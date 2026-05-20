@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hub de X-Treinos | Blood Strike</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
@@ -23,7 +21,6 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased">
 
-    <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
     <nav class="bg-slate-950/80 backdrop-blur-md border-b border-slate-900 sticky top-0 z-50 transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
@@ -40,7 +37,6 @@
         </div>
     </nav>
 
-    <!-- PAINEL CENTRAL DE SELEÇÃO DE DATA & FILTRO (UX Melhorada) -->
     <div class="bg-slate-900/40 border-b border-slate-900/60 py-4 backdrop-blur-sm sticky top-20 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2 text-sm">
@@ -49,18 +45,14 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <!-- Seletor de Mês -->
                 <div class="relative flex-grow sm:flex-grow-0">
                     <select id="select-mes" onchange="aoMudarMes()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
-                        <!-- Gerado via JS -->
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
                 </div>
 
-                <!-- Seletor de Dia -->
                 <div class="relative flex-grow sm:flex-grow-0">
                     <select id="select-dia" onchange="aoMudarDia()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
-                        <!-- Gerado via JS -->
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
                 </div>
@@ -68,10 +60,8 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <!-- PÁGINA 1: INÍCIO (HOME) -->
         <section id="page-home" class="page-section">
             <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-rose-950/20 rounded-2xl p-6 md:p-10 mb-8 border border-slate-800/60 relative overflow-hidden shadow-2xl">
                 <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -88,7 +78,6 @@
                 </div>
             </div>
 
-            <!-- REDES SOCIAIS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
                 <a id="link-discord" href="#" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/40 hover:bg-slate-900/20 transition group">
                     <div class="flex items-center gap-4">
@@ -113,18 +102,15 @@
                 </a>
             </div>
 
-            <!-- TIMES INSCRITOS NA DATA SELECIONADA -->
             <div>
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold uppercase tracking-wider text-white border-l-4 border-rose-500 pl-3">Equipes Confirmadas (<span id="count-times">0</span>)</h2>
                 </div>
                 <div id="lista-inscritos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <!-- Gerado automaticamente via JS -->
                 </div>
             </div>
         </section>
 
-        <!-- PÁGINA 2: TABELAS DE CLASSIFICAÇÃO -->
         <section id="page-tabela" class="page-section hidden">
             <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -133,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Sub-Abas de Queda -->
             <div class="flex border-b border-slate-900 mb-6 overflow-x-auto">
                 <button onclick="switchTab('geral')" id="tab-geral" class="tab-btn active px-5 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer whitespace-nowrap transition">Pontuação Geral</button>
                 <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">1ª Queda</button>
@@ -157,34 +142,28 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-corpo" class="divide-y divide-slate-900 text-sm">
-                            <!-- Gerado via JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- PÁGINA 3: TIMES & ESTATÍSTICAS -->
         <section id="page-times" class="page-section hidden">
-            <!-- BARRA DE PESQUISA DE TIME OU JOGADOR (UX Upgrade) -->
             <div class="mb-8 max-w-md relative">
                 <input type="text" id="search-bar" oninput="filtrarEstatisticas()" placeholder="Buscar time ou nick do jogador..." class="w-full bg-slate-950 border border-slate-900 hover:border-slate-800 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-rose-500 transition shadow-inner">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
             </div>
 
             <div id="container-times-detalhes" class="grid grid-cols-1 gap-8">
-                <!-- Gerado via JS -->
             </div>
         </section>
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-gray-500 font-medium">
         <p>&copy; 2026 Hub Esports Blood Strike. Sincronizado via Planilha CSV.</p>
     </footer>
 
-    <!-- LOGICA DO SITE (MÚLTIPLAS DATAS & UX) -->
     <script>
         const CONFIG = {
             organizador: "Diretoria do Clã",
@@ -212,8 +191,7 @@
                 bancoDeDadosCompleto = parseCSV(text);
                 inicializarFiltrosDeData();
             } catch (error) {
-                console.error("Erro ao ler CSV externo. Carregando simulação local...");
-                usarDadosMockCompleto();
+                console.error("Erro ao ler CSV externo.");
             }
         }
 
@@ -232,11 +210,8 @@
             return result;
         }
 
-        // AGALMA AS DATAS DISPONÍVEIS NO CSV PARA MONTAR OS SELECTS AUTOMATICAMENTE
         function inicializarFiltrosDeData() {
             const selectMes = document.getElementById('select-mes');
-            
-            // Extrai meses únicos
             const mesesUnicos = [...new Set(bancoDeDadosCompleto.map(item => item.Mes))].filter(Boolean);
             selectMes.innerHTML = "";
             mesesUnicos.forEach(m => {
@@ -251,8 +226,6 @@
 
         function atualizarDiasDisponiveis(mes) {
             const selectDia = document.getElementById('select-dia');
-            
-            // Extrai dias únicos daquele mês específico
             const linhasDoMes = bancoDeDadosCompleto.filter(item => item.Mes === mes);
             const diasUnicos = [...new Set(linhasDoMes.map(item => item.Dia))].filter(Boolean);
             
@@ -298,7 +271,6 @@
             return tabelaPontos[posicao] || 0;
         }
 
-        // FILTRA O BANCO POR MÊS E DIA ANTES DE AGRUPAR OS TIMES
         function processarEquipesFiltradas() {
             const dadosFiltrados = bancoDeDadosCompleto.filter(item => item.Mes === dataSelecionada.mes && item.Dia === dataSelecionada.dia);
             const equipes = {};
@@ -318,10 +290,10 @@
                 equipes[tName].q3_kills += parseInt(row.Q3_Kills) || 0;
 
                 equipes[tName].jogadores.push({
-                    nick: row.Jogador, funcao: row.Funcao,
+                    nick: row.Jogador,
                     q1_k: parseInt(row.Q1_Kills) || 0, q2_k: parseInt(row.Q2_Kills) || 0, q3_k: parseInt(row.Q3_Kills) || 0,
                     total_k: (parseInt(row.Q1_Kills) || 0) + (parseInt(row.Q2_Kills) || 0) + (parseInt(row.Q3_Kills) || 0),
-                    dano: parseInt(row.Dano_Medio) || 0, mvp: parseInt(row.MVP_Vezes) || 0
+                    dano: row.Dano_Medio || "Sem Informações", mvp: parseInt(row.MVP_Vezes) || 0
                 });
             });
 
@@ -405,7 +377,7 @@
                             <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-900">${eq.pt}</td>
                         </tr>`;
                 } else {
-                    let ppQ = eq[`${modo}_pp`], pkQ = eq[`${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`${modo}_pos__`] || eq[`${modo}_pos`];
+                    let ppQ = eq[`${modo}_pp`], pkQ = eq[`${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`${modo}_pos`];
                     corpo.innerHTML += `
                         <tr class="hover:bg-slate-900/40 transition border-b border-slate-900/40">
                             <td class="py-4 px-4 text-center font-bold text-gray-500">${posBadge}</td>
@@ -426,7 +398,6 @@
             container.innerHTML = '';
 
             listasEquipes.forEach(eq => {
-                // Filtro de pesquisa Inteligente (por time ou nick do player)
                 const bateComTime = eq.nome.toLowerCase().includes(filtroTexto.toLowerCase());
                 const bateComPlayer = eq.jogadores.some(p => p.nick.toLowerCase().includes(filtroTexto.toLowerCase()));
                 if (filtroTexto && !bateComTime && !bateComPlayer) return;
@@ -436,7 +407,6 @@
                     pRows += `
                         <tr class="border-b border-slate-900/40 hover:bg-slate-950/80 transition">
                             <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-600"></i>${p.nick}</td>
-                            <td class="py-3 px-4 text-gray-400"><span class="bg-slate-900 text-gray-400 text-[11px] px-2.5 py-0.5 rounded-md border border-slate-800">${p.funcao}</span></td>
                             <td class="py-3 px-4 text-center font-bold text-gray-200">${p.total_k}</td>
                             <td class="py-3 px-4 text-center text-gray-400">${p.dano}</td>
                             <td class="py-3 px-4 text-center text-amber-400 font-bold">${p.mvp > 0 ? `<i class="fa-solid fa-star text-xs mr-1"></i>${p.mvp}` : '0'}</td>
@@ -448,7 +418,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-900 pb-4 mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-600 to-slate-900 flex items-center justify-center font-black text-lg text-white border border-rose-500/20 shadow-md">${eq.nome.substring(0,2).toUpperCase()}</div>
-                                <div><h3 class="text-xl font-bold text-white tracking-wide uppercase">${eq.nome}</h3><p class="text-xs text-gray-500 font-medium">Data Relacionada: ${dataSelecionada.dia} de ${dataSelecionada.mes}</p></div>
+                                <div><h3 class="text-xl font-bold text-white tracking-wide uppercase">${eq.nome}</h3><p class="text-xs text-gray-500 font-medium">Data: ${dataSelecionada.dia} de ${dataSelecionada.mes}</p></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
@@ -461,7 +431,12 @@
                             <div class="overflow-x-auto rounded-xl border border-slate-900 bg-slate-900/10">
                                 <table class="w-full text-left text-xs">
                                     <thead>
-                                        <tr class="bg-slate-900/50 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-900"><th class="py-3 px-4">Jogador</th><th class="py-3 px-4">Função</th><th class="py-3 px-4 text-center">Kills Totais</th><th class="py-3 px-4 text-center">Média Dano</th><th class="py-3 px-4 text-center">MVP</th></tr>
+                                        <tr class="bg-slate-900/50 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-900">
+                                            <th class="py-3 px-4">Jogador</th>
+                                            <th class="py-3 px-4 text-center">Kills Totais</th>
+                                            <th class="py-3 px-4 text-center">Média Dano</th>
+                                            <th class="py-3 px-4 text-center">MVP</th>
+                                        </tr>
                                     </thead>
                                     <tbody>${pRows}</tbody>
                                 </table>
@@ -471,15 +446,9 @@
             });
         }
 
-        // BUSCA EM TEMPO REAL (Filtro UX instantâneo)
         function filtrarEstatisticas() {
             const texto = document.getElementById('search-bar').value;
             renderizarTimesDetalhes(texto);
-        }
-
-        function usarDadosMockCompleto() {
-            bancoDeDadosCompleto = parseCSV(`Mes;Dia;Time;Jogador;Funcao;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes\nMaio;Dia 15;Alfa;PlayerUm;Rush;1;5;3;2;2;4;1250;1\nMaio;Dia 15;Alfa;PlayerDois;Suporte;1;1;3;0;2;1;890;0\nMaio;Dia 15;Beta;SniperX;Suporte;2;3;1;6;4;1;1450;2\nMaio;Dia 20;Beta;SniperX;Suporte;1;4;2;3;2;2;1600;1`);
-            inicializarFiltrosDeData();
         }
     </script>
 </body>
