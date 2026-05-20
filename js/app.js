@@ -539,8 +539,7 @@ function iniciarBusca() {
 
 function copiarLobby() {
 
-  let texto = `
-DEVILS MOBILE LEAGUE 🚩
+  let texto = `DEVILS MOBILE LEAGUE 🚩
 
 PLATAFORMA: MOBILE
 MODO: SQUAD
@@ -548,14 +547,12 @@ MODO: SQUAD
 🪂 3 QUEDAS
 🌴 ILHA DO MEDO
 
-━━━━━━━━━━━━━━
-`;
+━━━━━━━━━━━━━━`;
 
   rankingAtual.forEach((eq, index) => {
 
     texto += `
-📍 ${String(index + 1).padStart(2, "0")} — ${eq.nome}
-`;
+📍 ${String(index + 1).padStart(2, "0")} — ${eq.nome}`;
 
   });
 
