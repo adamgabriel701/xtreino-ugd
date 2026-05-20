@@ -3,148 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-Treino Blood Strike</title>
+    <title>Hub de X-Treinos | Blood Strike</title>
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { background-color: #0b0f19; color: #f3f4f6; font-family: 'Inter', sans-serif; }
-        .tab-btn.active { border-bottom: 2px solid #ef4444; color: #ef4444; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+        
+        body { 
+            background-color: #060913; 
+            color: #f1f5f9; 
+            font-family: 'Space Grotesk', sans-serif; 
+        }
+        h1, h2, h3, h4, .nav-brand { font-family: 'Rajdhani', sans-serif; }
+        .tab-btn.active { border-bottom: 3px solid #f43f5e; color: #f43f5e; background: linear-gradient(to top, rgba(244,63,94,0.05), transparent); }
+        .page-link.active { color: #f43f5e; border-color: #f43f5e; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between">
+<body class="min-h-screen flex flex-col justify-between antialiased">
 
-    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
+    <nav class="bg-slate-950/80 backdrop-blur-md border-b border-slate-900 sticky top-0 z-50 transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+            <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-3">
-                    <span class="text-xl font-black tracking-wider text-red-500"><i class="fa-solid fa-crosshairs mr-2"></i>X-TREINO</span>
+                    <div class="w-10 h-10 bg-rose-600 rounded-bl-xl rounded-tr-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-600/30">BS</div>
+                    <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 nav-brand">BLOOD STRIKE <span class="text-rose-500">HUB</span></span>
                 </div>
-                <div class="flex space-x-4">
-                    <button onclick="switchPage('home')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Início</button>
-                    <button onclick="switchPage('tabela')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Tabela</button>
-                    <button onclick="switchPage('times')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Times & Stats</button>
+                <div class="flex space-x-2 md:space-x-6">
+                    <button onclick="switchPage('home')" id="nav-home" class="page-link active text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">INÍCIO</button>
+                    <button onclick="switchPage('tabela')" id="nav-tabela" class="page-link text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">TABELAS</button>
+                    <button onclick="switchPage('times')" id="nav-times" class="page-link text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">ESTATÍSTICAS</button>
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- PAINEL CENTRAL DE SELEÇÃO DE DATA & FILTRO (UX Melhorada) -->
+    <div class="bg-slate-900/40 border-b border-slate-900/60 py-4 backdrop-blur-sm sticky top-20 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-calendar-days text-rose-500 text-base"></i>
+                <span class="text-gray-400 font-medium">Histórico do Campeonato:</span>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <!-- Seletor de Mês -->
+                <div class="relative flex-grow sm:flex-grow-0">
+                    <select id="select-mes" onchange="aoMudarMes()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
+                        <!-- Gerado via JS -->
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
+                </div>
+
+                <!-- Seletor de Dia -->
+                <div class="relative flex-grow sm:flex-grow-0">
+                    <select id="select-dia" onchange="aoMudarDia()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
+                        <!-- Gerado via JS -->
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
+        <!-- PÁGINA 1: INÍCIO (HOME) -->
         <section id="page-home" class="page-section">
-            <div class="bg-gradient-to-r from-red-900 to-slate-950 rounded-2xl p-8 mb-8 border border-red-800/40 relative overflow-hidden shadow-2xl">
-                <div class="relative z-10 max-w-2xl">
-                    <span class="bg-red-500/20 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-red-500/30">Torneio Ativo</span>
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-white mt-4 mb-2">Copa Blood Strike</h1>
-                    <p class="text-gray-300 text-lg mb-6">Organizado por: <span class="text-red-400 font-semibold" id="org-name">Carregando...</span></p>
-                    <div class="flex flex-wrap gap-4 text-sm text-gray-300">
-                        <div class="bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800"><i class="fa-solid fa-gamepad text-red-500 mr-2"></i>Formato: <strong class="text-white">Battle Royale (BR)</strong></div>
-                        <div class="bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800"><i class="fa-solid fa-layer-group text-red-500 mr-2"></i>Rodadas: <strong class="text-white">3 Quedas</strong></div>
+            <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-rose-950/20 rounded-2xl p-6 md:p-10 mb-8 border border-slate-800/60 relative overflow-hidden shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-rose-500/10 text-rose-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-md border border-rose-500/20">X-Treino Oficial</span>
+                    <h1 class="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mt-4 mb-2">Arena Blood Strike</h1>
+                    <p class="text-gray-400 text-base md:text-lg mb-6">Acompanhe as parciais, tabelas acumuladas de 3 quedas e rendimento individual sob coordenação de: <span class="text-rose-400 font-bold" id="org-name">...</span></p>
+                    
+                    <div class="flex flex-wrap gap-4 text-xs font-bold uppercase tracking-wider text-gray-300">
+                        <div class="bg-slate-950 px-4 py-3 rounded-xl border border-slate-800/80 flex items-center gap-2"><i class="fa-solid fa-crosshairs text-rose-500"></i> BR Mode</div>
+                        <div class="bg-slate-950 px-4 py-3 rounded-xl border border-slate-800/80 flex items-center gap-2"><i class="fa-solid fa-stopwatch text-rose-500"></i> 3 Quedas diárias</div>
+                        <div class="bg-rose-500/10 text-rose-400 px-4 py-3 rounded-xl border border-rose-500/20 flex items-center gap-2"><i class="fa-solid fa-clock shadow-sm"></i> Exibindo: <span id="data-display-hero" class="font-black">...</span></div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <a id="link-discord" href="#" target="_blank" class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/50 transition shadow-lg group">
+            <!-- REDES SOCIAIS -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                <a id="link-discord" href="#" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/40 hover:bg-slate-900/20 transition group">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-indigo-600/10 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 transition"><i class="fa-brands fa-discord"></i></div>
-                        <div>
-                            <h3 class="font-bold text-white">Discord oficial</h3>
-                            <p class="text-xs text-gray-400">Inscrições e Suporte</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 text-xl group-hover:scale-105 transition"><i class="fa-brands fa-discord"></i></div>
+                        <div><h3 class="font-bold text-white text-base">Discord Clan</h3><p class="text-xs text-gray-500">Inscrições abertas</p></div>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-600 group-hover:text-indigo-400 transition text-sm"></i>
+                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-indigo-400 transition text-xs"></i>
                 </a>
-                <a id="link-youtube" href="#" target="_blank" class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between hover:border-red-500/50 transition shadow-lg group">
+                <a id="link-youtube" href="#" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-red-500/40 hover:bg-slate-900/20 transition group">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-red-600/10 flex items-center justify-center text-red-400 text-2xl group-hover:scale-110 transition"><i class="fa-brands fa-youtube"></i></div>
-                        <div>
-                            <h3 class="font-bold text-white">Canal do YouTube</h3>
-                            <p class="text-xs text-gray-400">Assista às Transmissões</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center text-red-400 text-xl group-hover:scale-105 transition"><i class="fa-brands fa-youtube"></i></div>
+                        <div><h3 class="font-bold text-white text-base">YouTube Lives</h3><p class="text-xs text-gray-500">Transmissão ao vivo</p></div>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-600 group-hover:text-red-400 transition text-sm"></i>
+                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-red-400 transition text-xs"></i>
                 </a>
-                <a id="link-tiktok" href="#" target="_blank" class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between hover:border-stone-400/50 transition shadow-lg group">
+                <a id="link-tiktok" href="#" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-white/20 hover:bg-slate-900/20 transition group">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-stone-800 flex items-center justify-center text-white text-xl group-hover:scale-110 transition"><i class="fa-brands fa-tiktok"></i></div>
-                        <div>
-                            <h3 class="font-bold text-white">TikTok Clips</h3>
-                            <p class="text-xs text-gray-400">Melhores Momentos</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-white text-lg group-hover:scale-105 transition"><i class="fa-brands fa-tiktok"></i></div>
+                        <div><h3 class="font-bold text-white text-base">TikTok Clips</h3><p class="text-xs text-gray-500">Melhores jogadas</p></div>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-600 group-hover:text-white transition text-sm"></i>
+                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-white transition text-xs"></i>
                 </a>
             </div>
 
-            <div class="mb-6">
-                <h2 class="text-2xl font-black uppercase border-l-4 border-red-500 pl-3 mb-6 tracking-wide">Times Inscritos</h2>
-                <div id="lista-inscritos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    </div>
+            <!-- TIMES INSCRITOS NA DATA SELECIONADA -->
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white border-l-4 border-rose-500 pl-3">Equipes Confirmadas (<span id="count-times">0</span>)</h2>
+                </div>
+                <div id="lista-inscritos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Gerado automaticamente via JS -->
+                </div>
             </div>
         </section>
 
+        <!-- PÁGINA 2: TABELAS DE CLASSIFICAÇÃO -->
         <section id="page-tabela" class="page-section hidden">
-            <div class="mb-6">
-                <h2 class="text-2xl font-black uppercase border-l-4 border-red-500 pl-3 mb-2 tracking-wide">Tabela de Classificação</h2>
-                <p class="text-gray-400 text-sm">Critério: <span class="text-red-400 font-medium">PP (Posição) + PK (Kill) = PT (Pontos Totais)</span></p>
+            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white border-l-4 border-rose-500 pl-3">Tabela Parcial Diária</h2>
+                    <p class="text-gray-500 text-xs mt-1">Pontuação Base: 1º=12pt, 2º=10pt, 3º=8pt, 4º=7pt... + 1 ponto por Eliminação (Kill).</p>
+                </div>
             </div>
 
-            <div class="flex border-b border-slate-800 mb-6 overflow-x-auto">
-                <button onclick="switchTab('geral')" id="tab-geral" class="tab-btn active px-4 py-2 text-sm font-bold uppercase tracking-wider cursor-pointer whitespace-nowrap">Classificação Geral</button>
-                <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white uppercase tracking-wider cursor-pointer whitespace-nowrap">1ª Queda</button>
-                <button onclick="switchTab('q2')" id="tab-q2" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white uppercase tracking-wider cursor-pointer whitespace-nowrap">2ª Queda</button>
-                <button onclick="switchTab('q3')" id="tab-q3" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white uppercase tracking-wider cursor-pointer whitespace-nowrap">3ª Queda</button>
+            <!-- Sub-Abas de Queda -->
+            <div class="flex border-b border-slate-900 mb-6 overflow-x-auto">
+                <button onclick="switchTab('geral')" id="tab-geral" class="tab-btn active px-5 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer whitespace-nowrap transition">Pontuação Geral</button>
+                <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">1ª Queda</button>
+                <button onclick="switchTab('q2')" id="tab-q2" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">2ª Queda</button>
+                <button onclick="switchTab('q3')" id="tab-q3" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">3ª Queda</button>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden shadow-2xl">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-950 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-slate-800">
+                            <tr class="bg-slate-900/60 text-[11px] font-bold uppercase tracking-widest text-gray-400 border-b border-slate-900">
                                 <th class="py-4 px-4 text-center w-16">Pos</th>
-                                <th class="py-4 px-6">Time</th>
+                                <th class="py-4 px-6">Equipe</th>
                                 <th class="py-4 px-4 text-center col-queda">Q1 (PP/PK)</th>
                                 <th class="py-4 px-4 text-center col-queda">Q2 (PP/PK)</th>
                                 <th class="py-4 px-4 text-center col-queda">Q3 (PP/PK)</th>
                                 <th class="py-4 px-4 text-center">Total PP</th>
                                 <th class="py-4 px-4 text-center">Total PK</th>
-                                <th class="py-4 px-6 text-center bg-red-950/20 font-black text-red-400">PT (Total)</th>
+                                <th class="py-4 px-6 text-center bg-rose-950/20 font-black text-rose-400 border-l border-slate-900">PT (Total)</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-corpo" class="divide-y divide-slate-800/60 text-sm">
-                            </tbody>
+                        <tbody id="tabela-corpo" class="divide-y divide-slate-900 text-sm">
+                            <!-- Gerado via JS -->
+                        </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
+        <!-- PÁGINA 3: TIMES & ESTATÍSTICAS -->
         <section id="page-times" class="page-section hidden">
-            <div class="mb-6">
-                <h2 class="text-2xl font-black uppercase border-l-4 border-red-500 pl-3 mb-6 tracking-wide">Estatísticas das Equipes & Players</h2>
+            <!-- BARRA DE PESQUISA DE TIME OU JOGADOR (UX Upgrade) -->
+            <div class="mb-8 max-w-md relative">
+                <input type="text" id="search-bar" oninput="filtrarEstatisticas()" placeholder="Buscar time ou nick do jogador..." class="w-full bg-slate-950 border border-slate-900 hover:border-slate-800 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-rose-500 transition shadow-inner">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
             </div>
-            <div id="container-times-detalhes" class="space-y-12">
-                </div>
+
+            <div id="container-times-detalhes" class="grid grid-cols-1 gap-8">
+                <!-- Gerado via JS -->
+            </div>
         </section>
 
     </main>
 
-    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-gray-500">
-        <p>&copy; 2026 Clã Blood Strike X-Treino. Rodando via GitHub Pages.</p>
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-gray-500 font-medium">
+        <p>&copy; 2026 Hub Esports Blood Strike. Sincronizado via Planilha CSV.</p>
     </footer>
 
+    <!-- LOGICA DO SITE (MÚLTIPLAS DATAS & UX) -->
     <script>
-        // CONFIGURAÇÕES GERAIS - Altere os links abaixo:
         const CONFIG = {
-            organizador: "Seu Clan / Nick",
-            discord: "https://discord.gg/seu-link-aqui",
-            youtube: "https://youtube.com/@seu-canal-aqui",
-            tiktok: "https://tiktok.com/@seu-perfil-aqui"
+            organizador: "Diretoria do Clã",
+            discord: "https://discord.gg/clan-bloodstrike",
+            youtube: "https://youtube.com/@clan-live",
+            tiktok: "https://tiktok.com/@clan-clips"
         };
 
         const CSV_URL = './data/campeonato.csv';
-        let dadosGlobais = [];
+        let bancoDeDadosCompleto = [];
+        let dataSelecionada = { mes: "", dia: "" };
 
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('org-name').innerText = CONFIG.organizador;
@@ -154,21 +205,15 @@
             carregarDados();
         });
 
-        function switchPage(pageId) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(`page-${pageId}`).classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
         async function carregarDados() {
             try {
                 const response = await fetch(CSV_URL);
                 const text = await response.text();
-                dadosGlobais = parseCSV(text);
-                renderizarTodos();
+                bancoDeDadosCompleto = parseCSV(text);
+                inicializarFiltrosDeData();
             } catch (error) {
-                console.error("Erro ao processar CSV, carregando exemplo de simulação...", error);
-                usarDadosMock(); // Garante o funcionamento em testes offline
+                console.error("Erro ao ler CSV externo. Carregando simulação local...");
+                usarDadosMockCompleto();
             }
         }
 
@@ -187,14 +232,78 @@
             return result;
         }
 
+        // AGALMA AS DATAS DISPONÍVEIS NO CSV PARA MONTAR OS SELECTS AUTOMATICAMENTE
+        function inicializarFiltrosDeData() {
+            const selectMes = document.getElementById('select-mes');
+            
+            // Extrai meses únicos
+            const mesesUnicos = [...new Set(bancoDeDadosCompleto.map(item => item.Mes))].filter(Boolean);
+            selectMes.innerHTML = "";
+            mesesUnicos.forEach(m => {
+                selectMes.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            if(mesesUnicos.length > 0) {
+                dataSelecionada.mes = mesesUnicos[0];
+                atualizarDiasDisponiveis(dataSelecionada.mes);
+            }
+        }
+
+        function atualizarDiasDisponiveis(mes) {
+            const selectDia = document.getElementById('select-dia');
+            
+            // Extrai dias únicos daquele mês específico
+            const linhasDoMes = bancoDeDadosCompleto.filter(item => item.Mes === mes);
+            const diasUnicos = [...new Set(linhasDoMes.map(item => item.Dia))].filter(Boolean);
+            
+            selectDia.innerHTML = "";
+            diasUnicos.forEach(d => {
+                selectDia.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+
+            if(diasUnicos.length > 0) {
+                dataSelecionada.dia = diasUnicos[0];
+                renderizarPainelCompleto();
+            }
+        }
+
+        function aoMudarMes() {
+            dataSelecionada.mes = document.getElementById('select-mes').value;
+            atualizarDiasDisponiveis(dataSelecionada.mes);
+        }
+
+        function aoMudarDia() {
+            dataSelecionada.dia = document.getElementById('select-dia').value;
+            renderizarPainelCompleto();
+        }
+
+        function renderizarPainelCompleto() {
+            document.getElementById('data-display-hero').innerText = `${dataSelecionada.dia} de ${dataSelecionada.mes}`;
+            renderizarHome();
+            renderizarTabela('geral');
+            renderizarTimesDetalhes();
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.page-link').forEach(link => link.classList.remove('active'));
+            
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById(`nav-${pageId}`).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function obterPontosPosicao(posicao) {
             const tabelaPontos = { 1: 12, 2: 10, 3: 8, 4: 7, 5: 6, 6: 5, 7: 4, 8: 3, 9: 2, 10: 1 };
             return tabelaPontos[posicao] || 0;
         }
 
-        function processarEquipes() {
+        // FILTRA O BANCO POR MÊS E DIA ANTES DE AGRUPAR OS TIMES
+        function processarEquipesFiltradas() {
+            const dadosFiltrados = bancoDeDadosCompleto.filter(item => item.Mes === dataSelecionada.mes && item.Dia === dataSelecionada.dia);
             const equipes = {};
-            dadosGlobais.forEach(row => {
+
+            dadosFiltrados.forEach(row => {
                 const tName = row.Time;
                 if (!tName) return;
                 if (!equipes[tName]) {
@@ -233,24 +342,25 @@
             });
         }
 
-        function renderizarTodos() {
-            renderizarHome();
-            renderizarTabela('geral');
-            renderizarTimesDetalhes();
-        }
-
         function renderizarHome() {
-            const listasEquipes = processarEquipes();
+            const listasEquipes = processarEquipesFiltradas();
             const container = document.getElementById('lista-inscritos');
+            document.getElementById('count-times').innerText = listasEquipes.length;
             container.innerHTML = '';
+            
+            if(listasEquipes.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-6 text-sm text-gray-500">Nenhum time cadastrado para este dia.</p>`;
+                return;
+            }
+
             listasEquipes.forEach(eq => {
                 container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center flex flex-col items-center justify-center gap-2 shadow-md">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-slate-800 flex items-center justify-center text-white font-black text-lg shadow-inner">
+                    <div class="bg-slate-950 border border-slate-900 rounded-xl p-4 text-center flex flex-col items-center justify-center gap-2 hover:border-rose-500/30 transition shadow-lg">
+                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-800 flex items-center justify-center text-rose-500 font-bold text-lg">
                             ${eq.nome.substring(0,2).toUpperCase()}
                         </div>
-                        <div class="font-bold text-white text-sm tracking-wide truncate w-full">${eq.nome}</div>
-                        <div class="text-[10px] text-gray-500 uppercase">${eq.jogadores.length} Jogadores</div>
+                        <div class="font-bold text-white text-sm truncate w-full tracking-wide">${eq.nome}</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">${eq.jogadores.length} Players</div>
                     </div>`;
             });
         }
@@ -262,7 +372,7 @@
         }
 
         function renderizarTabela(modo) {
-            let listasEquipes = processarEquipes();
+            let listasEquipes = processarEquipesFiltradas();
             const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = '';
 
@@ -276,83 +386,82 @@
 
             listasEquipes.forEach((eq, index) => {
                 let posBadge = `${index + 1}º`;
-                if(index === 0) posBadge = `<span class="bg-amber-500 text-slate-950 font-bold px-2 py-0.5 rounded-md text-xs">1º</span>`;
-                if(index === 1) posBadge = `<span class="bg-slate-300 text-slate-950 font-bold px-2 py-0.5 rounded-md text-xs">2º</span>`;
-                if(index === 2) posBadge = `<span class="bg-amber-700 text-white font-bold px-2 py-0.5 rounded-md text-xs">3º</span>`;
+                if(index === 0) posBadge = `<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-2.5 py-0.5 rounded-md text-xs shadow">1º</span>`;
+                if(index === 1) posBadge = `<span class="bg-slate-300 text-slate-950 font-black px-2.5 py-0.5 rounded-md text-xs">2º</span>`;
+                if(index === 2) posBadge = `<span class="bg-amber-700 text-white font-black px-2.5 py-0.5 rounded-md text-xs">3º</span>`;
 
                 if (modo === 'geral') {
                     corpo.innerHTML += `
-                        <tr class="hover:bg-slate-800/30 transition">
-                            <td class="py-4 px-4 text-center font-bold text-gray-400">${posBadge}</td>
-                            <td class="py-4 px-6 font-bold text-white flex items-center gap-2">
-                               <div class="w-6 h-6 rounded-full bg-slate-800 text-[10px] flex items-center justify-center text-red-400 font-bold">${eq.nome.substring(0,2)}</div> ${eq.nome}
+                        <tr class="hover:bg-slate-900/40 transition border-b border-slate-900/40">
+                            <td class="py-4 px-4 text-center font-bold text-gray-500">${posBadge}</td>
+                            <td class="py-4 px-6 font-bold text-white flex items-center gap-2.5">
+                               <div class="w-6 h-6 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">${eq.nome.substring(0,2)}</div> ${eq.nome}
                             </td>
                             <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q1_pp}/${eq.q1_kills}</td>
                             <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q2_pp}/${eq.q2_kills}</td>
                             <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q3_pp}/${eq.q3_kills}</td>
                             <td class="py-4 px-4 text-center text-gray-300">${eq.total_pp}</td>
                             <td class="py-4 px-4 text-center text-gray-300">${eq.total_kills}</td>
-                            <td class="py-4 px-6 text-center bg-red-950/10 font-black text-base text-red-400">${eq.pt}</td>
+                            <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-900">${eq.pt}</td>
                         </tr>`;
                 } else {
-                    let ppQ = eq[`${modo}_pp`], pkQ = eq[`${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`${modo}_pos`];
+                    let ppQ = eq[`${modo}_pp`], pkQ = eq[`${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`${modo}_pos__`] || eq[`${modo}_pos`];
                     corpo.innerHTML += `
-                        <tr class="hover:bg-slate-800/30 transition">
-                            <td class="py-4 px-4 text-center font-bold text-gray-400">${posBadge}</td>
+                        <tr class="hover:bg-slate-900/40 transition border-b border-slate-900/40">
+                            <td class="py-4 px-4 text-center font-bold text-gray-500">${posBadge}</td>
                             <td class="py-4 px-6 font-bold text-white flex items-center gap-2">
-                               <div class="w-6 h-6 rounded-full bg-slate-800 text-[10px] flex items-center justify-center text-red-400 font-bold">${eq.nome.substring(0,2)}</div> ${eq.nome} <span class="text-xs text-gray-500 font-normal">(${nPos}º na Queda)</span>
+                               <div class="w-6 h-6 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">${eq.nome.substring(0,2)}</div> ${eq.nome} <span class="text-xs text-gray-500 font-normal">(${nPos}º na Queda)</span>
                             </td>
-                            <td class="py-4 px-4 text-center text-gray-300">${ppQ} PP</td>
-                            <td class="py-4 px-4 text-center text-gray-300">${pkQ} Kills (PK)</td>
-                            <td class="py-4 px-6 text-center bg-red-950/10 font-black text-base text-red-400">${totQ} pts</td>
+                            <td class="py-4 px-4 text-center text-gray-300 font-semibold">${ppQ} PP</td>
+                            <td class="py-4 px-4 text-center text-gray-300 font-semibold">${pkQ} Kills (PK)</td>
+                            <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-900">${totQ} pts</td>
                         </tr>`;
                 }
             });
         }
 
-        function renderizarTimesDetalhes() {
-            const listasEquipes = processarEquipes();
+        function renderizarTimesDetalhes(filtroTexto = "") {
+            const listasEquipes = processarEquipesFiltradas();
             const container = document.getElementById('container-times-detalhes');
             container.innerHTML = '';
 
             listasEquipes.forEach(eq => {
+                // Filtro de pesquisa Inteligente (por time ou nick do player)
+                const bateComTime = eq.nome.toLowerCase().includes(filtroTexto.toLowerCase());
+                const bateComPlayer = eq.jogadores.some(p => p.nick.toLowerCase().includes(filtroTexto.toLowerCase()));
+                if (filtroTexto && !bateComTime && !bateComPlayer) return;
+
                 let pRows = "";
                 eq.jogadores.forEach(p => {
                     pRows += `
-                        <tr class="border-b border-slate-800/50 hover:bg-slate-950/40 transition">
-                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-500"></i>${p.nick}</td>
-                            <td class="py-3 px-4 text-gray-400"><span class="bg-slate-800 text-gray-300 text-[11px] px-2 py-0.5 rounded-full border border-slate-700">${p.funcao}</span></td>
-                            <td class="py-3 px-4 text-center font-semibold text-gray-200">${p.total_k}</td>
-                            <td class="py-3 px-4 text-center text-gray-300">${p.dano}</td>
+                        <tr class="border-b border-slate-900/40 hover:bg-slate-950/80 transition">
+                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-600"></i>${p.nick}</td>
+                            <td class="py-3 px-4 text-gray-400"><span class="bg-slate-900 text-gray-400 text-[11px] px-2.5 py-0.5 rounded-md border border-slate-800">${p.funcao}</span></td>
+                            <td class="py-3 px-4 text-center font-bold text-gray-200">${p.total_k}</td>
+                            <td class="py-3 px-4 text-center text-gray-400">${p.dano}</td>
                             <td class="py-3 px-4 text-center text-amber-400 font-bold">${p.mvp > 0 ? `<i class="fa-solid fa-star text-xs mr-1"></i>${p.mvp}` : '0'}</td>
                         </tr>`;
                 });
 
                 container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
-                        <div class="flex items-center gap-4 border-b border-slate-800 pb-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-to-tr from-red-600 to-slate-900 flex items-center justify-center font-black text-xl text-white border border-red-500/20 shadow-md">
-                                ${eq.nome.substring(0,2).toUpperCase()}
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-extrabold text-white tracking-wide">${eq.nome}</h3>
-                                <p class="text-xs text-gray-500">Lineup Ativa no Campeonato</p>
+                    <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 shadow-xl relative">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-900 pb-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-600 to-slate-900 flex items-center justify-center font-black text-lg text-white border border-rose-500/20 shadow-md">${eq.nome.substring(0,2).toUpperCase()}</div>
+                                <div><h3 class="text-xl font-bold text-white tracking-wide uppercase">${eq.nome}</h3><p class="text-xs text-gray-500 font-medium">Data Relacionada: ${dataSelecionada.dia} de ${dataSelecionada.mes}</p></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-gray-500 uppercase font-bold">Kills Coletivas</span><div class="text-xl font-black text-white mt-1">${eq.total_kills}</div></div>
-                            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-gray-500 uppercase font-bold">Pontos Totais</span><div class="text-xl font-black text-red-400 mt-1">${eq.pt}</div></div>
-                            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-gray-500 uppercase font-bold">Vitórias (Booyah)</span><div class="text-xl font-black text-amber-500 mt-1"><i class="fa-solid fa-crown mr-1"></i>${eq.strikes}</div></div>
-                            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-gray-500 uppercase font-bold">Média Posição</span><div class="text-xl font-black text-blue-400 mt-1">${((eq.q1_pos + eq.q2_pos + eq.q3_pos)/3).toFixed(1)}º</div></div>
+                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Kills Coletivas</span><div class="text-xl font-black text-white mt-0.5">${eq.total_kills}</div></div>
+                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Pontos Totais</span><div class="text-xl font-black text-rose-500 mt-0.5">${eq.pt}</div></div>
+                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Vitórias / Booyah</span><div class="text-xl font-black text-amber-400 mt-0.5"><i class="fa-solid fa-crown mr-1"></i>${eq.strikes}</div></div>
+                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Posição Média</span><div class="text-xl font-black text-sky-400 mt-0.5">${((eq.q1_pos + eq.q2_pos + eq.q3_pos)/3).toFixed(1)}º</div></div>
                         </div>
                         <div class="mt-6">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3"><i class="fa-solid fa-users mr-2 text-red-500"></i>Estatísticas Individuais</h4>
-                            <div class="overflow-x-auto rounded-lg border border-slate-800/80 bg-slate-950/20">
+                            <div class="overflow-x-auto rounded-xl border border-slate-900 bg-slate-900/10">
                                 <table class="w-full text-left text-xs">
                                     <thead>
-                                        <tr class="bg-slate-950 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-800">
-                                            <th class="py-3 px-4">Jogador</th><th class="py-3 px-4">Função</th><th class="py-3 px-4 text-center">Kills</th><th class="py-3 px-4 text-center">Média Dano</th><th class="py-3 px-4 text-center">MVP</th>
-                                        </tr>
+                                        <tr class="bg-slate-900/50 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-900"><th class="py-3 px-4">Jogador</th><th class="py-3 px-4">Função</th><th class="py-3 px-4 text-center">Kills Totais</th><th class="py-3 px-4 text-center">Média Dano</th><th class="py-3 px-4 text-center">MVP</th></tr>
                                     </thead>
                                     <tbody>${pRows}</tbody>
                                 </table>
@@ -362,9 +471,15 @@
             });
         }
 
-        function usarDadosMock() {
-            dadosGlobais = parseCSV(`Time;Jogador;Funcao;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes\nAlfa;PlayerUm;Rush;1;5;3;2;2;4;1250;1\nAlfa;PlayerDois;Suporte;1;1;3;0;2;1;890;0\nBeta;SniperX;Suporte;2;3;1;6;4;1;1450;2\nBeta;Ghost;Rush;2;1;1;2;4;0;980;0`);
-            renderizarTodos();
+        // BUSCA EM TEMPO REAL (Filtro UX instantâneo)
+        function filtrarEstatisticas() {
+            const texto = document.getElementById('search-bar').value;
+            renderizarTimesDetalhes(texto);
+        }
+
+        function usarDadosMockCompleto() {
+            bancoDeDadosCompleto = parseCSV(`Mes;Dia;Time;Jogador;Funcao;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes\nMaio;Dia 15;Alfa;PlayerUm;Rush;1;5;3;2;2;4;1250;1\nMaio;Dia 15;Alfa;PlayerDois;Suporte;1;1;3;0;2;1;890;0\nMaio;Dia 15;Beta;SniperX;Suporte;2;3;1;6;4;1;1450;2\nMaio;Dia 20;Beta;SniperX;Suporte;1;4;2;3;2;2;1600;1`);
+            inicializarFiltrosDeData();
         }
     </script>
 </body>
