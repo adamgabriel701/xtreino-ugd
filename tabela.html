@@ -113,7 +113,7 @@
         };
 
         async function loadTableData() {
-            allData = await loadCSV('dados_xtreino.csv');
+            allData = await loadCSV('data/campeonato.csv');
 
             // Preencher filtros
             const months = [...new Set(allData.map(r => r.Mes))];

@@ -63,7 +63,7 @@
         let allData = [];
 
         async function loadTeamsData() {
-            allData = await loadCSV('dados_xtreino.csv');
+            allData = await loadCSV('data/campeonato.csv');
 
             const teams = [...new Set(allData.map(r => r.Time))];
             const teamSelect = document.getElementById('team-filter');
