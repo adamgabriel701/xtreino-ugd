@@ -1,10 +1,32 @@
 Mes;Dia;Time;Jogador;Funcao;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes
-Maio;Dia 15;Alfa;PlayerUm;Rush;1;5;3;2;2;4;1250;1
-Maio;Dia 15;Alfa;PlayerDois;Suporte;1;1;3;0;2;1;890;0
-Maio;Dia 15;Beta;SniperX;Suporte;2;3;1;6;4;1;1450;2
-Maio;Dia 15;Beta;Ghost;Rush;2;1;1;2;4;0;980;0
-Maio;Dia 20;Alfa;PlayerUm;Rush;3;2;1;4;5;1;950;0
-Maio;Dia 20;Alfa;PlayerDois;Suporte;3;0;1;1;5;0;600;0
-Maio;Dia 20;Beta;SniperX;Suporte;1;4;2;3;2;2;1600;1
-Maio;Dia 20;Beta;Ghost;Rush;1;2;2;1;2;1;1100;0
-Junho;Dia 02;Charlie;Nox;Rush;1;6;1;4;2;3;1800;2
+Maio;Dia 19;Equipe D (UGD);UGD_Treon;Rush;1;11;4;12;1;13;1200;1
+Maio;Dia 19;Equipe D (UGD);UGD_cool7;Suporte;1;8;4;10;1;6;950;0
+Maio;Dia 19;Equipe D (UGD);UGD_Kaze;Flanco;1;13;4;1;1;8;1050;1
+Maio;Dia 19;Equipe D (UGD);UGD_ARISE;Capitao;1;8;4;8;1;4;890;0
+Maio;Dia 19;Equipe A (RED);RED_snow777;Rush;2;3;0;0;4;1;500;0
+Maio;Dia 19;Equipe A (RED);RED_APENAS;Suporte;2;7;0;0;4;4;750;0
+Maio;Dia 19;Equipe A (RED);CF_ALMEIDA;Flanco;2;0;0;0;4;1;320;0
+Maio;Dia 19;Equipe A (RED);LMF_Boss;Rush;2;5;0;0;4;3;610;0
+Maio;Dia 19;Equipe F (RED/MOL);RED_LANGO;Rush;3;4;1;7;0;0;850;0
+Maio;Dia 19;Equipe F (RED/MOL);RED_KENNZY;Flanco;3;6;1;6;0;0;920;0
+Maio;Dia 19;Equipe F (RED/MOL);MOL_ADRIAN;Suporte;3;2;1;1;0;0;450;0
+Maio;Dia 19;Equipe F (RED/MOL);LXELTINHO;Rush;3;1;1;5;0;0;530;0
+Maio;Dia 19;Equipe C (LMF);LMF_LACERDA;Capitao;4;2;6;0;5;3;480;0
+Maio;Dia 19;Equipe C (LMF);LMF_CALOP12;Rush;4;1;6;0;5;1;350;0
+Maio;Dia 19;Equipe C (LMF);LMF_mtfacil;Suporte;4;1;6;0;5;5;620;0
+Maio;Dia 19;Equipe C (LMF);LMF_XIT;Flanco;4;1;6;0;5;0;290;0
+Maio;Dia 19;Equipe K (KOV);KOV_Fushyx;Rush;5;5;5;2;3;2;680;0
+Maio;Dia 19;Equipe K (KOV);KOV_ADAN;Flanco;5;7;5;5;3;2;810;0
+Maio;Dia 19;Equipe K (KOV);TTKKAIKE;Suporte;5;5;5;2;0;0;490;0
+Maio;Dia 19;Equipe K (KOV);KOV_ALONE;Rush;0;0;5;1;3;5;520;0
+Maio;Dia 19;Equipe E (RED/zy);RED_REZE;Rush;6;0;0;0;6;0;150;0
+Maio;Dia 19;Equipe E (RED/zy);Muggle;Flanco;6;0;2;6;6;0;420;0
+Maio;Dia 19;Equipe E (RED/zy);Shxrk;Suporte;6;0;2;4;0;0;310;0
+Maio;Dia 19;Equipe E (RED/zy);zy;Rush;0;0;2;0;0;0;100;0
+Maio;Dia 19;Equipe G (CMF);CMF_Syx7;Rush;0;0;3;7;2;7;990;0
+Maio;Dia 19;Equipe G (CMF);CMF_Lyx7;Flanco;0;0;3;7;2;3;840;0
+Maio;Dia 19;Equipe G (CMF);CMF_MOIZO;Suporte;0;0;3;4;2;5;670;0
+Maio;Dia 19;Equipe G (CMF);CMF_Stygian7;Rush;0;0;3;3;2;7;780;0
+Maio;Dia 19;Equipe B (OZ/RED);OZ_Linuz;Rush;0;0;0;0;6;0;200;0
+Maio;Dia 19;Equipe B (OZ/RED);RED_V1;Flanco;0;0;0;0;6;0;180;0
+Maio;Dia 19;Equipe B (OZ/RED);URIEL_VENCEU;Suporte;0;0;0;0;6;0;120;0
