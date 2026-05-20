@@ -1,4 +1,4 @@
-[!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -434,10 +434,10 @@
                 eq.jogadores.forEach(p => {
                     pRows += `
                         <tr class="border-b border-slate-900/40 hover:bg-slate-950/80 transition">
-                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-600"></i>\${p.nick}</td>
-                            <td class="py-3 px-4 text-center font-bold text-gray-200">\${p.total_k}</td>
-                            <td class="py-3 px-4 text-center text-gray-400">\${p.dano}</td>
-                            <td class="py-3 px-4 text-center text-amber-400 font-bold">\${p.mvp > 0 ? `<i class="fa-solid fa-star text-xs mr-1"></i>\${p.mvp}` : '0'}</td>
+                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-600"></i>${p.nick}</td>
+                            <td class="py-3 px-4 text-center font-bold text-gray-200">${p.total_k}</td>
+                            <td class="py-3 px-4 text-center text-gray-400">${p.dano}</td>
+                            <td class="py-3 px-4 text-center text-amber-400 font-bold">${p.mvp > 0 ? '<i class="fa-solid fa-star text-xs mr-1"></i>' + p.mvp : '0'}</td>
                         </tr>`;
                 });
 
