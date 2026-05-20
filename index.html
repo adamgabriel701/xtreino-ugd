@@ -4,136 +4,504 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Devils Mobile League | Blood Strike Hub</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
-        
-        body { 
-            background-color: #060913; 
-            color: #f1f5f9; 
-            font-family: 'Space Grotesk', sans-serif; 
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary: #f43f5e;
+            --primary-glow: rgba(244,63,94,0.3);
+            --bg-dark: #060913;
+            --glass: rgba(15,23,42,0.7);
         }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: #f1f5f9; 
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
         h1, h2, h3, h4, .nav-brand { font-family: 'Rajdhani', sans-serif; }
-        .tab-btn.active { border-bottom: 3px solid #f43f5e; color: #f43f5e; background: linear-gradient(to top, rgba(244,63,94,0.05), transparent); }
-        .page-link.active { color: #f43f5e; border-color: #f43f5e; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f43f5e; }
+
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .glass-strong {
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+            50% { box-shadow: 0 0 40px var(--primary-glow), 0 0 60px rgba(244,63,94,0.1); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-slide-in { animation: slideIn 0.5s ease-out forwards; }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(244,63,94,0.15);
+            border-color: rgba(244,63,94,0.3);
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(244,63,94,0.05);
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+        .progress-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary), #fb7185);
+            transition: width 1s ease-out;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(244,63,94,0.3);
+            border-radius: 50%;
+            animation: particle-float 20s infinite linear;
+        }
+
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(100px); opacity: 0; }
+        }
+
+        @keyframes strike-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .strike-icon {
+            animation: strike-pulse 2s ease-in-out infinite;
+        }
+
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(244,63,94,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(244,63,94,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        @media (max-width: 768px) {
+            .responsive-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #f43f5e;
+            color: #f43f5e;
+            background: linear-gradient(to top, rgba(244,63,94,0.05), transparent);
+        }
     </style>
+<base target="_blank">
 </head>
-<body class="min-h-screen flex flex-col justify-between antialiased">
+<body class="min-h-screen flex flex-col antialiased relative">
+    <div class="particles" id="particles"></div>
+    <div class="fixed inset-0 grid-pattern pointer-events-none z-0"></div>
 
     <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
-    <nav class="bg-slate-950/80 backdrop-blur-md border-b border-slate-900 sticky top-0 z-50 transition-all">
+    <nav class="glass-strong sticky top-0 z-50 border-b border-slate-800/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-rose-600 rounded-bl-xl rounded-tr-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-600/30">DML</div>
-                    <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 nav-brand">DEVILS MOBILE <span class="text-rose-500">LEAGUE</span></span>
+                <div class="flex items-center gap-3 group cursor-pointer" onclick="switchPage('home')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-rose-600 to-rose-800 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-600/30 group-hover:shadow-rose-600/50 transition-all duration-300 group-hover:scale-105">
+                        <i class="fa-solid fa-fire-flame-curved"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 nav-brand leading-none">DEVILS MOBILE</span>
+                        <span class="text-sm font-bold tracking-[0.3em] text-rose-500 leading-none mt-1">LEAGUE</span>
+                    </div>
                 </div>
-                <div class="flex space-x-2 md:space-x-6">
-                    <button onclick="switchPage('home')" id="nav-home" class="page-link active text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">INÍCIO</button>
-                    <button onclick="switchPage('tabela')" id="nav-tabela" class="page-link text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">TABELAS</button>
-                    <button onclick="switchPage('times')" id="nav-times" class="page-link text-gray-400 hover:text-white px-3 py-2 border-b-2 border-transparent font-bold text-sm tracking-wide transition cursor-pointer">ESTATÍSTICAS</button>
+                <div class="hidden md:flex space-x-1">
+                    <button onclick="switchPage('home')" id="nav-home" class="nav-link active px-4 py-2 text-gray-400 hover:text-white font-bold text-sm tracking-wide transition rounded-lg hover:bg-white/5">
+                        <i class="fa-solid fa-house mr-2"></i>INÍCIO
+                    </button>
+                    <button onclick="switchPage('tabela')" id="nav-tabela" class="nav-link px-4 py-2 text-gray-400 hover:text-white font-bold text-sm tracking-wide transition rounded-lg hover:bg-white/5">
+                        <i class="fa-solid fa-table mr-2"></i>TABELAS
+                    </button>
+                    <button onclick="switchPage('times')" id="nav-times" class="nav-link px-4 py-2 text-gray-400 hover:text-white font-bold text-sm tracking-wide transition rounded-lg hover:bg-white/5">
+                        <i class="fa-solid fa-chart-column mr-2"></i>ESTATÍSTICAS
+                    </button>
+                    <button onclick="switchPage('jogadores')" id="nav-jogadores" class="nav-link px-4 py-2 text-gray-400 hover:text-white font-bold text-sm tracking-wide transition rounded-lg hover:bg-white/5">
+                        <i class="fa-solid fa-users mr-2"></i>JOGADORES
+                    </button>
                 </div>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-white p-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-slate-800/50">
+            <div class="px-4 py-3 space-y-2">
+                <button onclick="switchPage('home'); toggleMobileMenu()" class="w-full text-left px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">
+                    <i class="fa-solid fa-house mr-2"></i>INÍCIO
+                </button>
+                <button onclick="switchPage('tabela'); toggleMobileMenu()" class="w-full text-left px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">
+                    <i class="fa-solid fa-table mr-2"></i>TABELAS
+                </button>
+                <button onclick="switchPage('times'); toggleMobileMenu()" class="w-full text-left px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">
+                    <i class="fa-solid fa-chart-column mr-2"></i>ESTATÍSTICAS
+                </button>
+                <button onclick="switchPage('jogadores'); toggleMobileMenu()" class="w-full text-left px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">
+                    <i class="fa-solid fa-users mr-2"></i>JOGADORES
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- PAINEL CENTRAL DE SELEÇÃO DE DATA & FILTRO -->
-    <div class="bg-slate-900/40 border-b border-slate-900/60 py-4 backdrop-blur-sm sticky top-20 z-40">
+    <!-- PAINEL CENTRAL DE SELEÇÃO DE DATA -->
+    <div class="glass border-b border-slate-800/50 py-4 sticky top-20 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2 text-sm">
-                <i class="fa-solid fa-calendar-days text-rose-500 text-base"></i>
-                <span class="text-gray-400 font-medium">Histórico do Campeonato:</span>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-calendar-days text-rose-500"></i>
+                </div>
+                <div>
+                    <span class="text-gray-400 font-medium text-sm block">Histórico do Campeonato</span>
+                    <span id="data-display-hero" class="text-white font-bold text-lg">...</span>
+                </div>
             </div>
-            
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <!-- Seletor de Mês -->
-                <div class="relative flex-grow sm:flex-grow-0">
-                    <select id="select-mes" onchange="aoMudarMes()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
-                    </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
-                </div>
 
-                <!-- Seletor de Dia -->
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div class="relative flex-grow sm:flex-grow-0">
-                    <select id="select-dia" onchange="aoMudarDia()" class="w-full sm:w-40 bg-slate-950 border border-slate-800 text-sm rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 transition appearance-none cursor-pointer">
+                    <select id="select-mes" onchange="aoMudarMes()" class="w-full sm:w-44 bg-slate-950/80 border border-slate-800 text-sm rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition cursor-pointer hover:border-slate-700">
                     </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-xs text-gray-500 pointer-events-none"></i>
                 </div>
+                <div class="relative flex-grow sm:flex-grow-0">
+                    <select id="select-dia" onchange="aoMudarDia()" class="w-full sm:w-44 bg-slate-950/80 border border-slate-800 text-sm rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition cursor-pointer hover:border-slate-700">
+                    </select>
+                </div>
+                <button onclick="exportarDados()" class="px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-rose-600/20 hover:shadow-rose-600/40 flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">Exportar</span>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+
         <!-- PÁGINA 1: INÍCIO (HOME) -->
-        <section id="page-home" class="page-section">
-            <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-rose-950/20 rounded-2xl p-6 md:p-10 mb-8 border border-slate-800/60 relative overflow-hidden shadow-2xl">
-                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="relative z-10 max-w-3xl">
-                    <span class="bg-rose-500/10 text-rose-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-md border border-rose-500/20">Torneio Ativo</span>
-                    <h1 class="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mt-4 mb-2">Devils Mobile League</h1>
-                    <p class="text-gray-400 text-base md:text-lg mb-6">Acompanhe as tabelas acumuladas de 3 quedas nas Ilhas do Medo e o rendimento individual dos squads sob coordenação da organização.</p>
-                    
-                    <div class="flex flex-wrap gap-3 text-xs font-bold uppercase tracking-wider text-gray-300">
-                        <div class="bg-slate-950 px-4 py-3 rounded-xl border border-slate-800/80 flex items-center gap-2"><i class="fa-solid fa-mobile-screen-button text-rose-500"></i> MOBILE ONLY</div>
-                        <div class="bg-slate-950 px-4 py-3 rounded-xl border border-slate-800/80 flex items-center gap-2"><i class="fa-solid fa-users text-rose-500"></i> SQUAD MODO</div>
-                        <div class="bg-slate-950 px-4 py-3 rounded-xl border border-slate-800/80 flex items-center gap-2"><i class="fa-solid fa-mountain text-rose-500"></i> 3 ILHAS DO MEDO</div>
-                        <div class="bg-rose-500/10 text-rose-400 px-4 py-3 rounded-xl border border-rose-500/20 flex items-center gap-2"><i class="fa-solid fa-clock shadow-sm"></i> Exibindo: <span id="data-display-hero" class="font-black">...</span></div>
+        <section id="page-home" class="page-section animate-slide-in">
+            <!-- Hero Section -->
+            <div class="relative rounded-3xl p-8 md:p-12 mb-8 border border-slate-800/60 overflow-hidden shadow-2xl">
+                <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-rose-950/30"></div>
+                <div class="absolute -right-20 -top-20 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl animate-pulse-glow"></div>
+                <div class="absolute -left-20 -bottom-20 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl"></div>
+
+                <div class="relative z-10 max-w-4xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="bg-rose-500/10 text-rose-400 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-rose-500/20 animate-pulse">
+                            <i class="fa-solid fa-circle text-[8px] mr-2 animate-pulse"></i>Torneio Ativo
+                        </span>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-emerald-500/20">
+                            <i class="fa-solid fa-signal text-[8px] mr-2"></i>Live
+                        </span>
                     </div>
+
+                    <h1 class="text-5xl md:text-7xl font-black text-white uppercase tracking-tight mb-4 leading-none">
+                        Devils Mobile<br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">League</span>
+                    </h1>
+                    <p class="text-gray-400 text-lg md:text-xl mb-8 max-w-2xl leading-relaxed">
+                        Acompanhe as tabelas acumuladas de 3 quedas nas Ilhas do Medo e o rendimento individual dos squads sob coordenação da organização.
+                    </p>
+
+                    <div class="flex flex-wrap gap-4">
+                        <div class="glass px-5 py-3 rounded-xl flex items-center gap-3 hover:border-rose-500/30 transition cursor-pointer group">
+                            <i class="fa-solid fa-mobile-screen-button text-rose-500 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-bold text-gray-300">MOBILE ONLY</span>
+                        </div>
+                        <div class="glass px-5 py-3 rounded-xl flex items-center gap-3 hover:border-rose-500/30 transition cursor-pointer group">
+                            <i class="fa-solid fa-users text-rose-500 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-bold text-gray-300">SQUAD MODO</span>
+                        </div>
+                        <div class="glass px-5 py-3 rounded-xl flex items-center gap-3 hover:border-rose-500/30 transition cursor-pointer group">
+                            <i class="fa-solid fa-mountain text-rose-500 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-bold text-gray-300">3 ILHAS DO MEDO</span>
+                        </div>
+                        <div class="glass px-5 py-3 rounded-xl flex items-center gap-3 border-rose-500/20 bg-rose-500/5">
+                            <i class="fa-solid fa-clock text-rose-400"></i>
+                            <span class="text-sm font-bold text-rose-400">Exibindo: <span id="data-display-hero-2" class="font-black">...</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-2xl p-5 card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">Equipes</span>
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-shield-halved text-rose-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-white stat-number" id="stat-equipes">0</div>
+                    <div class="text-xs text-gray-500 mt-1">Times confirmados</div>
+                </div>
+                <div class="glass rounded-2xl p-5 card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">Jogadores</span>
+                        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-users text-indigo-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-white stat-number" id="stat-jogadores">0</div>
+                    <div class="text-xs text-gray-500 mt-1">Atletas ativos</div>
+                </div>
+                <div class="glass rounded-2xl p-5 card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">Kills Total</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-skull text-amber-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-white stat-number" id="stat-kills">0</div>
+                    <div class="text-xs text-gray-500 mt-1">Eliminações</div>
+                </div>
+                <div class="glass rounded-2xl p-5 card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">Média Dano</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-crosshairs text-emerald-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-white stat-number" id="stat-dano">0</div>
+                    <div class="text-xs text-gray-500 mt-1">Dano médio/Player</div>
                 </div>
             </div>
 
             <!-- CARD DE REGRAS E HORÁRIOS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-900 pb-2"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-2"></i>Regras Importantes</h3>
-                    <ul class="space-y-3 text-sm text-gray-400">
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-ban text-rose-500 mt-1 text-xs"></i> <span><strong>Todos os auxílios estão banidos</strong> nas salas personalizadas.</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-fire text-rose-500 mt-1 text-xs"></i> <span><strong>Proibido terminantemente o uso de Lança-Chamas</strong>.</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-circle-exclamation text-amber-500 mt-1 text-xs"></i> <span>Desistências ou alterações de última hora permitidas apenas <strong>até às 19:30</strong>.</span></li>
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <h3 class="text-lg font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+                        Regras Importantes
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3 group">
+                            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition">
+                                <i class="fa-solid fa-ban text-rose-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-300 font-semibold block">Todos os auxílios estão banidos</span>
+                                <span class="text-xs text-gray-500">Uso de hacks, mods ou qualquer assistência externa resultará em desclassificação imediata.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3 group">
+                            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition">
+                                <i class="fa-solid fa-fire text-rose-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-300 font-semibold block">Proibido Lança-Chamas</span>
+                                <span class="text-xs text-gray-500">O uso de lança-chamas é terminantemente proibido em todas as quedas.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3 group">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition">
+                                <i class="fa-solid fa-clock text-amber-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-300 font-semibold block">Alterações até 19:30</span>
+                                <span class="text-xs text-gray-500">Desistências ou alterações de última hora permitidas apenas até às 19:30.</span>
+                            </div>
+                        </li>
                     </ul>
                 </div>
-                <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-900 pb-2"><i class="fa-solid fa-earth-americas text-rose-500 mr-2"></i>Fusos e Horários (Cronograma)</h3>
-                    <div class="grid grid-cols-2 gap-3 text-xs uppercase font-semibold text-gray-400">
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇧🇷 Brasil:</span> <span class="text-rose-400 font-bold">20:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇦🇷 Argentina:</span> <span class="text-rose-400 font-bold">20:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇲🇽 México:</span> <span class="text-rose-400 font-bold">17:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇩🇴 R. Dominicana:</span> <span class="text-rose-400 font-bold">19:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇨🇴 Colômbia:</span> <span class="text-rose-400 font-bold">18:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇺🇸 Estados Unidos:</span> <span class="text-rose-400 font-bold">19:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇻🇪 Venezuela:</span> <span class="text-rose-400 font-bold">19:00h</span></div>
-                        <div class="flex justify-between border-b border-slate-900/60 pb-1"><span>🇵🇪 Peru:</span> <span class="text-rose-400 font-bold">18:00h</span></div>
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <h3 class="text-lg font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-earth-americas text-rose-500"></i>
+                        Fusos e Horários
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇧🇷</span> Brasil</span>
+                            <span class="text-rose-400 font-bold text-sm">20:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇦🇷</span> Argentina</span>
+                            <span class="text-rose-400 font-bold text-sm">20:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇲🇽</span> México</span>
+                            <span class="text-rose-400 font-bold text-sm">17:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇩🇴</span> R. Dominicana</span>
+                            <span class="text-rose-400 font-bold text-sm">19:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇨🇴</span> Colômbia</span>
+                            <span class="text-rose-400 font-bold text-sm">18:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇺🇸</span> Estados Unidos</span>
+                            <span class="text-rose-400 font-bold text-sm">19:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇻🇪</span> Venezuela</span>
+                            <span class="text-rose-400 font-bold text-sm">19:00h</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 hover:border-rose-500/20 transition">
+                            <span class="flex items-center gap-2 text-sm text-gray-400"><span class="text-lg">🇵🇪</span> Peru</span>
+                            <span class="text-rose-400 font-bold text-sm">18:00h</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- REDES SOCIAIS / ACESSOS -->
+            <!-- REDES SOCIAIS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-                <a id="link-scrim" href="https://chat.whatsapp.com/BGrWBFrLQVc3HrpCfdeqbw" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-emerald-500/40 hover:bg-slate-900/20 transition group">
+                <a href="https://chat.whatsapp.com/BGrWBFrLQVc3HrpCfdeqbw" target="_blank" class="glass rounded-2xl p-6 flex items-center justify-between hover:border-emerald-500/40 transition group card-hover">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-400 text-xl group-hover:scale-105 transition"><i class="fa-brands fa-whatsapp"></i></div>
-                        <div><h3 class="font-bold text-white text-base">Grupo Scrim WhatsApp</h3><p class="text-xs text-gray-500">Acessar grupo oficial</p></div>
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-110 group-hover:bg-emerald-600/20 transition">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Grupo Scrim WhatsApp</h3>
+                            <p class="text-xs text-gray-500">Acessar grupo oficial</p>
+                        </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-emerald-400 transition text-xs"></i>
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-emerald-400 text-sm"></i>
+                    </div>
                 </a>
-                <a id="link-discord" href="https://discord.gg/vYGkNex878" target="_blank" class="bg-slate-950 border border-slate-900 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/40 hover:bg-slate-900/20 transition group">
+                <a href="https://discord.gg/vYGkNex878" target="_blank" class="glass rounded-2xl p-6 flex items-center justify-between hover:border-indigo-500/40 transition group card-hover">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 text-xl group-hover:scale-105 transition"><i class="fa-brands fa-discord"></i></div>
-                        <div><h3 class="font-bold text-white text-base">Discord Oficial</h3><p class="text-xs text-gray-500">Comunidade e Suporte</p></div>
+                        <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 group-hover:bg-indigo-600/20 transition">
+                            <i class="fa-brands fa-discord"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Discord Oficial</h3>
+                            <p class="text-xs text-gray-500">Comunidade e Suporte</p>
+                        </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-gray-700 group-hover:text-indigo-400 transition text-xs"></i>
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-indigo-400 text-sm"></i>
+                    </div>
                 </a>
             </div>
 
             <!-- TIMES INSCRITOS -->
             <div>
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white border-l-4 border-rose-500 pl-3">Equipes Confirmadas / Slots (<span id="count-times">0</span>)</h2>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white flex items-center gap-3">
+                        <span class="w-1 h-8 bg-gradient-to-b from-rose-500 to-rose-700 rounded-full"></span>
+                        Equipes Confirmadas
+                        <span class="bg-rose-500/10 text-rose-400 text-sm px-3 py-1 rounded-full border border-rose-500/20" id="count-times">0</span>
+                    </h2>
+                    <div class="flex gap-2">
+                        <button onclick="alternarViewTimes('grid')" id="view-grid" class="p-2 rounded-lg bg-rose-500/20 text-rose-400 transition">
+                            <i class="fa-solid fa-grid-2"></i>
+                        </button>
+                        <button onclick="alternarViewTimes('list')" id="view-list" class="p-2 rounded-lg hover:bg-white/5 text-gray-500 transition">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
                 </div>
                 <div id="lista-inscritos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 </div>
@@ -144,91 +512,250 @@
         <section id="page-tabela" class="page-section hidden">
             <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white border-l-4 border-rose-500 pl-3">Tabela Parcial Diária</h2>
-                    <p class="text-gray-500 text-xs mt-1">Pontuação Base: 1º=12pt, 2º=10pt, 3º=8pt, 4º=7pt... + 1 ponto por Eliminação (Kill).</p>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-white flex items-center gap-3">
+                        <span class="w-1 h-8 bg-gradient-to-b from-rose-500 to-rose-700 rounded-full"></span>
+                        Tabela Parcial Diária
+                    </h2>
+                    <p class="text-gray-500 text-sm mt-2 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-rose-500/50"></i>
+                        Pontuação Base: 1º=12pt, 2º=10pt, 3º=8pt, 4º=7pt... + 1 ponto por Eliminação (Kill).
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="alternarOrdenacao('pontos')" id="sort-pontos" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 hover:bg-rose-500/20 transition">
+                        <i class="fa-solid fa-sort mr-2"></i>Pontos
+                    </button>
+                    <button onclick="alternarOrdenacao('kills')" id="sort-kills" class="px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition">
+                        <i class="fa-solid fa-skull mr-2"></i>Kills
+                    </button>
                 </div>
             </div>
 
             <!-- Sub-Abas de Queda -->
-            <div class="flex border-b border-slate-900 mb-6 overflow-x-auto">
-                <button onclick="switchTab('geral')" id="tab-geral" class="tab-btn active px-5 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer whitespace-nowrap transition">Pontuação Geral</button>
-                <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">1ª Ilha</button>
-                <button onclick="switchTab('q2')" id="tab-q2" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">2ª Ilha</button>
-                <button onclick="switchTab('q3')" id="tab-q3" class="tab-btn px-5 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition">3ª Ilha</button>
+            <div class="flex border-b border-slate-800/50 mb-6 overflow-x-auto gap-1">
+                <button onclick="switchTab('geral')" id="tab-geral" class="tab-btn active px-6 py-3 text-sm font-bold uppercase tracking-widest cursor-pointer whitespace-nowrap transition rounded-t-xl relative">
+                    <i class="fa-solid fa-ranking-star mr-2"></i>Pontuação Geral
+                </button>
+                <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-6 py-3 text-sm font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition rounded-t-xl">
+                    <i class="fa-solid fa-1 mr-2"></i>1ª Ilha
+                </button>
+                <button onclick="switchTab('q2')" id="tab-q2" class="tab-btn px-6 py-3 text-sm font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition rounded-t-xl">
+                    <i class="fa-solid fa-2 mr-2"></i>2ª Ilha
+                </button>
+                <button onclick="switchTab('q3')" id="tab-q3" class="tab-btn px-6 py-3 text-sm font-bold text-gray-500 hover:text-white uppercase tracking-widest cursor-pointer whitespace-nowrap transition rounded-t-xl">
+                    <i class="fa-solid fa-3 mr-2"></i>3ª Ilha
+                </button>
             </div>
 
-            <div class="bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
+            <div class="glass rounded-2xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto responsive-table">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-900/60 text-[11px] font-bold uppercase tracking-widest text-gray-400 border-b border-slate-900">
+                            <tr class="bg-slate-950/80 text-[11px] font-bold uppercase tracking-widest text-gray-400 border-b border-slate-800">
                                 <th class="py-4 px-4 text-center w-16">Pos</th>
                                 <th class="py-4 px-6">Equipe</th>
                                 <th class="py-4 px-4 text-center col-queda">Q1 (PP/PK)</th>
-                                <th class="py-4 px-4 text-center col-queda">Q2 (PP/PK)</th>
-                                <th class="py-4 px-4 text-center col-queda">Q3 (PP/PK)</th>
+                                <th class="py-4 px-4 text-center col-queda">Q2 (PP/Kills)</th>
+                                <th class="py-4 px-4 text-center col-queda">Q3 (PP/Kills)</th>
                                 <th class="py-4 px-4 text-center">Total PP</th>
                                 <th class="py-4 px-4 text-center">Total PK</th>
-                                <th class="py-4 px-6 text-center bg-rose-950/20 font-black text-rose-400 border-l border-slate-900">PT (Total)</th>
+                                <th class="py-4 px-6 text-center bg-rose-950/20 font-black text-rose-400 border-l border-slate-800">PT (Total)</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-corpo" class="divide-y divide-slate-900 text-sm">
+                        <tbody id="tabela-corpo" class="divide-y divide-slate-800/50 text-sm">
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="mt-8 glass rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-white mb-4 uppercase tracking-wider">
+                    <i class="fa-solid fa-chart-line text-rose-500 mr-2"></i>
+                    Desempenho por Queda
+                </h3>
+                <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="performanceChart"></canvas>
                 </div>
             </div>
         </section>
 
         <!-- PÁGINA 3: TIMES & ESTATÍSTICAS -->
         <section id="page-times" class="page-section hidden">
-            <div class="mb-8 max-w-md relative">
-                <input type="text" id="search-bar" oninput="filtrarEstatisticas()" placeholder="Buscar time ou nick do jogador..." class="w-full bg-slate-950 border border-slate-900 hover:border-slate-800 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-rose-500 transition shadow-inner">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
+            <div class="mb-8">
+                <div class="max-w-md relative">
+                    <input type="text" id="search-bar" oninput="filtrarEstatisticas()" placeholder="Buscar time ou nick do jogador..." 
+                        class="w-full glass rounded-xl px-4 py-4 pl-12 text-sm text-white focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition shadow-inner placeholder-gray-600">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-4.5 text-gray-500 text-sm"></i>
+                    <button onclick="limparBusca()" class="absolute right-3 top-3.5 text-gray-500 hover:text-white transition p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
 
-            <div id="container-times-detalhes" class="grid grid-cols-1 gap-8">
+            <div id="container-times-detalhes" class="grid grid-cols-1 gap-6">
+            </div>
+        </section>
+
+        <!-- PÁGINA 4: JOGADORES -->
+        <section id="page-jogadores" class="page-section hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold uppercase tracking-wider text-white flex items-center gap-3 mb-4">
+                    <span class="w-1 h-8 bg-gradient-to-b from-rose-500 to-rose-700 rounded-full"></span>
+                    Ranking de Jogadores
+                </h2>
+                <div class="flex gap-3 mb-6">
+                    <button onclick="ordenarJogadores('kills')" id="sort-jog-kills" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 transition">
+                        <i class="fa-solid fa-skull mr-2"></i>Kills
+                    </button>
+                    <button onclick="ordenarJogadores('mvp')" id="sort-jog-mvp" class="px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition">
+                        <i class="fa-solid fa-star mr-2"></i>MVP
+                    </button>
+                    <button onclick="ordenarJogadores('dano')" id="sort-jog-dano" class="px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition">
+                        <i class="fa-solid fa-fire mr-2"></i>Dano
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-950/80 text-[11px] font-bold uppercase tracking-widest text-gray-400 border-b border-slate-800">
+                                <th class="py-4 px-4 text-center w-16">#</th>
+                                <th class="py-4 px-6">Jogador</th>
+                                <th class="py-4 px-4">Time</th>
+                                <th class="py-4 px-4 text-center">Kills Q1</th>
+                                <th class="py-4 px-4 text-center">Kills Q2</th>
+                                <th class="py-4 px-4 text-center">Kills Q3</th>
+                                <th class="py-4 px-4 text-center">Total</th>
+                                <th class="py-4 px-4 text-center">MVP</th>
+                                <th class="py-4 px-4 text-center">Dano</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-jogadores" class="divide-y divide-slate-800/50 text-sm">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-gray-500 font-medium">
-        <p>&copy; 2026 Devils Mobile League | Sincronizado via Planilha CSV.</p>
+    <footer class="glass-strong border-t border-slate-800/50 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">DML</div>
+                    <span class="text-gray-400 text-sm font-medium">2026 Devils Mobile League</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <span class="text-xs text-gray-500">Sincronizado via Planilha CSV</span>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
+                            <i class="fa-brands fa-instagram text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
+                            <i class="fa-brands fa-youtube text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
+                            <i class="fa-brands fa-twitch text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </footer>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 glass rounded-xl px-6 py-4 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message" class="text-sm font-medium text-white">Operação realizada com sucesso!</span>
+    </div>
 
-    <!-- LOGICA DO SITE -->
+    <!-- Modal de Detalhes do Time -->
+    <div id="modal-time" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-strong rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700/50 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="p-6 border-b border-slate-800/50 flex items-center justify-between">
+                <h3 id="modal-titulo" class="text-2xl font-bold text-white"></h3>
+                <button onclick="fecharModal()" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-gray-500 hover:text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="modal-body" class="p-6">
+            </div>
+        </div>
+    </div>
+
     <script>
-        const CSV_URL = './data/campeonato.csv';
+        // Dados CSV embutidos
+        const CSV_DATA = `Mes;Dia;Time;Jogador;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes
+Maio;Dia 19;UGD;UGD Treon;1;11;4;12;1;13;Sem Informações;1
+Maio;Dia 19;UGD;UGD cool7;1;8;4;10;1;6;Sem Informações;0
+Maio;Dia 19;UGD;UGD Kaze;1;13;4;1;1;8;Sem Informações;1
+Maio;Dia 19;UGD;UGD ARISE;1;8;4;8;1;4;Sem Informações;0
+Maio;Dia 19;RED;RED snow777;2;3;7;0;4;1;Sem Informações;0
+Maio;Dia 19;RED;RED APENAS;2;7;7;0;4;4;Sem Informações;0
+Maio;Dia 19;RED;CF ALMEIDA;2;0;7;0;4;1;Sem Informações;0
+Maio;Dia 19;RED;LMF Boss;2;5;7;0;4;3;Sem Informações;0
+Maio;Dia 19;RED Lango;RED LANGO;3;4;1;7;7;0;Sem Informações;0
+Maio;Dia 19;RED Lango;RED KENNZY;3;6;1;6;7;0;Sem Informações;1
+Maio;Dia 19;RED Lango;MOL ADRIAN;3;2;1;1;7;0;Sem Informações;0
+Maio;Dia 19;RED Lango;LXELTINHO;3;1;1;5;7;0;Sem Informações;0
+Maio;Dia 19;LMF;LMF LACERDA;4;2;6;0;5;3;Sem Informações;0
+Maio;Dia 19;LMF;LMF CALOP12;4;1;6;0;5;1;Sem Informações;0
+Maio;Dia 19;LMF;LMF mtfacil;4;1;6;0;5;5;Sem Informações;0
+Maio;Dia 19;LMF;LMF XIT;4;1;6;0;5;0;Sem Informações;0
+Maio;Dia 19;KOV;KOV FushyX;5;5;5;2;3;2;Sem Informações;0
+Maio;Dia 19;KOV;KOV ADAN;5;7;5;5;3;2;Sem Informações;0
+Maio;Dia 19;KOV;TTKKAIKE;5;5;5;2;3;0;Sem Informações;0
+Maio;Dia 19;KOV;KOV ALONE;5;0;5;1;3;5;Sem Informações;0
+Maio;Dia 19;CMF;CMF Syx;7;0;3;7;2;7;Sem Informações;0
+Maio;Dia 19;CMF;CMF Lyx7;7;0;3;7;2;3;Sem Informações;0
+Maio;Dia 19;CMF;CMF MOIZO;7;0;3;4;2;5;Sem Informações;0
+Maio;Dia 19;CMF;CMF Stygian;7;0;3;3;2;7;Sem Informações;0
+Maio;Dia 19;Time_E;RED REZE;6;0;2;0;6;0;Sem Informações;0
+Maio;Dia 19;Time_E;Muggle;6;0;2;6;6;0;Sem Informações;0
+Maio;Dia 19;Time_E;Shxrk;6;0;2;4;6;0;Sem Informações;0`;
+
         let bancoDeDadosCompleto = [];
         let dataSelecionada = { mes: "", dia: "" };
+        let ordenacaoAtual = 'pontos';
+        let viewTimesAtual = 'grid';
+        let performanceChart = null;
 
         document.addEventListener("DOMContentLoaded", () => {
+            criarParticulas();
             carregarDados();
         });
 
-        async function carregarDados() {
-            try {
-                const response = await fetch(CSV_URL);
-                const text = await response.text();
-                bancoDeDadosCompleto = parseCSV(text);
-                inicializarFiltrosDeData();
-            } catch (error) {
-                console.error("Erro ao ler CSV externo. Carregando simulação de segurança...");
-                usarDadosMockCompleto();
+        function criarParticulas() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
             }
+        }
+
+        function carregarDados() {
+            bancoDeDadosCompleto = parseCSV(CSV_DATA);
+            inicializarFiltrosDeData();
         }
 
         function parseCSV(text) {
             const lines = text.split('\n').filter(line => line.trim() !== '');
             const result = [];
-            if(lines.length === 0) return result;
+            if (lines.length === 0) return result;
             const headers = lines[0].split(';');
-            for(let i=1; i<lines.length; i++) {
+            for (let i = 1; i < lines.length; i++) {
                 const obj = {};
                 const currentline = lines[i].split(';');
-                for(let j=0; j<headers.length; j++) {
+                for (let j = 0; j < headers.length; j++) {
                     obj[headers[j].trim()] = currentline[j] ? currentline[j].trim() : "";
                 }
                 result.push(obj);
@@ -244,7 +771,7 @@
                 selectMes.innerHTML += `<option value="${m}">${m}</option>`;
             });
 
-            if(mesesUnicos.length > 0) {
+            if (mesesUnicos.length > 0) {
                 dataSelecionada.mes = mesesUnicos[0];
                 atualizarDiasDisponiveis(dataSelecionada.mes);
             }
@@ -254,13 +781,13 @@
             const selectDia = document.getElementById('select-dia');
             const linhasDoMes = bancoDeDadosCompleto.filter(item => item.Mes === mes);
             const diasUnicos = [...new Set(linhasDoMes.map(item => item.Dia))].filter(Boolean);
-            
+
             selectDia.innerHTML = "";
             diasUnicos.forEach(d => {
                 selectDia.innerHTML += `<option value="${d}">${d}</option>`;
             });
 
-            if(diasUnicos.length > 0) {
+            if (diasUnicos.length > 0) {
                 dataSelecionada.dia = diasUnicos[0];
                 renderizarPainelCompleto();
             }
@@ -277,19 +804,33 @@
         }
 
         function renderizarPainelCompleto() {
-            document.getElementById('data-display-hero').innerText = `${dataSelecionada.dia} de ${dataSelecionada.mes}`;
+            const dataTexto = `${dataSelecionada.dia} de ${dataSelecionada.mes}`;
+            document.getElementById('data-display-hero').innerText = dataTexto;
+            document.getElementById('data-display-hero-2').innerText = dataTexto;
             renderizarHome();
             renderizarTabela('geral');
             renderizarTimesDetalhes();
+            renderizarJogadores('kills');
+            atualizarEstatisticas();
         }
 
         function switchPage(pageId) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
-            document.querySelectorAll('.page-link').forEach(link => link.classList.remove('active'));
-            
-            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.querySelectorAll('.page-section').forEach(sec => {
+                sec.classList.add('hidden');
+                sec.classList.remove('animate-slide-in');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            const page = document.getElementById(`page-${pageId}`);
+            page.classList.remove('hidden');
+            page.classList.add('animate-slide-in');
             document.getElementById(`nav-${pageId}`).classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
         }
 
         function obterPontosPosicao(posicao) {
@@ -298,7 +839,9 @@
         }
 
         function processarEquipesFiltradas() {
-            const dadosFiltrados = bancoDeDadosCompleto.filter(item => item.Mes === dataSelecionada.mes && item.Dia === dataSelecionada.dia);
+            const dadosFiltrados = bancoDeDadosCompleto.filter(item => 
+                item.Mes === dataSelecionada.mes && item.Dia === dataSelecionada.dia
+            );
             const equipes = {};
 
             dadosFiltrados.forEach(row => {
@@ -320,7 +863,7 @@
                         nick: row.Jogador,
                         q1_k: parseInt(row.Q1_Kills) || 0, q2_k: parseInt(row.Q2_Kills) || 0, q3_k: parseInt(row.Q3_Kills) || 0,
                         total_k: (parseInt(row.Q1_Kills) || 0) + (parseInt(row.Q2_Kills) || 0) + (parseInt(row.Q3_Kills) || 0),
-                        dano: row.Dano_Medio || "Sem Informações", mvp: parseInt(row.MVP_Vezes) || 0
+                        dano: row.Dano_Medio || "Sem Info", mvp: parseInt(row.MVP_Vezes) || 0
                     });
                 }
             });
@@ -332,14 +875,26 @@
                 eq.q3_pp = obterPontosPosicao(eq.q3_pos);
                 eq.total_pp = eq.q1_pp + eq.q2_pp + eq.q3_pp;
                 eq.pt = eq.total_pp + eq.total_kills;
-                
+
                 let booyahs = 0;
                 if(eq.q1_pos === 1) booyahs++;
                 if(eq.q2_pos === 1) booyahs++;
                 if(eq.q3_pos === 1) booyahs++;
                 eq.strikes = booyahs;
+                eq.posicao_media = ((eq.q1_pos + eq.q2_pos + eq.q3_pos) / 3).toFixed(1);
                 return eq;
             });
+        }
+
+        function atualizarEstatisticas() {
+            const equipes = processarEquipesFiltradas();
+            const totalJogadores = equipes.reduce((acc, eq) => acc + eq.jogadores.length, 0);
+            const totalKills = equipes.reduce((acc, eq) => acc + eq.total_kills, 0);
+
+            document.getElementById('stat-equipes').innerText = equipes.length;
+            document.getElementById('stat-jogadores').innerText = totalJogadores;
+            document.getElementById('stat-kills').innerText = totalKills;
+            document.getElementById('stat-dano').innerText = "N/A";
         }
 
         function renderizarHome() {
@@ -347,28 +902,74 @@
             const container = document.getElementById('lista-inscritos');
             document.getElementById('count-times').innerText = listasEquipes.length;
             container.innerHTML = '';
-            
+
             if(listasEquipes.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center py-6 text-sm text-gray-500">Nenhum time cadastrado para este dia no CSV.</p>`;
+                container.innerHTML = `<div class="col-span-full text-center py-12">
+                    <i class="fa-solid fa-circle-exclamation text-4xl text-gray-700 mb-3"></i>
+                    <p class="text-sm text-gray-500">Nenhum time cadastrado para este dia.</p>
+                </div>`;
                 return;
             }
 
             listasEquipes.forEach((eq, index) => {
-                container.innerHTML += `
-                    <div class="bg-slate-950 border border-slate-900 rounded-xl p-4 text-center flex flex-col items-center justify-center gap-2 hover:border-rose-500/30 transition shadow-lg">
-                        <div class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-rose-500 font-bold text-xs">
-                            SLOT ${String(index + 1).padStart(2, '0')}
+                const delay = index * 50;
+                const card = document.createElement('div');
+                card.className = `glass rounded-2xl p-5 text-center flex flex-col items-center justify-center gap-3 hover:border-rose-500/30 transition-all duration-300 cursor-pointer card-hover animate-slide-in`;
+                card.style.animationDelay = `${delay}ms`;
+                card.onclick = () => abrirModalTime(eq.nome);
+
+                card.innerHTML = `
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 flex items-center justify-center text-rose-500 font-bold text-lg shadow-lg">
+                        ${eq.nome.substring(0,2).toUpperCase()}
+                    </div>
+                    <div class="font-bold text-white text-sm truncate w-full tracking-wide">${eq.nome}</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold bg-slate-950 px-2 py-1 rounded-md">${eq.jogadores.length} Players</span>
+                        ${eq.strikes > 0 ? `<span class="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-1 rounded-md"><i class="fa-solid fa-crown mr-1"></i>${eq.strikes}</span>` : ''}
+                    </div>
+                    <div class="w-full mt-1">
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                            <span>PT: ${eq.pt}</span>
+                            <span>${eq.total_kills} Kills</span>
                         </div>
-                        <div class="font-bold text-white text-sm truncate w-full tracking-wide">${eq.nome}</div>
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">${eq.jogadores.length} Players</div>
-                    </div>`;
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.min((eq.pt / 60) * 100, 100)}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
+        function alternarViewTimes(view) {
+            viewTimesAtual = view;
+            document.getElementById('view-grid').className = view === 'grid' ? 'p-2 rounded-lg bg-rose-500/20 text-rose-400 transition' : 'p-2 rounded-lg hover:bg-white/5 text-gray-500 transition';
+            document.getElementById('view-list').className = view === 'list' ? 'p-2 rounded-lg bg-rose-500/20 text-rose-400 transition' : 'p-2 rounded-lg hover:bg-white/5 text-gray-500 transition';
+            renderizarHome();
+        }
+
         function switchTab(mode) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'text-white'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.classList.add('text-gray-500');
+            });
             document.getElementById(`tab-${mode}`).classList.add('active');
+            document.getElementById(`tab-${mode}`).classList.remove('text-gray-500');
             renderizarTabela(mode);
+            if (mode === 'geral') {
+                setTimeout(atualizarGrafico, 100);
+            }
+        }
+
+        function alternarOrdenacao(criterio) {
+            ordenacaoAtual = criterio;
+            document.getElementById('sort-pontos').className = criterio === 'pontos' ? 
+                'px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 hover:bg-rose-500/20 transition' : 
+                'px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition';
+            document.getElementById('sort-kills').className = criterio === 'kills' ? 
+                'px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 hover:bg-rose-500/20 transition' : 
+                'px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition';
+            renderizarTabela('geral');
         }
 
         function renderizarTabela(modo) {
@@ -377,100 +978,208 @@
             corpo.innerHTML = '';
 
             if (modo === 'geral') {
-                listasEquipes.sort((a, b) => b.pt - a.pt || b.total_kills - a.total_kills);
+                if (ordenacaoAtual === 'pontos') {
+                    listasEquipes.sort((a, b) => b.pt - a.pt || b.total_kills - a.total_kills);
+                } else {
+                    listasEquipes.sort((a, b) => b.total_kills - a.total_kills || b.pt - a.pt);
+                }
             } else {
-                listasEquipes.sort((a, b) => (a[`\${modo}_pp`] + a[`\${modo}_kills`]) - (b[`\${modo}_pp`] + b[`\${modo}_kills`])).reverse();
+                listasEquipes.sort((a, b) => {
+                    const aTot = (a[`${modo}_pp`] + a[`${modo}_kills`]);
+                    const bTot = (b[`${modo}_pp`] + b[`${modo}_kills`]);
+                    return bTot - aTot;
+                });
             }
 
-            document.querySelectorAll('.col-queda').forEach(c => c.style.display = modo !== 'geral' ? 'none' : '');
+            document.querySelectorAll('.col-queda').forEach(c => {
+                c.style.display = modo !== 'geral' ? 'none' : '';
+            });
 
             listasEquipes.forEach((eq, index) => {
-                let posBadge = `\${index + 1}º`;
-                if(index === 0) posBadge = `<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black px-2.5 py-0.5 rounded-md text-xs shadow">1º</span>`;
-                if(index === 1) posBadge = `<span class="bg-slate-300 text-slate-950 font-black px-2.5 py-0.5 rounded-md text-xs">2º</span>`;
-                if(index === 2) posBadge = `<span class="bg-amber-700 text-white font-black px-2.5 py-0.5 rounded-md text-xs">3º</span>`;
+                let posBadge = `${index + 1}º`;
+                if(index === 0) posBadge = `<span class="rank-1 font-black px-2.5 py-0.5 rounded-md text-xs shadow">1º</span>`;
+                if(index === 1) posBadge = `<span class="rank-2 font-black px-2.5 py-0.5 rounded-md text-xs">2º</span>`;
+                if(index === 2) posBadge = `<span class="rank-3 font-black px-2.5 py-0.5 rounded-md text-xs">3º</span>`;
+
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-slate-800/40';
 
                 if (modo === 'geral') {
-                    corpo.innerHTML += `
-                        <tr class="hover:bg-slate-900/40 transition border-b border-slate-900/40">
-                            <td class="py-4 px-4 text-center font-bold text-gray-500">\${posBadge}</td>
-                            <td class="py-4 px-6 font-bold text-white flex items-center gap-2.5">
-                               <div class="w-6 h-6 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">\${eq.nome.substring(0,2)}</div> \${eq.nome}
-                            </td>
-                            <td class="py-4 px-4 text-center text-gray-400 col-queda">\${eq.q1_pp}/\${eq.q1_kills}</td>
-                            <td class="py-4 px-4 text-center text-gray-400 col-queda">\${eq.q2_pp}/\${eq.q2_kills}</td>
-                            <td class="py-4 px-4 text-center text-gray-400 col-queda">\${eq.q3_pp}/\${eq.q3_kills}</td>
-                            <td class="py-4 px-4 text-center text-gray-300">\${eq.total_pp}</td>
-                            <td class="py-4 px-4 text-center text-gray-300">\${eq.total_kills}</td>
-                            <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-900">\${eq.pt}</td>
-                        </tr>`;
+                    row.innerHTML = `
+                        <td class="py-4 px-4 text-center font-bold text-gray-500">${posBadge}</td>
+                        <td class="py-4 px-6 font-bold text-white">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">${eq.nome.substring(0,2).toUpperCase()}</div>
+                                <span>${eq.nome}</span>
+                                ${eq.strikes > 0 ? `<span class="text-amber-400 text-xs"><i class="fa-solid fa-crown strike-icon"></i> ${eq.strikes}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q1_pp} <span class="text-rose-400">/ ${eq.q1_kills}</span></td>
+                        <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q2_pp} <span class="text-rose-400">/ ${eq.q2_kills}</span></td>
+                        <td class="py-4 px-4 text-center text-gray-400 col-queda">${eq.q3_pp} <span class="text-rose-400">/ ${eq.q3_kills}</span></td>
+                        <td class="py-4 px-4 text-center text-gray-300 font-semibold">${eq.total_pp}</td>
+                        <td class="py-4 px-4 text-center text-gray-300 font-semibold">${eq.total_kills}</td>
+                        <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-800">${eq.pt}</td>
+                    `;
                 } else {
-                    let ppQ = eq[`\${modo}_pp`], pkQ = eq[`\${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`\${modo}_pos`];
-                    corpo.innerHTML += `
-                        <tr class="hover:bg-slate-900/40 transition border-b border-slate-900/40">
-                            <td class="py-4 px-4 text-center font-bold text-gray-500">\${posBadge}</td>
-                            <td class="py-4 px-6 font-bold text-white flex items-center gap-2">
-                               <div class="w-6 h-6 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">\${eq.nome.substring(0,2)}</div> \${eq.nome} <span class="text-xs text-gray-500 font-normal">(\${nPos}º na Queda)</span>
-                            </td>
-                            <td class="py-4 px-4 text-center text-gray-300 font-semibold">\${ppQ} PP</td>
-                            <td class="py-4 px-4 text-center text-gray-300 font-semibold">\${pkQ} Kills (PK)</td>
-                            <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-900">\${totQ} pts</td>
-                        </tr>`;
+                    let ppQ = eq[`${modo}_pp`], pkQ = eq[`${modo}_kills`], totQ = ppQ + pkQ, nPos = eq[`${modo}_pos`];
+                    row.innerHTML = `
+                        <td class="py-4 px-4 text-center font-bold text-gray-500">${posBadge}</td>
+                        <td class="py-4 px-6 font-bold text-white">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded bg-slate-900 text-[10px] flex items-center justify-center text-rose-400 font-bold border border-slate-800">${eq.nome.substring(0,2).toUpperCase()}</div>
+                                <span>${eq.nome}</span>
+                            </div>
+                            <span class="text-xs text-gray-500 font-normal ml-10">(${nPos}º na Queda)</span>
+                        </td>
+                        <td class="py-4 px-4 text-center text-gray-300 font-semibold">${ppQ} PP</td>
+                        <td class="py-4 px-4 text-center text-gray-300 font-semibold">${pkQ} Kills</td>
+                        <td class="py-4 px-6 text-center bg-rose-950/5 font-black text-base text-rose-400 border-l border-slate-800">${totQ} pts</td>
+                    `;
+                }
+                corpo.appendChild(row);
+            });
+        }
+
+        function atualizarGrafico() {
+            const equipes = processarEquipesFiltradas().sort((a, b) => b.pt - a.pt).slice(0, 8);
+            const ctx = document.getElementById('performanceChart');
+
+            if (!ctx) return;
+
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: equipes.map(e => e.nome),
+                    datasets: [
+                        {
+                            label: 'Q1',
+                            data: equipes.map(e => e.q1_pp + e.q1_kills),
+                            backgroundColor: 'rgba(244, 63, 94, 0.6)',
+                            borderColor: 'rgba(244, 63, 94, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Q2',
+                            data: equipes.map(e => e.q2_pp + e.q2_kills),
+                            backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Q3',
+                            data: equipes.map(e => e.q3_pp + e.q3_kills),
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8', font: { family: 'Space Grotesk' } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { family: 'Space Grotesk' } },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8', font: { family: 'Space Grotesk' } },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        }
+                    }
                 }
             });
         }
 
         function renderizarTimesDetalhes(filtroTexto = "") {
-            const listasEquipes = processarEquipesFiltradas();
+            const listasEquipes = processarEquipesFiltradas().sort((a, b) => b.pt - a.pt);
             const container = document.getElementById('container-times-detalhes');
             container.innerHTML = '';
 
-            listasEquipes.forEach(eq => {
+            listasEquipes.forEach((eq, idx) => {
                 const bateComTime = eq.nome.toLowerCase().includes(filtroTexto.toLowerCase());
                 const bateComPlayer = eq.jogadores.some(p => p.nick.toLowerCase().includes(filtroTexto.toLowerCase()));
                 if (filtroTexto && !bateComTime && !bateComPlayer) return;
 
                 let pRows = "";
-                eq.jogadores.forEach(p => {
+                eq.jogadores.sort((a, b) => b.total_k - a.total_k).forEach(p => {
                     pRows += `
-                        <tr class="border-b border-slate-900/40 hover:bg-slate-950/80 transition">
-                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-600"></i>${p.nick}</td>
+                        <tr class="border-b border-slate-800/40 hover:bg-slate-950/80 transition">
+                            <td class="py-3 px-4 font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-user text-xs text-slate-600"></i>${p.nick}
+                                ${p.mvp > 0 ? `<span class="text-amber-400 text-xs ml-1"><i class="fa-solid fa-star"></i></span>` : ''}
+                            </td>
                             <td class="py-3 px-4 text-center font-bold text-gray-200">${p.total_k}</td>
+                            <td class="py-3 px-4 text-center text-gray-400 text-xs">${p.q1_k} / ${p.q2_k} / ${p.q3_k}</td>
                             <td class="py-3 px-4 text-center text-gray-400">${p.dano}</td>
-                            <td class="py-3 px-4 text-center text-amber-400 font-bold">${p.mvp > 0 ? '<i class="fa-solid fa-star text-xs mr-1"></i>' + p.mvp : '0'}</td>
+                            <td class="py-3 px-4 text-center text-amber-400 font-bold">${p.mvp > 0 ? p.mvp : '-'}</td>
                         </tr>`;
                 });
 
-                container.innerHTML += `
-                    <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 shadow-xl relative">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-900 pb-4 mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-600 to-slate-900 flex items-center justify-center font-black text-lg text-white border border-rose-500/20 shadow-md">\${eq.nome.substring(0,2).toUpperCase()}</div>
-                                <div><h3 class="text-xl font-bold text-white tracking-wide uppercase">\${eq.nome}</h3><p class="text-xs text-gray-500 font-medium">Data Relacionada: \${dataSelecionada.dia} de \${dataSelecionada.mes}</p></div>
+                const card = document.createElement('div');
+                card.className = 'glass rounded-2xl p-6 shadow-xl relative card-hover';
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/50 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-rose-600 to-slate-900 flex items-center justify-center font-black text-xl text-white border border-rose-500/20 shadow-md">
+                                ${eq.nome.substring(0,2).toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white tracking-wide uppercase">${eq.nome}</h3>
+                                <p class="text-xs text-gray-500 font-medium">${dataSelecionada.dia} de ${dataSelecionada.mes} | Pos. Média: ${eq.posicao_media}º</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Kills Coletivas</span><div class="text-xl font-black text-white mt-0.5">\${eq.total_kills}</div></div>
-                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Pontos Totais</span><div class="text-xl font-black text-rose-500 mt-0.5">\${eq.pt}</div></div>
-                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Vitórias / Booyah</span><div class="text-xl font-black text-amber-400 mt-0.5"><i class="fa-solid fa-crown mr-1"></i>\${eq.strikes}</div></div>
-                            <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-900 text-center"><span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider">Posição Média</span><div class="text-xl font-black text-sky-400 mt-0.5">\${((eq.q1_pos + eq.q2_pos + eq.q3_pos)/3).toFixed(1)}º</div></div>
+                        <div class="flex gap-2">
+                            ${eq.strikes > 0 ? `<span class="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20"><i class="fa-solid fa-crown mr-1"></i>${eq.strikes} Booyah</span>` : ''}
+                            <span class="px-3 py-1 rounded-lg bg-rose-500/10 text-rose-400 text-xs font-bold border border-rose-500/20">${eq.pt} PT</span>
                         </div>
-                        <div class="mt-6">
-                            <div class="overflow-x-auto rounded-xl border border-slate-900 bg-slate-900/10">
-                                <table class="w-full text-left text-xs">
-                                    <thead>
-                                        <tr class="bg-slate-900/50 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-900">
-                                            <th class="py-3 px-4">Jogador</th>
-                                            <th class="py-3 px-4 text-center">Kills Totais</th>
-                                            <th class="py-3 px-4 text-center">Média Dano</th>
-                                            <th class="py-3 px-4 text-center">MVP</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>\${pRows}</tbody>
-                                </table>
-                            </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50 text-center">
+                            <span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider block">Kills</span>
+                            <div class="text-xl font-black text-white mt-0.5">${eq.total_kills}</div>
                         </div>
-                    </div>`;
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50 text-center">
+                            <span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider block">Pontos</span>
+                            <div class="text-xl font-black text-rose-500 mt-0.5">${eq.pt}</div>
+                        </div>
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50 text-center">
+                            <span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider block">Vitórias</span>
+                            <div class="text-xl font-black text-amber-400 mt-0.5"><i class="fa-solid fa-crown mr-1 text-sm"></i>${eq.strikes}</div>
+                        </div>
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50 text-center">
+                            <span class="text-[11px] text-gray-500 uppercase font-bold tracking-wider block">Pos. Média</span>
+                            <div class="text-xl font-black text-sky-400 mt-0.5">${eq.posicao_media}º</div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <div class="overflow-x-auto rounded-xl border border-slate-800/50 bg-slate-950/20">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-gray-400 uppercase tracking-wider font-bold border-b border-slate-800/50">
+                                        <th class="py-3 px-4">Jogador</th>
+                                        <th class="py-3 px-4 text-center">Kills</th>
+                                        <th class="py-3 px-4 text-center">Q1/Q2/Q3</th>
+                                        <th class="py-3 px-4 text-center">Dano</th>
+                                        <th class="py-3 px-4 text-center">MVP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${pRows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
@@ -479,20 +1188,188 @@
             renderizarTimesDetalhes(texto);
         }
 
-        function usarDadosMockCompleto() {
-            // MOCK pré-configurado com os 7 primeiros times enviados da DEVILS MOBILE LEAGUE para o Dia 20 de Maio
-            const mockCSV = "Mes;Dia;Time;Jogador;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Dano_Medio;MVP_Vezes\n" +
-            "Maio;Dia 20;RED MAGIC BR;;1;0;1;0;1;0;Sem Informações;0\n" +
-            "Maio;Dia 20;RED DEVILS²;;2;0;2;0;2;0;Sem Informações;0\n" +
-            "Maio;Dia 20;LÁ MAFIA;;3;0;3;0;3;0;Sem Informações;0\n" +
-            "Maio;Dia 20;UGD THREAT;;4;0;4;0;4;0;Sem Informações;0\n" +
-            "Maio;Dia 20;FURY RISING;;5;0;5;0;5;0;Sem Informações;0\n" +
-            "Maio;Dia 20;UGD LIGHT;;6;0;6;0;6;0;Sem Informações;0\n" +
-            "Maio;Dia 20;CMF ATLANTIC;;7;0;7;0;7;0;Sem Informações;0";
-            
-            bancoDeDadosCompleto = parseCSV(mockCSV);
-            inicializarFiltrosDeData();
+        function limparBusca() {
+            document.getElementById('search-bar').value = '';
+            renderizarTimesDetalhes();
         }
+
+        function renderizarJogadores(ordenacao) {
+            const dados = bancoDeDadosCompleto.filter(item => 
+                item.Mes === dataSelecionada.mes && item.Dia === dataSelecionada.dia
+            );
+
+            let jogadores = dados.map(row => ({
+                nick: row.Jogador,
+                time: row.Time,
+                q1: parseInt(row.Q1_Kills) || 0,
+                q2: parseInt(row.Q2_Kills) || 0,
+                q3: parseInt(row.Q3_Kills) || 0,
+                total: (parseInt(row.Q1_Kills) || 0) + (parseInt(row.Q2_Kills) || 0) + (parseInt(row.Q3_Kills) || 0),
+                mvp: parseInt(row.MVP_Vezes) || 0,
+                dano: row.Dano_Medio || "Sem Info"
+            }));
+
+            if (ordenacao === 'kills') {
+                jogadores.sort((a, b) => b.total - a.total);
+            } else if (ordenacao === 'mvp') {
+                jogadores.sort((a, b) => b.mvp - a.mvp || b.total - a.total);
+            } else {
+                jogadores.sort((a, b) => b.dano - a.dano || b.total - a.total);
+            }
+
+            document.getElementById('sort-jog-kills').className = ordenacao === 'kills' ? 
+                'px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 transition' : 
+                'px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition';
+            document.getElementById('sort-jog-mvp').className = ordenacao === 'mvp' ? 
+                'px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 transition' : 
+                'px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition';
+            document.getElementById('sort-jog-dano').className = ordenacao === 'dano' ? 
+                'px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm font-bold border border-rose-500/20 transition' : 
+                'px-4 py-2 rounded-xl bg-slate-950 text-gray-400 text-sm font-bold border border-slate-800 hover:border-rose-500/30 transition';
+
+            const tbody = document.getElementById('tabela-jogadores');
+            tbody.innerHTML = '';
+
+            jogadores.forEach((jog, index) => {
+                let posBadge = `${index + 1}º`;
+                if(index === 0) posBadge = `<span class="rank-1 font-black px-2 py-0.5 rounded text-xs">1º</span>`;
+                if(index === 1) posBadge = `<span class="rank-2 font-black px-2 py-0.5 rounded text-xs">2º</span>`;
+                if(index === 2) posBadge = `<span class="rank-3 font-black px-2 py-0.5 rounded text-xs">3º</span>`;
+
+                const row = document.createElement('tr');
+                row.className = 'table-row';
+                row.innerHTML = `
+                    <td class="py-4 px-4 text-center font-bold">${posBadge}</td>
+                    <td class="py-4 px-6 font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-user text-xs text-slate-600"></i>
+                        ${jog.nick}
+                        ${jog.mvp > 0 ? `<span class="text-amber-400"><i class="fa-solid fa-star text-xs"></i></span>` : ''}
+                    </td>
+                    <td class="py-4 px-4 text-gray-400">${jog.time}</td>
+                    <td class="py-4 px-4 text-center text-gray-400">${jog.q1}</td>
+                    <td class="py-4 px-4 text-center text-gray-400">${jog.q2}</td>
+                    <td class="py-4 px-4 text-center text-gray-400">${jog.q3}</td>
+                    <td class="py-4 px-4 text-center font-bold text-white">${jog.total}</td>
+                    <td class="py-4 px-4 text-center text-amber-400 font-bold">${jog.mvp > 0 ? jog.mvp : '-'}</td>
+                    <td class="py-4 px-4 text-center text-gray-400">${jog.dano}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function ordenarJogadores(criterio) {
+            renderizarJogadores(criterio);
+        }
+
+        function abrirModalTime(nomeTime) {
+            const equipes = processarEquipesFiltradas();
+            const equipe = equipes.find(e => e.nome === nomeTime);
+            if (!equipe) return;
+
+            document.getElementById('modal-titulo').innerText = equipe.nome;
+
+            let jogadoresHtml = '';
+            equipe.jogadores.sort((a, b) => b.total_k - a.total_k).forEach(p => {
+                jogadoresHtml += `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-rose-400 font-bold text-sm">${p.nick.substring(0,2).toUpperCase()}</div>
+                            <div>
+                                <div class="font-bold text-white text-sm">${p.nick}</div>
+                                <div class="text-xs text-gray-500">${p.dano}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">Kills</div>
+                                <div class="font-bold text-white">${p.total_k}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">MVP</div>
+                                <div class="font-bold text-amber-400">${p.mvp > 0 ? p.mvp : '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Pontuação Total</div>
+                        <div class="text-2xl font-black text-rose-500">${equipe.pt}</div>
+                    </div>
+                    <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Kills</div>
+                        <div class="text-2xl font-black text-white">${equipe.total_kills}</div>
+                    </div>
+                    <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Booyahs</div>
+                        <div class="text-2xl font-black text-amber-400">${equipe.strikes}</div>
+                    </div>
+                    <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Pos. Média</div>
+                        <div class="text-2xl font-black text-sky-400">${equipe.posicao_media}º</div>
+                    </div>
+                </div>
+                <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Jogadores</h4>
+                ${jogadoresHtml}
+            `;
+
+            const modal = document.getElementById('modal-time');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function fecharModal() {
+            const modal = document.getElementById('modal-time');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function exportarDados() {
+            const equipes = processarEquipesFiltradas().sort((a, b) => b.pt - a.pt);
+            let csv = 'Posicao;Time;Q1_Pos;Q1_Kills;Q2_Pos;Q2_Kills;Q3_Pos;Q3_Kills;Total_PP;Total_PK;PT_Total;Booyahs\n';
+
+            equipes.forEach((eq, idx) => {
+                csv += `${idx+1};${eq.nome};${eq.q1_pos};${eq.q1_kills};${eq.q2_pos};${eq.q2_kills};${eq.q3_pos};${eq.q3_kills};${eq.total_pp};${eq.total_kills};${eq.pt};${eq.strikes}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `DML_${dataSelecionada.dia}_${dataSelecionada.mes}.csv`;
+            link.click();
+
+            mostrarToast('Dados exportados com sucesso!');
+        }
+
+        function mostrarToast(mensagem) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = mensagem;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal-time').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal-time')) {
+                fecharModal();
+            }
+        });
     </script>
 </body>
 </html>
