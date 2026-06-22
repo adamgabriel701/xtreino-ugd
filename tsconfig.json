@@ -1,0 +1,30 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.server.json"
+    }
+  ],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@contracts/*": [
+        "./contracts/*"
+      ],
+      "@db/*": [
+        "./db/*"
+      ],
+      "@components/xtreino": ["./src/components/xtreino/index.ts"]
+    }
+  }
+}
