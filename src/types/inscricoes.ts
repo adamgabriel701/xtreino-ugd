@@ -28,3 +28,11 @@ export interface XtreinoEvento {
   createdAt?: Date | string | null;
   updatedAt?: Date | string | null;
 }
+
+// Novo: dados para geração de seed
+export interface SeedXtreinoData {
+  id: number;
+  date: string;
+  colocacoes: Array<[string, number, number, number]>;
+  jogadores: Array<[string, string, number, number, number]>;
+}

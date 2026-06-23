@@ -15,7 +15,7 @@ import {
   migrarEventosHistoricos,
 } from "../../db/inscricoes.js";
 import { getDb } from "../queries/connection.js";
-import { settings, xtreinos, xtreinoTeams } from "../../db/schema.js";
+import { settings, xtreinos, xtreinoTeams, teams } from "../../db/schema.js";
 import { eq, and, sql } from "drizzle-orm";
 
 // ============================================================
@@ -33,7 +33,7 @@ function parseFixedTeams(fixedTeamsList: string | null | undefined): string[] {
 
 function formatTeamsList(
   teams: Array<{ position: number; name: string; isFixed: boolean }>,
-  maxSlots: number = 12
+  maxSlots: number = 15
 ): string {
   const filled = [...teams];
   for (let i = teams.length + 1; i <= maxSlots; i++) {
@@ -44,7 +44,7 @@ function formatTeamsList(
       const emoji = t.isFixed ? "📌" : "🎫";
       const pos = String(t.position).padStart(2, "0");
       const name = t.name || "";
-      return `${emoji}${pos} - ${name}`;
+      return `${emoji} ${pos} - ${name}`;
     })
     .join("\n");
 }
@@ -99,6 +99,17 @@ export const xtreinoInscricoesRouter = createRouter({
   }),
 
   // ============================================================
+  // BUSCAR UM XTREINO POR ID
+  // ============================================================
+  getXtreino: publicQuery
+    .input(z.object({ id: z.number() }))
+    .query(({ input }) => {
+      const xtreino = getXtreinoEvent(input.id);
+      if (!xtreino) throw new Error("XTreino não encontrado");
+      return xtreino;
+    }),
+
+  // ============================================================
   // LISTAR INSCRIÇÕES POR XTREINO
   // ============================================================
   listByXtreino: publicQuery
@@ -121,6 +132,14 @@ export const xtreinoInscricoesRouter = createRouter({
     const db = getDb();
     const config = db.select().from(settings).limit(1).get();
     return parseFixedTeams(config?.fixedTeamsList);
+  }),
+
+  // ============================================================
+  // BUSCAR TODOS OS TIMES DISPONÍVEIS
+  // ============================================================
+  getAllTeams: publicQuery.query(() => {
+    const db = getDb();
+    return db.select({ id: teams.id, name: teams.name, tag: teams.tag }).from(teams).where(eq(teams.status, "active")).all();
   }),
 
   // ============================================================
@@ -198,7 +217,7 @@ export const xtreinoInscricoesRouter = createRouter({
     .input(
       z.object({
         date: z.string(),
-        maxTeams: z.number().min(1).max(32).default(12),
+        maxTeams: z.number().min(1).max(32).default(15),
         status: z.enum(["aberto", "fechado"]).default("aberto"),
         timeBr: z.string().default("21:00"),
         modality: z.string().default("squad"),
@@ -244,7 +263,7 @@ export const xtreinoInscricoesRouter = createRouter({
         isFixed: fixedSet.has(insc.teamName.toLowerCase()),
       }));
 
-      const teamsList = formatTeamsList(confirmedTeams, xtreino.maxTeams || 12);
+      const teamsList = formatTeamsList(confirmedTeams, xtreino.maxTeams || 15);
       const times = parseTimeBr(config?.defaultTimesBr || "21:00");
       const dateParts = xtreino.date.split("-");
       const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}` : xtreino.date;

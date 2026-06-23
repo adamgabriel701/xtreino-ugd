@@ -10,7 +10,7 @@ interface InscricoesManagerProps {
   allTeams: Array<{ id: number; name: string; tag: string }> | undefined;
   onRegister: (data: { teamName: string; players: string[]; isReserve: boolean }) => void;
   onCancel: (data: { teamName: string }) => void;
-  onReactivate: (data: { teamName: string; players: string[]; isReserve: boolean }) => void;
+  onReactivate: (data: { teamName: string }) => void;
   onRemove: (data: { teamName: string }) => void;
   isPending: boolean;
   isAdmin?: boolean;
@@ -107,10 +107,9 @@ export function InscricoesManager({
     }
   };
 
-  const handleReactivate = (teamName: string, players: string[]) => {
+  const handleReactivate = (teamName: string) => {
     if (confirm(`Reativar inscrição de "${teamName}"?`)) {
-      const isReserve = confirmedTeams.length >= xtreino.maxTeams;
-      onReactivate({ teamName, players, isReserve });
+      onReactivate({ teamName });
     }
   };
 
@@ -327,7 +326,7 @@ export function InscricoesManager({
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() => handleReactivate(team.teamName, team.players || [])}
+                    onClick={() => handleReactivate(team.teamName)}
                     className="p-1.5 rounded hover:bg-green-500/10 text-green-400 transition-all"
                     title="Reativar"
                   >
@@ -371,7 +370,7 @@ export function InscricoesManager({
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() => handleReactivate(team.teamName, team.players || [])}
+                    onClick={() => handleReactivate(team.teamName)}
                     className="p-1.5 rounded hover:bg-green-500/10 text-green-400 transition-all"
                     title="Reativar"
                   >
