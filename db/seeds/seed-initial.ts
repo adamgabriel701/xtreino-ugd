@@ -465,9 +465,13 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["VNG SCAVEIRA", "vengeance", "off"],
 
   // K4F
-  ["K4F Łucã0", "K4F", "off"],
-  ["K4F NINE", "K4F", "off"],
-  ["K4F WEND", "K4F", "off"],
+  ["Nine", "K4F", "off"],
+  ["zaza", "K4F", "off"],
+  ["WEND", "K4F", "off"],
+  ["Éourso", "K4F", "off"],
+
+  // UGD Threat
+  ["LMF_Boss", "UGD Threat", "off"],
 
   // UGD LIGHT
   ["UGD Psycho", "UGD LIGHT", "off"],
