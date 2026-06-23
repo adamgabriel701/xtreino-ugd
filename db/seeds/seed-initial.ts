@@ -463,6 +463,15 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["ackerman", "vengeance", "off"],
   ["VNG ¿¿¿", "vengeance", "off"],
   ["VNG SCAVEIRA", "vengeance", "off"],
+
+  // K4F
+  ["K4F Łucã0", "K4F", "off"],
+  ["K4F NINE", "K4F", "off"],
+  ["K4F WEND", "K4F", "off"],
+
+  // UGD LIGHT
+  ["UGD Psycho", "UGD LIGHT", "off"],
+  ["Dopped", "UGD LIGHT", "off"],
 ];
 
 // --- XTREINOS (lista base, sem dados de jogadores) ---
@@ -481,6 +490,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 17/06", "2026-06-17", "finalizado"],
   ["XTreino Underground - 18/06", "2026-06-18", "finalizado"],
   ["XTreino Underground - 19/06", "2026-06-19", "finalizado"],
+  ["XTreino Underground - 22/06", "2026-06-22", "finalizado"],
 ];
 
 // ============================================================
