@@ -16,6 +16,9 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
   const isBR = scrim.mode === "br";
   const isMME = scrim.mode === "mme";
 
+  // Transforma o nome em uma string segura para ser usada na URL (ex: "UGD Threat vs K4F" vira "UGD%20Threat%20vs%20K4F")
+  const safeScrimNameForUrl = encodeURIComponent(scrim.name);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -71,24 +74,26 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
             </div>
           </div>
 
+          {/* Resultado e Botão de Tela de Fim de Junto */}
           {scrim.result && (
-            <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                <span className="text-sm font-medium text-[#f0f0f5]">Resultado</span>
+            <div className="space-y-4">
+              <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                  <span className="text-sm font-medium text-[#f0f0f5]">Resultado</span>
+                </div>
+                <p className="text-sm text-[#8a8a9e]">{scrim.result}</p>
               </div>
-              <p className="text-sm text-[#8a8a9e]">{scrim.result}</p>
+              
+              <a 
+                href={`/scrims/match/${safeScrimNameForUrl}`} // <-- USANDO O NOME SEGUTO NA URL
+                target="_blank"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600/20 to-red-600/20 border border-white/10 text-white font-bold py-3 rounded-xl hover:from-blue-600/30 hover:to-red-600/30 transition-all"
+              >
+                <BarChart3 className="w-5 h-5" />
+                Ver Tela de Fim de Partida
+              </a>
             </div>
-          )}
-          {scrim.result && (
-            <a 
-              href={`/scrims/match/${scrim.id}`} // Usa o ID REAL do scrim que está sendo visualizado
-              target="_blank"
-              className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600/20 to-red-600/20 border border-white/10 text-white font-bold py-3 rounded-xl hover:from-blue-600/30 hover:to-red-600/30 transition-all"
-            >
-              <BarChart3 className="w-5 h-5" />
-              Ver Tela de Fim de Partida
-            </a>
           )}
 
           {isBR && (
@@ -106,7 +111,7 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
                 <Swords className="w-4 h-4 text-orange-400" aria-hidden="true" />
                 <span className="text-sm font-medium text-orange-400">Mata-Mata em Equipe</span>
               </div>
-              <p className="text-xs text-[#5a5a6e]">Sistema baseado em rounds ganhos. O time que acumular mais rounds vence a série.</p>
+              <p className="text-xs text-[#5a5a6e]">Sistema baseado em rounds ganhos. O tempo que acumular mais rounds vence a série.</p>
             </div>
           )}
         </div>
