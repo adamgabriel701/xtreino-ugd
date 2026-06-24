@@ -39,3 +39,8 @@ build/
 # Test coverage
 coverage/
 .nyc_output/
+
+# .gitignore
+db.sqlite
+*.sqlite
+*.db
