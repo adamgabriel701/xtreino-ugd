@@ -1050,6 +1050,58 @@ export const xtreinosRaw: XtreinoRaw[] = [
       ["UGD LEGENDS", "RED MORAES", 0, 0, 0],
     ],
   },
+  // ========================================
+  // XTreino 15 — 2026-06-23
+  // ========================================
+  {
+    id: 15,
+    date: "2026-06-23",
+    colocacoes: [
+      ["randolinhas", 1, 1, 6],
+      ["FURY ELITE", 4, 6, 7],
+      ["UGD Threat", 3, 4, 1],
+      ["K4F", 7, 5, 5],
+      ["FURY ROYAL", 2, 3, 4],
+      ["CMF ASSALT", 6, 7, 2],
+      ["UGD LIGHT", 5, 2, 3],
+      ["UGD LEGENDS", 8, 0, 0],
+    ],
+    jogadores: [
+      ["randolinhas", "elbra", 20, 15, 9],
+      ["randolinhas", "Felipe", 14, 14, 4],
+      ["randolinhas", "frajola", 8, 6, 1],
+      ["randolinhas", "rayzer_bot", 11, 6, 0],
+      ["FURY ROYAL", "M4RTNA FURY", 12, 10, 6],
+      ["FURY ROYAL", "NGLIFE FURY", 9, 7, 11],
+      ["FURY ROYAL", "EGOIST FURY", 8, 8, 4],
+      ["FURY ROYAL", "VN' FURY", 7, 9, 6],
+      ["UGD Threat", "Kaze", 6, 4, 5],
+      ["UGD Threat", "Arise", 0, 4, 10],
+      ["UGD Threat", "XOXOTO", 9, 6, 11],
+      ["UGD Threat", "LOREX", 4, 5, 9],
+      ["UGD LEGENDS", "Santz", 1, 0, 0],
+      ["UGD LEGENDS", "Hell", 1, 0, 0],
+      ["UGD LEGENDS", "Daisy", 0, 0, 0],
+      ["UGD LEGENDS", "Duardin", 0, 0, 0],
+      ["FURY ELITE", "DIANA", 3, 3, 2],
+      ["FURY ELITE", "DEX", 1, 1, 2],
+      ["FURY ELITE", "TRY", 1, 3, 1],
+      ["FURY ELITE", "RAUAN", 1, 5, 1],
+      ["UGD LIGHT", "Psycho", 2, 2, 2],
+      ["UGD LIGHT", "Xenz", 1, 0, 0],
+      ["UGD LIGHT", "Dopped", 2, 3, 1],
+      ["UGD LIGHT", "Chrisxz", 2, 1, 2],
+      ["CMF ASSALT", "CMF Syx", 0, 7, 5],
+      ["CMF ASSALT", "CMF Hisoka", 3, 5, 4],
+      ["CMF ASSALT", "CMF Max", 0, 2, 1],
+      ["CMF ASSALT", "CMF Thxxxz", 2, 3, 2],
+      ["K4F", "K4F Nine", 2, 3, 1],
+      ["K4F", "KISE", 2, 2, 2],
+      ["K4F", "NyE Wendxz", 2, 1, 3],
+      ["K4F", "K4F ZAZA", 1, 0, 6],
+    ],
+  },
+  
 
   // ========================================
   // NOVO XTREINO? Cole um bloco novo aqui embaixo!

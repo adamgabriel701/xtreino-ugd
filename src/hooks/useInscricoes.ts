@@ -14,7 +14,7 @@ async function trpcFetch<T>(path: string, input?: unknown): Promise<T> {
     throw new Error(err.error?.message || `HTTP ${res.status}`);
   }
   const data = await res.json();
-  return data.result?.data?.json ?? data;
+  return (data.result?.data?.json ?? data) as T;
 }
 
 async function trpcMutate<T>(path: string, input: unknown): Promise<T> {
@@ -28,7 +28,7 @@ async function trpcMutate<T>(path: string, input: unknown): Promise<T> {
     throw new Error(err.error?.message || `HTTP ${res.status}`);
   }
   const data = await res.json();
-  return data.result?.data?.json ?? data;
+  return (data.result?.data?.json ?? data) as T;
 }
 
 export function useInscricoes(xtreinoId: number) {
@@ -43,12 +43,11 @@ export function useInscricoes(xtreinoId: number) {
     if (!xtreinoId) return;
     setIsLoading(true);
     try {
-      const [xt, ins, ft, at] = await Promise.all([
-        trpcFetch<XtreinoEvento>("xtreinoInscricoes.getXtreino", { id: xtreinoId }),
-        trpcFetch<InscricaoEquipe[]>("xtreinoInscricoes.listByXtreino", { xtreinoId }),
-        trpcFetch<string[]>("xtreinoInscricoes.getFixedTeams"),
-        trpcFetch<Array<{ id: number; name: string; tag: string }>>("xtreinoInscricoes.getAllTeams"),
-      ]);
+      const xt = await trpcFetch<XtreinoEvento>("xtreinoInscricoes.getXtreino", { id: xtreinoId });
+      const ins = await trpcFetch<InscricaoEquipe[]>("xtreinoInscricoes.listByXtreino", { xtreinoId });
+      const ft = await trpcFetch<string[]>("xtreinoInscricoes.getFixedTeams");
+      const at = await trpcFetch<Array<{ id: number; name: string; tag: string }>>("xtreinoInscricoes.getAllTeams");
+
       setXtreino(xt);
       setInscricoes(ins ?? []);
       setFixedTeams(ft ?? []);
@@ -63,7 +62,7 @@ export function useInscricoes(xtreinoId: number) {
   const register = useCallback(async (data: { teamName: string; players: string[]; isReserve: boolean }) => {
     setIsPending(true);
     try {
-      await trpcMutate("xtreinoInscricoes.register", { ...data, xtreinoId });
+      await trpcMutate<{ success: boolean; id: number }>("xtreinoInscricoes.register", { ...data, xtreinoId });
       toast.success("Time inscrito com sucesso!");
       await loadData();
     } catch (err: any) {
@@ -76,7 +75,7 @@ export function useInscricoes(xtreinoId: number) {
   const cancel = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate("xtreinoInscricoes.cancel", { xtreinoId, teamName });
+      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.cancel", { xtreinoId, teamName });
       toast.success("Inscrição cancelada!");
       await loadData();
     } catch (err: any) {
@@ -89,7 +88,7 @@ export function useInscricoes(xtreinoId: number) {
   const reactivate = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate("xtreinoInscricoes.reactivate", { xtreinoId, teamName });
+      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.reactivate", { xtreinoId, teamName });
       toast.success("Inscrição reativada!");
       await loadData();
     } catch (err: any) {
@@ -102,7 +101,7 @@ export function useInscricoes(xtreinoId: number) {
   const remove = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate("xtreinoInscricoes.unregister", { xtreinoId, teamName });
+      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.unregister", { xtreinoId, teamName });
       toast.success("Time removido!");
       await loadData();
     } catch (err: any) {
