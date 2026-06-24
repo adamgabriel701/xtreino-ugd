@@ -82,7 +82,7 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
           )}
           {scrim.result && (
             <a 
-              href={`/scrims/match/${scrim.id}`}
+              href={`/scrims/match/${scrim.id}`} // Usa o ID REAL do scrim que está sendo visualizado
               target="_blank"
               className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600/20 to-red-600/20 border border-white/10 text-white font-bold py-3 rounded-xl hover:from-blue-600/30 hover:to-red-600/30 transition-all"
             >
