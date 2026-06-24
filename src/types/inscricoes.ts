@@ -16,6 +16,7 @@ export interface InscricaoEquipe {
 }
 
 export interface XtreinoEvento {
+  googleFormsUrl: string | undefined;
   id: number;
   name: string;
   date: string;

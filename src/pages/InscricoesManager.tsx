@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, Users, CheckCircle2, Clock, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { InscricaoEquipe, XtreinoEvento } from "@/types/inscricoes";
+import { GoogleFormsSection } from "./GoogleFormsSection";
 
 interface InscricoesManagerProps {
   xtreino: XtreinoEvento;
@@ -205,6 +206,12 @@ export function InscricoesManager({
           </div>
         </div>
       )}
+
+      {/* Google Forms Integration */}
+      <GoogleFormsSection
+        xtreinoStatus={xtreino.status}
+        googleFormsUrl={xtreino.googleFormsUrl} // opcional, tem default
+      />
 
       {/* Lista de Confirmados */}
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
