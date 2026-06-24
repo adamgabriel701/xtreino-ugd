@@ -1,22 +1,18 @@
 "use client";
 
-import { useParams, useNavigate } from "react-router-dom"; // MUDANÇA AQUI: React Router ao invés de Next Navigation
-import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { trpc } from "@/providers/trpc";
-import type { ScrimItem, PlayerStat } from "../../types"; // MUDANÇA AQUI: Caminho relativo correto
+import type { ScrimItem, PlayerStat } from "../../../types";
 import { ArrowLeft, Star } from "lucide-react";
 
-// Cores do tema
 const COLORS = {
   winner: {
     bg: "bg-blue-600/80",
-    text: "text-blue-400",
     border: "border-blue-500/50",
     neon: "text-blue-400 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]",
   },
   loser: {
     bg: "bg-red-600/80",
-    text: "text-red-400",
     border: "border-red-500/50",
     neon: "text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]",
   },
@@ -24,34 +20,13 @@ const COLORS = {
 
 export default function MatchResultPage() {
   const params = useParams();
-  const navigate = useNavigate(); // MUDANÇA AQUI
+  const navigate = useNavigate();
   const scrimId = Number(params.id);
 
-  // Busca dados do agendamento
   const { data: allScrims } = trpc.scrims.list.useQuery(undefined, {
     select: (data) => (data as ScrimItem[]).find((s) => s.id === scrimId),
   });
   const scrim = allScrims;
-
-  // Busca stats dos jogadores usando a rota individual que criamos (busca por time)
-  const { data: team1Stats } = trpc.scrims.teamStatsByName.useQuery(
-    { teamName: scrim?.team1Name || "" },
-    { enabled: !!scrim?.team1Name }
-  );
-  const { data: team2Stats } = trpc.scrims.teamStatsByName.useQuery(
-    { teamName: scrim?.team2Name || "" },
-    { enabled: !!scrim?.team2Name }
-  );
-
-  const isLoading = !scrim; // Simplificado
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-full bg-black flex items-center justify-center">
-        <p className="text-white text-xl animate-pulse">Carregando tela de fim de partida...</p>
-      </div>
-    );
-  }
 
   if (!scrim) {
     return (
@@ -62,32 +37,54 @@ export default function MatchResultPage() {
     );
   }
 
-  // Lógica para descobrir quem ganhou
-  const resultText = scrim.result || "";
-  const team1Name = scrim.team1Name || "Time 1";
-  const team2Name = scrim.team2Name || "Time 2";
+  // ============================================================
+  // LÓGICA INTELIGENTE PARA DESCOBRIR OS NOMES E PLACARES
+  // ============================================================
+  const resultText = scrim.result || "Time 1 0-0 Time 2";
   
-  const scoreMatch = resultText.match(/(\d+)-(\d+)/);
-  const score1 = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-  const score2 = scoreMatch ? parseInt(scoreMatch[2]) : 0;
+  // Tenta extrair do texto: "UGD Threat 3-0 K4F"
+  const match = resultText.match(/(.+?)\s+(\d+)-(\d+)\s+(.+)/);
+  
+  let team1Name = "Time 1";
+  let team2Name = "Time 2";
+  let score1 = 0;
+  let score2 = 0;
+
+  if (match) {
+    team1Name = match[1].trim();
+    score1 = parseInt(match[2], 10);
+    score2 = parseInt(match[3], 10);
+    team2Name = match[4].trim();
+  } else {
+    // Fallback caso o formato do texto seja diferente
+    team1Name = scrim.team1Name || "Time 1";
+    team2Name = scrim.team2Name || "Time 2";
+  }
 
   const isTeam1Winner = score1 > score2;
-  
   const winnerTeam = isTeam1Winner ? team1Name : team2Name;
   const loserTeam = isTeam1Winner ? team2Name : team1Name;
   const winnerScore = isTeam1Winner ? score1 : score2;
   const loserScore = isTeam1Winner ? score2 : score1;
 
-  // Força tipagem e separa jogadores (Corrigindo o erro do createdAt)
+  // Busca stats dos jogadores baseando-se nos nomes extraídos
+  const { data: team1Stats } = trpc.scrims.teamStatsByName.useQuery(
+    { teamName: team1Name },
+    { enabled: !!team1Name }
+  );
+  const { data: team2Stats } = trpc.scrims.teamStatsByName.useQuery(
+    { teamName: team2Name },
+    { enabled: !!team2Name }
+  );
+
+  // Força tipagem e separa jogadores
   const winnerPlayers = (isTeam1Winner ? team1Stats : team2Stats) as PlayerStat[] | undefined;
   const loserPlayers = (isTeam1Winner ? team2Stats : team1Stats) as PlayerStat[] | undefined;
 
-  // Ordena para que o MVP fique em primeiro
   const sortByMvp = (a: PlayerStat, b: PlayerStat) => (b.totalMvp || 0) - (a.totalMvp || 0);
   const sortedWinners = [...(winnerPlayers || [])].sort(sortByMvp);
   const sortedLosers = [...(loserPlayers || [])].sort(sortByMvp);
 
-  // Função para pegar dados totais
   const getRowData = (p: PlayerStat) => ({
     name: p.playerName.replace(/[⚡⁷]/g, "").trim(),
     kills: p.totalKills,
@@ -105,20 +102,17 @@ export default function MatchResultPage() {
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 blur-sm z-0" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] z-0" />
 
-      {/* Conteúdo Principal */}
       <div className="relative z-10 w-full max-w-5xl px-6 py-12 flex flex-col items-center gap-10">
         
-        {/* Botão Voltar */}
         <div className="w-full flex justify-start">
           <button 
-            onClick={() => navigate("/scrims")} // MUDANÇA AQUI
+            onClick={() => navigate("/scrims")}
             className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
         </div>
 
-        {/* Cabeçalho */}
         <div className="text-center space-y-3">
           <h1 className="text-6xl md:text-8xl font-black text-yellow-500 drop-shadow-[0_0_20px_rgba(234,179,8,0.6)] uppercase tracking-wider">
             Vitória
@@ -130,10 +124,9 @@ export default function MatchResultPage() {
           </div>
         </div>
 
-        {/* Placar e Tabelas */}
         <div className="w-full flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
           
-          {/* Placar (Esquerda) */}
+          {/* Placar */}
           <div className="flex flex-col items-center gap-6 w-40">
             <div className="relative w-32 h-32 flex items-center justify-center">
               <div className="absolute inset-0 bg-blue-500/10 rounded-2xl blur-2xl" />
@@ -146,10 +139,10 @@ export default function MatchResultPage() {
             </div>
           </div>
 
-          {/* Tabelas (Direita) */}
+          {/* Tabelas */}
           <div className="flex-1 max-w-2xl w-full flex flex-col gap-4 backdrop-blur-md bg-black/40 p-4 rounded-2xl border border-white/10">
             
-            {/* Tabela do Vencedor (Azul) */}
+            {/* Tabela Azul */}
             <div className={`rounded-lg overflow-hidden border ${COLORS.winner.border}`}>
               <div className={`${COLORS.winner.bg} px-4 py-2.5 flex items-center justify-between`}>
                 <h2 className="text-white font-bold tracking-wide uppercase text-sm">{winnerTeam}</h2>
@@ -191,7 +184,7 @@ export default function MatchResultPage() {
               </table>
             </div>
 
-            {/* Tabela do Perdedor (Vermelho) */}
+            {/* Tabela Vermelha */}
             <div className={`rounded-lg overflow-hidden border ${COLORS.loser.border}`}>
               <div className={`${COLORS.loser.bg} px-4 py-2.5 flex items-center justify-between`}>
                 <h2 className="text-white font-bold tracking-wide uppercase text-sm">{loserTeam}</h2>
@@ -236,7 +229,6 @@ export default function MatchResultPage() {
           </div>
         </div>
 
-        {/* Rodapé */}
         <div className="mt-8 text-center text-gray-500 text-xs space-x-4">
           <span>{scrim.date}</span>
           <span>•</span>

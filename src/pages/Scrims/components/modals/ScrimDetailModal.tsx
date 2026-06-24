@@ -80,7 +80,6 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
               <p className="text-sm text-[#8a8a9e]">{scrim.result}</p>
             </div>
           )}
-          // Dentro do ScrimDetailModal, logo após mostrar o resultado:
           {scrim.result && (
             <a 
               href={`/scrims/match/${scrim.id}`}
