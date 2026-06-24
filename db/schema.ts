@@ -222,14 +222,14 @@ export const xtreinoSchedule = sqliteTable("xtreino_schedule", {
 // SCRIMS — Agora com campo mode (br | mme)
 // ============================================================
 export const scrims = sqliteTable("scrims", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  id: integer("id", { mode: "number" }).primaryKey(),
   name: text("name").notNull(),
   team1Id: integer("team1_id", { mode: "number" }),
   team2Id: integer("team2_id", { mode: "number" }),
   date: text("date"),
   time: text("time"),
   modality: text("modality"),
-  mode: text("mode").default("br"), // "br" = Battle Royale, "mme" = Mata-Mata em Equipe
+  mode: text("mode").default("br"), 
   status: text("status").notNull().default("agendado"),
   result: text("result"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),

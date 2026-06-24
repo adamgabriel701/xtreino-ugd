@@ -1,15 +1,16 @@
 // db/seeds/seed-scrim-4v4-ugd-vs-k4f.ts
 // Seed da scrim 4v4 MME: UGD Threat vs K4F — 13/06/2026
-// Adaptado para a nova arquitetura relacional (Rounds Dinâmicos)
+// FORÇA O ID 1 PARA GARANTIR A URL /scrims/match/1
 
 import { getDb } from "../../api/queries/connection.js";
 import { scrims, scrimResults, scrimResultRounds, scrimPlayerStats, scrimPlayerStatRounds, seedRuns } from "../schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 // ============================================================
 // DADOS DA SCRIM
 // ============================================================
 
+const SCRIM_ID = 1; // ID FORÇADO
 const SCRIM_DATE = "2026-06-13";
 const SCRIM_NAME = "Scrim 4v4 MME — UGD Threat vs K4F";
 const SCRIM_TIME = "21:00";
@@ -94,52 +95,45 @@ const PLAYER_STATS: [string, string,
 
 export function seed() {
   const db = getDb();
-  console.log("[SEED] Starting scrim 4v4 MME seed (Relacional): UGD Threat vs K4F...");
+  console.log("[SEED] Starting scrim 4v4 MME seed (Forçando ID 1)...");
 
-  // 1. Inserir o scrim na tabela scrims
-  const existingScrim = db.select().from(scrims).where(eq(scrims.name, SCRIM_NAME)).get();
-  let scrimId = existingScrim?.id;
+  // 0. Limpa dados antigos do ID 1 para poder re-rodar o seed sem erro de chave duplicada
+  db.delete(scrimPlayerStatRounds).where(eq(scrimPlayerStatRounds.scrimPlayerStatId, sql`select sps.id from scrim_player_stats sps where sps.scrimId = ${SCRIM_ID}`)).run();
+  db.delete(scrimPlayerStats).where(eq(scrimPlayerStats.scrimId, SCRIM_ID)).run();
+  db.delete(scrimResultRounds).where(eq(scrimResultRounds.scrimResultId, sql`select sr.id from scrim_results sr where sr.scrimId = ${SCRIM_ID}`)).run();
+  db.delete(scrimResults).where(eq(scrimResults.scrimId, SCRIM_ID)).run();
+  db.delete(scrims).where(eq(scrims.id, SCRIM_ID)).run();
+  console.log("[SEED] Limpei dados antigos do ID 1.");
 
-  if (!scrimId) {
-    const result = db.insert(scrims).values({
-      name: SCRIM_NAME,
-      date: SCRIM_DATE,
-      time: SCRIM_TIME,
-      modality: SCRIM_MODALITY,
-      mode: SCRIM_MODE,
-      status: SCRIM_STATUS,
-      result: SCRIM_RESULT,
-    }).run();
-    scrimId = Number(result.lastInsertRowid);
-    console.log(`[SEED] Scrim created (id=${scrimId})`);
-  } else {
-    console.log(`[SEED] Scrim already exists (id=${scrimId})`);
-  }
+  // 1. Inserir o scrim na tabela scrims com o ID 1
+  db.insert(scrims).values({
+    id: SCRIM_ID, // ID FORÇADO
+    name: SCRIM_NAME,
+    date: SCRIM_DATE,
+    time: SCRIM_TIME,
+    modality: SCRIM_MODALITY,
+    mode: SCRIM_MODE,
+    status: SCRIM_STATUS,
+    result: SCRIM_RESULT,
+  }).run();
+  console.log(`[SEED] Scrim criado com ID fixo: ${SCRIM_ID}`);
 
   // 2. Inserir resultados dos times e suas rodadas
-  let teamResultsCount = 0;
   for (const tr of TEAM_RESULTS) {
-    const existingResult = db.select().from(scrimResults)
-      .where(and(eq(scrimResults.scrimId, scrimId), eq(scrimResults.teamName, tr.teamName))).get();
+    const res = db.insert(scrimResults).values({
+      scrimId: SCRIM_ID,
+      date: SCRIM_DATE,
+      teamName: tr.teamName,
+    }).run();
+    const resultId = Number(res.lastInsertRowid);
 
-    if (!existingResult) {
-      const res = db.insert(scrimResults).values({
-        scrimId,
-        date: SCRIM_DATE,
-        teamName: tr.teamName,
-      }).run();
-      const resultId = Number(res.lastInsertRowid);
-
-      db.insert(scrimResultRounds).values(
-        tr.rounds.map(r => ({ scrimResultId: resultId, ...r }))
-      ).run();
-      teamResultsCount++;
-    }
+    db.insert(scrimResultRounds).values(
+      tr.rounds.map(r => ({ scrimResultId: resultId, ...r }))
+    ).run();
   }
-  console.log(`[SEED] ${teamResultsCount} team results with rounds created`);
+  console.log(`[SEED] 2 team results com rounds criados.`);
 
-  // 3. Inserir estatísticas dos jogadores (Lendo o array antigo e salvando no formato novo)
-  let playerStatsCount = 0;
+  // 3. Inserir estatísticas dos jogadores
   for (const [
     playerName, teamName,
     q1Kills, q1Assists, q1Deaths, q1Damage, q1Mvp, q1Score,
@@ -148,45 +142,35 @@ export function seed() {
     totalKills, totalAssists, totalDeaths, totalDamage, totalMvp
   ] of PLAYER_STATS) {
     
-    const existingStat = db.select().from(scrimPlayerStats)
-      .where(and(eq(scrimPlayerStats.scrimId, scrimId), eq(scrimPlayerStats.playerName, playerName))).get();
+    const res = db.insert(scrimPlayerStats).values({
+      scrimId: SCRIM_ID,
+      date: SCRIM_DATE,
+      teamName,
+      playerName,
+      totalKills,
+      totalAssists,
+      totalDeaths,
+      totalDamage,
+      totalMvp,
+    }).run();
+    const statId = Number(res.lastInsertRowid);
 
-    if (!existingStat) {
-      // Insere o registro principal do jogador
-      const res = db.insert(scrimPlayerStats).values({
-        scrimId,
-        date: SCRIM_DATE,
-        teamName,
-        playerName,
-        totalKills,
-        totalAssists,
-        totalDeaths,
-        totalDamage,
-        totalMvp,
-      }).run();
-      const statId = Number(res.lastInsertRowid);
+    const dynamicRounds = [
+      { scrimPlayerStatId: statId, roundNumber: 1, kills: q1Kills, assists: q1Assists, deaths: q1Deaths, damage: q1Damage, mvp: q1Mvp, score: q1Score },
+      { scrimPlayerStatId: statId, roundNumber: 2, kills: q2Kills, assists: q2Assists, deaths: q2Deaths, damage: q2Damage, mvp: q2Mvp, score: q2Score },
+      { scrimPlayerStatId: statId, roundNumber: 3, kills: q3Kills, assists: q3Assists, deaths: q3Deaths, damage: q3Damage, mvp: q3Mvp, score: q3Score },
+    ];
 
-      // Transforma os dados estáticos do array em um array de rodadas dinâmico
-      const dynamicRounds = [
-        { scrimPlayerStatId: statId, roundNumber: 1, kills: q1Kills, assists: q1Assists, deaths: q1Deaths, damage: q1Damage, mvp: q1Mvp, score: q1Score },
-        { scrimPlayerStatId: statId, roundNumber: 2, kills: q2Kills, assists: q2Assists, deaths: q2Deaths, damage: q2Damage, mvp: q2Mvp, score: q2Score },
-        { scrimPlayerStatId: statId, roundNumber: 3, kills: q3Kills, assists: q3Assists, deaths: q3Deaths, damage: q3Damage, mvp: q3Mvp, score: q3Score },
-      ];
-
-      // Insere as rodadas na tabela filha
-      db.insert(scrimPlayerStatRounds).values(dynamicRounds).run();
-      playerStatsCount++;
-    }
+    db.insert(scrimPlayerStatRounds).values(dynamicRounds).run();
   }
-  console.log(`[SEED] ${playerStatsCount} player stats with rounds created`);
+  console.log(`[SEED] 8 player stats com rounds criados.`);
 
   // 4. Registrar seed run
-  const seedName = "scrim-4v4-mme-ugd-vs-k4f-v2";
+  const seedName = "scrim-4v4-mme-ugd-vs-k4f-v3";
   const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
   if (!existingSeed) {
     db.insert(seedRuns).values({ seedName }).run();
-    console.log(`[SEED] Seed run '${seedName}' recorded`);
   }
 
-  console.log("[SEED] Scrim 4v4 MME (Relational) seed completed successfully!");
+  console.log("[SEED] Seed concluído com sucesso! Acesse /scrims/match/1");
 }
