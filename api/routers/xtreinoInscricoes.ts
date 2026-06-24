@@ -293,76 +293,76 @@ export const xtreinoInscricoesRouter = createRouter({
     migrarEventosHistoricos();
     return { success: true };
   }),
-// ============================================================
-// REGISTRAR VIA GOOGLE FORMS (webhook)
-// ============================================================
-registerFromGoogleForm: publicQuery
-  .input(
-    z.object({
-      secret: z.string().min(1),
-      teamName: z.string().min(1),
-      players: z.array(z.string().min(1)).min(1).max(6),
-      coach: z.string().optional(),
-    })
-  )
-  .mutation(({ input }) => {
-    // Valida secret
-    if (input.secret !== process.env.GOOGLE_FORMS_SECRET) {
-      throw new Error("Unauthorized");
-    }
+  // ============================================================
+  // REGISTRAR VIA GOOGLE FORMS (webhook)
+  // ============================================================
+  registerFromGoogleForm: publicQuery
+    .input(
+      z.object({
+        secret: z.string().min(1),
+        teamName: z.string().min(1),
+        players: z.array(z.string().min(1)).min(1).max(6),
+        coach: z.string().optional(),
+      })
+    )
+    .mutation(({ input }) => {
+      // Valida secret
+      if (input.secret !== process.env.GOOGLE_FORMS_SECRET) {
+        throw new Error("Unauthorized");
+      }
 
-    // Busca o xtreino aberto mais recente
-    const db = getDb();
-    const activeXtreino = db
-      .select()
-      .from(xtreinos)
-      .where(eq(xtreinos.status, "aberto"))
-      .orderBy(sql`date DESC`)
-      .limit(1)
-      .get();
+      // Busca o xtreino aberto mais recente
+      const db = getDb();
+      const activeXtreino = db
+        .select()
+        .from(xtreinos)
+        .where(eq(xtreinos.status, "aberto"))
+        .orderBy(sql`date DESC`)
+        .limit(1)
+        .get();
 
-    if (!activeXtreino) {
-      throw new Error("Nenhum xtreino aberto no momento");
-    }
+      if (!activeXtreino) {
+        throw new Error("Nenhum xtreino aberto no momento");
+      }
 
-    // Verifica se já está inscrito
-    const existing = db
-      .select()
-      .from(xtreinoTeams)
-      .where(
-        and(
-          eq(xtreinoTeams.xtreinoId, activeXtreino.id),
-          eq(xtreinoTeams.teamName, input.teamName)
+      // Verifica se já está inscrito
+      const existing = db
+        .select()
+        .from(xtreinoTeams)
+        .where(
+          and(
+            eq(xtreinoTeams.xtreinoId, activeXtreino.id),
+            eq(xtreinoTeams.teamName, input.teamName)
+          )
         )
-      )
-      .get();
+        .get();
 
-    if (existing) {
-      // Já inscrito — retorna sucesso silenciosamente (idempotente)
-      return {
-        success: true,
-        id: existing.id,
-        xtreinoId: activeXtreino.id,
-        duplicate: true,
-      };
-    }
+      if (existing) {
+        // Já inscrito — retorna sucesso silenciosamente (idempotente)
+        return {
+          success: true,
+          id: existing.id,
+          xtreinoId: activeXtreino.id,
+          duplicate: true,
+        };
+      }
 
-    const id = inscreverEquipe(activeXtreino.id, input.teamName, input.players);
-    if (id === null) {
-      throw new Error("Não foi possível inscrever a equipe (xtreino cheio ou fechado?)");
-    }
+      const id = inscreverEquipe(activeXtreino.id, input.teamName, input.players);
+      if (id === null) {
+        throw new Error("Não foi possível inscrever a equipe (xtreino cheio ou fechado?)");
+      }
 
-    // Log do coach se informado
-    if (input.coach) {
+      // Log do coach se informado
+      if (input.coach) {
+        console.log(
+          `[GOOGLE-FORMS] Coach da equipe "${input.teamName}": ${input.coach}`
+        );
+      }
+
       console.log(
-        `[GOOGLE-FORMS] Coach da equipe "${input.teamName}": ${input.coach}`
+        `[GOOGLE-FORMS] Equipe "${input.teamName}" inscrita automaticamente no xtreino #${activeXtreino.id}`
       );
-    }
 
-    console.log(
-      `[GOOGLE-FORMS] Equipe "${input.teamName}" inscrita automaticamente no xtreino #${activeXtreino.id}`
-    );
-
-    return { success: true, id, xtreinoId: activeXtreino.id, duplicate: false };
+      return { success: true, id, xtreinoId: activeXtreino.id, duplicate: false };
   }),
 });

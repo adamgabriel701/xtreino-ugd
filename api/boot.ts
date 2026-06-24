@@ -30,6 +30,87 @@ const app = new Hono();
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 app.get("/health", (c) => c.json({ status: "ok", time: Date.now() }));
 
+  // ============================================================
+  // WEBHOOK DO GOOGLE FORMS (Rota limpa, sem passar pelo tRPC)
+  // ============================================================
+  app.post("/api/webhook/google-forms", async (c) => {
+    try {
+      // Pega o body de forma bruta
+      const rawBody = await c.req.text();
+
+      let data: any;
+
+      // 1. Tenta fazer parse de JSON puro (se o proxy do Railway não bagunçar)
+      try {
+        data = JSON.parse(rawBody);
+      } catch {
+        // 2. Se falhar, o proxy transformou em Form Data (input={"json":...})
+        // Fazemos o decode reverso
+        const urlParams = new URLSearchParams(rawBody);
+        const inputStr = urlParams.get("input");
+        if (inputStr) {
+          data = JSON.parse(inputStr);
+        } else {
+          return c.json({ error: "Formato inválido" }, 400);
+        }
+      }
+
+      // Extrai os dados (funciona nos dois cenários)
+      const payload = data?.input?.json || data?.["0"]?.json || data;
+
+      const { secret, teamName, players, coach } = payload;
+
+      // Valida a chave secreta
+      if (secret !== process.env.GOOGLE_FORMS_SECRET) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      // Valida os dados
+      if (!teamName || !players || players.length === 0) {
+        return c.json({ error: "Dados inválidos" }, 400);
+      }
+
+      // Importa as funções do banco
+      const { inscreverEquipe } = await import("../db/inscricoes.js");
+      const { xtreinos } = await import("../db/schema.js");
+      const { eq, sql } = await import("drizzle-orm");
+
+      const db = getDb();
+
+      // Busca o xtreino aberto mais recente
+      const activeXtreino = db
+        .select()
+        .from(xtreinos)
+        .where(eq(xtreinos.status, "aberto"))
+        .orderBy(sql`date DESC`)
+        .limit(1)
+        .get();
+
+      if (!activeXtreino) {
+        return c.json({ error: "Nenhum xtreino aberto no momento" }, 400);
+      }
+
+      // Registra a equipe
+      const id = inscreverEquipe(activeXtreino.id, teamName, players);
+      
+      if (!id) {
+        return c.json({ error: "Falha ao inscrever (duplicata ou lotado?)" }, 400);
+      }
+
+      if (coach) {
+        console.log(`[WEBHOOK] Coach da equipe "${teamName}": ${coach}`);
+      }
+
+      console.log(`[WEBHOOK] Equipe "${teamName}" registrada via Google Forms no xtreino #${activeXtreino.id}`);
+
+      return c.json({ success: true, id, xtreinoId: activeXtreino.id });
+
+    } catch (error: any) {
+      console.error("[WEBHOOK] Erro:", error);
+      return c.json({ error: error.message || "Erro interno" }, 500);
+    }
+  });
+
 // ============================================================
 // API ROUTES (sempre antes do catch-all)
 // ============================================================
