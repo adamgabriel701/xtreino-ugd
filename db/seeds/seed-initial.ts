@@ -454,6 +454,11 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["Miag", "Randolinhas", "off"],
   ["VAL Yzzi⁷", "Randolinhas", "off"],
   ["7xis ╲ Tilapia", "Randolinhas", "off"],
+  // randolinhas
+  ["elbra", "randolinhas", "off"],
+  ["Felipe", "randolinhas", "off"],
+  ["frajola", "randolinhas", "off"],
+  ["rayzer_bot", "randolinhas", "off"],
 
   // vengeance
   ["VNG NEAR★", "vengeance", "cap"],
@@ -495,7 +500,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 18/06", "2026-06-18", "finalizado"],
   ["XTreino Underground - 19/06", "2026-06-19", "finalizado"],
   ["XTreino Underground - 22/06", "2026-06-22", "finalizado"],
-  ["XTreino Underground - 23/06", "2026-06-23", "aberto"],
+  ["XTreino Underground - 23/06", "2026-06-23", "finalizado"],
 ];
 
 // ============================================================
