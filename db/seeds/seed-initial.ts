@@ -510,9 +510,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
 
 export const DEFAULT_FIXED_TEAMS = [
   "UGD Threat",
-  "UGD Royal",
-  "UGD LEGENDS",
-  "UGD OLYMPIQUE",
+  "UGD Light",
   "FURY ROYAL",
   "FURY ELITE",
   "CMF ATLANTIC",
