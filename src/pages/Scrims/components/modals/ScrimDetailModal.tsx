@@ -80,6 +80,17 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
               <p className="text-sm text-[#8a8a9e]">{scrim.result}</p>
             </div>
           )}
+          // Dentro do ScrimDetailModal, logo após mostrar o resultado:
+          {scrim.result && (
+            <a 
+              href={`/scrims/match/${scrim.id}`}
+              target="_blank"
+              className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600/20 to-red-600/20 border border-white/10 text-white font-bold py-3 rounded-xl hover:from-blue-600/30 hover:to-red-600/30 transition-all"
+            >
+              <BarChart3 className="w-5 h-5" />
+              Ver Tela de Fim de Partida
+            </a>
+          )}
 
           {isBR && (
             <div className="bg-blue-500/5 rounded-xl border border-blue-500/10 p-4">
