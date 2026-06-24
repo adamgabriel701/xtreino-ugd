@@ -1,5 +1,4 @@
 // src/app/scrims/index.ts
-// Exporta todos os tipos e componentes do módulo de scrims
 
 export * from "./types";
 export { useScrimData } from "./hooks/useScrimData";
@@ -22,3 +21,4 @@ export { HistoricoJogadoresTab } from "./components/tabs/HistoricoJogadoresTab";
 export { ScrimDetailModal } from "./components/modals/ScrimDetailModal";
 export { TeamStatsModal } from "./components/modals/TeamStatsModal";
 export { PlayerStatsModal } from "./components/modals/PlayerStatsModal";
+export { ScrimFormModal } from "./components/modals/ScrimFormModal"; // <-- NOVO

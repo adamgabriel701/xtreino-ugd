@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Clock, Shield, Swords, Eye, Target, Users } from "lucide-react";
+import { Calendar, Clock, Swords, Eye, Target, Users, CalendarX } from "lucide-react";
 import { type ScrimItem, STATUS_COLORS, STATUS_LABELS } from "../../types";
 import { EmptyState } from "../EmptyState";
 
@@ -19,14 +19,15 @@ export function AgendadosTab({ scrimsList, onScrimClick }: AgendadosTabProps) {
   );
 
   return (
-    <>
+    <div className="space-y-6">
       {/* Filtro de modalidade */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div role="group" aria-label="Filtrar por modalidade" className="flex flex-wrap gap-2">
         {modalities.map((m) => (
           <button
             key={m}
             onClick={() => setFilterModality(m)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            aria-pressed={filterModality === m}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
               filterModality === m
                 ? "bg-emerald-500 text-white"
                 : "bg-[#1a1a24] text-[#8a8a9e] hover:text-[#f0f0f5] border border-[#2a2a3a]"
@@ -49,13 +50,13 @@ export function AgendadosTab({ scrimsList, onScrimClick }: AgendadosTabProps) {
 
         {filtered?.length === 0 && (
           <EmptyState
-            icon={<Shield className="w-12 h-12" />}
+            icon={<CalendarX className="w-12 h-12" />}
             title="Nenhum scrim encontrado"
             subtitle="Não há scrims com os filtros selecionados"
           />
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -66,6 +67,10 @@ function ScrimCard({ scrim, onClick }: { scrim: ScrimItem; onClick?: () => void 
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick?.(); }}
+      aria-label={`Ver detalhes do scrim: ${scrim.team1Name ?? "TBD"} vs ${scrim.team2Name ?? "TBD"}`}
       className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-6 hover:border-[#3a3a4e] hover:bg-[#1a1a24] transition-all cursor-pointer group"
     >
       <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -76,7 +81,7 @@ function ScrimCard({ scrim, onClick }: { scrim: ScrimItem; onClick?: () => void 
           </div>
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-full bg-[#1a1a24] border border-[#2a2a3a] flex items-center justify-center group-hover:border-emerald-500/30 transition-colors">
-              <Swords className="w-5 h-5 text-emerald-400" />
+              <Swords className="w-5 h-5 text-emerald-400" aria-hidden="true" />
             </div>
           </div>
           <div className="text-center min-w-[100px]">
@@ -85,36 +90,41 @@ function ScrimCard({ scrim, onClick }: { scrim: ScrimItem; onClick?: () => void 
           </div>
         </div>
 
-        <div className="flex items-center gap-6 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           {scrim.date && (
             <div className="text-sm text-[#8a8a9e]">
-              <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {scrim.date}</span>
+              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" aria-hidden="true" /> {scrim.date}</span>
             </div>
           )}
           {scrim.time && (
             <div className="text-sm text-[#8a8a9e]">
-              <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {scrim.time}</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" aria-hidden="true" /> {scrim.time}</span>
             </div>
           )}
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[scrim.status] ?? "bg-gray-500/10 text-gray-400"}`}>
+          
+          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[scrim.status] ?? "bg-gray-500/10 text-gray-400 border-gray-500/20"}`}>
             {STATUS_LABELS[scrim.status] ?? scrim.status}
           </span>
+          
           {scrim.modality && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#1a1a24] text-[#8a8a9e] border border-[#2a2a3a]">
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#1a1a24] text-[#8a8a9e] border border-[#2a2a3a]">
               {scrim.modality.toUpperCase()}
             </span>
           )}
+          
           {isBR && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
-              <Target className="w-3 h-3" /> BR
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
+              <Target className="w-3 h-3" aria-hidden="true" /> BR
             </span>
           )}
+          
           {isMME && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
-              <Users className="w-3 h-3" /> MME
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
+              <Users className="w-3 h-3" aria-hidden="true" /> MME
             </span>
           )}
-          <Eye className="w-4 h-4 text-[#5a5a6e] opacity-0 group-hover:opacity-100 transition-opacity" />
+          
+          <Eye className="w-4 h-4 text-[#5a5a6e] opacity-0 group-hover:opacity-100 transition-opacity ml-2" aria-hidden="true" />
         </div>
       </div>
 
