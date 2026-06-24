@@ -16,7 +16,7 @@ interface GoogleFormsSectionProps {
 
 export function GoogleFormsSection({
   xtreinoStatus,
-  googleFormsUrl = "https://forms.gle/SEU_LINK_AQUI",
+  googleFormsUrl = "https://forms.gle/yyTkC8nczQw32A5d6",
 }: GoogleFormsSectionProps) {
   const [showEmbed, setShowEmbed] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
