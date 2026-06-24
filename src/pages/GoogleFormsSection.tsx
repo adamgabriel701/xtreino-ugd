@@ -2,11 +2,11 @@ import { useState } from "react";
 import {
   ExternalLink,
   Globe,
-  RefreshCw,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
   AlertCircle,
+  ImageOff,
 } from "lucide-react";
 
 interface GoogleFormsSectionProps {
@@ -64,10 +64,10 @@ export function GoogleFormsSection({
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-all disabled:opacity-40"
-            style={!isAberto ? { pointerEvents: "none" } : undefined}
+            style={!isAberto ? { pointerEvents: "none", opacity: 0.4 } : undefined}
           >
             <ExternalLink className="w-4 h-4" />
-            Abrir Google Forms
+            Abrir Formulário de Inscrição
           </a>
 
           <button
@@ -80,7 +80,7 @@ export function GoogleFormsSection({
             ) : (
               <ChevronDown className="w-4 h-4" />
             )}
-            {showEmbed ? "Ocultar formulário" : "Embutir na página"}
+            {showEmbed ? "Ocultar formulário" : "Preencher aqui"}
           </button>
         </div>
 
@@ -94,7 +94,7 @@ export function GoogleFormsSection({
               frameBorder="0"
               marginHeight={0}
               marginWidth={0}
-              title="Formulário de Inscrição"
+              title="Formulário de Inscrição UGD"
               className="w-full"
             >
               Carregando…
@@ -107,8 +107,7 @@ export function GoogleFormsSection({
           onClick={() => setShowInfo(!showInfo)}
           className="w-full text-left text-xs text-[#5a5a6e] hover:text-[#8a8a9e] transition-colors flex items-center gap-1"
         >
-          <RefreshCw className="w-3 h-3" />
-          Como funciona a sincronização?
+          Como funciona a sincronização do Forms?
           {showInfo ? (
             <ChevronUp className="w-3 h-3 ml-1" />
           ) : (
@@ -120,52 +119,41 @@ export function GoogleFormsSection({
           <div className="bg-[#0a0a0f] rounded-lg border border-[#2a2a3a] p-4 text-xs text-[#8a8a9e] space-y-2">
             <p>
               <span className="text-[#f0f0f5] font-medium">Fluxo automático:</span>{" "}
-              Quando alguém preenche o Google Forms, um webhook envia os dados
-              para o servidor, que registra a equipe automaticamente no xtreino
-              aberto mais recente.
+              Quando alguém preenche o Forms, o sistema registra a Line automaticamente aqui.
             </p>
             <div className="flex items-start gap-2 text-green-400/80">
               <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0" />
               <span>
-                <strong className="text-green-400">CAPITÃO</strong> é usado como
-                nome da equipe
+                <strong className="text-green-400">NOME DA LINE</strong> é usado como
+                nome da equipe aqui no sistema
               </span>
             </div>
             <div className="flex items-start gap-2 text-green-400/80">
               <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0" />
               <span>
-                <strong className="text-green-400">PLAYER 2-4</strong> são
+                <strong className="text-green-400">CAPITÃO ao PLAYER 4</strong> são
                 adicionados como jogadores titulares
               </span>
             </div>
             <div className="flex items-start gap-2 text-green-400/80">
               <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0" />
               <span>
-                <strong className="text-green-400">RESERVA 1-2</strong> são
-                adicionados como reservas
+                <strong className="text-green-400">RESERVA 1 e 2</strong> são
+                adicionados na lista de jogadores
               </span>
             </div>
             <div className="flex items-start gap-2 text-amber-400/80">
               <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
               <span>
                 <strong className="text-amber-400">COACH</strong> é registrado
-                no log mas não aparece na listagem (melhoria futura)
+                no log do servidor
               </span>
             </div>
-            <div className="flex items-start gap-2 text-amber-400/80">
-              <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-2 text-red-400/80">
+              <ImageOff className="w-3 h-3 mt-0.5 shrink-0" />
               <span>
-                <strong className="text-amber-400">LOGO TEAM</strong> — o upload
-                do Google Forms vai para o Drive; para exibir na plataforma, faça
-                upload separadamente
-              </span>
-            </div>
-            <div className="flex items-start gap-2 text-[#5a5a6e]">
-              <span className="w-3 h-3 mt-0.5 shrink-0 text-center">ℹ️</span>
-              <span>
-                Duplicatas são ignoradas silenciosamente (idempotente). Se o
-                xtreino estiver cheio, a equipe entra como reserva
-                automaticamente.
+                <strong className="text-red-400">LOGO TEAM</strong> não é sincronizada 
+                (vai para o Drive do Forms). Faça o upload da logo pela área administrativa do time.
               </span>
             </div>
           </div>
