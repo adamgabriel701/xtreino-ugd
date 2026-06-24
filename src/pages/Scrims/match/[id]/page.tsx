@@ -172,10 +172,11 @@ export default function MatchResultPage() {
                           )}
                           {data.name}
                         </td>
-                        <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills}</td>
-                        <td className="text-center py-2.5 px-2 text-gray-400">{data.assists}</td>
-                        <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths}</td>
-                        <td className="text-right py-2.5 px-4 text-gray-300 font-mono">{data.damage.toLocaleString()}</td>
+                        {/* ADICIONADO: || 0 para evitar crash com null */}
+                        <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills || 0}</td>
+                        <td className="text-center py-2.5 px-2 text-gray-400">{data.assists || 0}</td>
+                        <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths || 0}</td>
+                        <td className="text-right py-2.5 px-4 text-gray-300 font-mono">{(data.damage || 0).toLocaleString()}</td>
                       </tr>
                     );
                   })}
@@ -214,10 +215,11 @@ export default function MatchResultPage() {
                           )}
                           {data.name}
                         </td>
-                        <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills}</td>
-                        <td className="text-center py-2.5 px-2 text-gray-400">{data.assists}</td>
-                        <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths}</td>
-                        <td className="text-right py-2.5 px-4 text-gray-300 font-mono">{data.damage.toLocaleString()}</td>
+                        {/* ADICIONADO: || 0 para evitar crash com null */}
+                        <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills || 0}</td>
+                        <td className="text-center py-2.5 px-2 text-gray-400">{data.assists || 0}</td>
+                        <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths || 0}</td>
+                        <td className="text-right py-2.5 px-4 text-gray-300 font-mono">{(data.damage || 0).toLocaleString()}</td>
                       </tr>
                     );
                   })}
