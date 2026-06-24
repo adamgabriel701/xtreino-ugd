@@ -2,7 +2,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { trpc } from "@/providers/trpc";
-import type { ScrimItem, PlayerStat } from "../../../types";
+import type { ScrimItem, PlayerStat } from "../../types";
 import { ArrowLeft, Star } from "lucide-react";
 
 const COLORS = {
