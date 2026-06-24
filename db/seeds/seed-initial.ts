@@ -513,6 +513,9 @@ export const DEFAULT_FIXED_TEAMS = [
   "UGD Royal",
   "UGD LEGENDS",
   "UGD OLYMPIQUE",
+  "FURY ROYAL",
+  "FURY ELITE",
+  "CMF ATLANTIC",
 ];
 
 export function seed() {
