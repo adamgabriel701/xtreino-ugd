@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Crosshair,
   Target,
+  Shield, // NOVO: Importação do ícone de Clã
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import XTreinosTab from "./components/XTreinosTab";
@@ -18,6 +19,7 @@ import JogadoresTab from "./Jogadores/JogadoresTab";
 import RankingGeralTab from "./components/RankingGeralTab";
 import RankingMensalTab from "./components/RankingMensalTab";
 import RankingSemanalTab from "./components/RankingSemanalTab";
+import RankingClasTab from "./components/RankingClasTab"; // NOVA IMPORTAÇÃO
 import DueloTab from "./components/DueloTab";
 import HeadToHeadTab from "./components/HeadToHeadTab";
 import EvolucaoTab from "./components/EvolucaoTab";
@@ -35,6 +37,7 @@ type TabKey =
   | "geral" 
   | "mensal" 
   | "semanal" 
+  | "clas"       // NOVO TIPO
   | "jogadores" 
   | "duelo"
   | "h2h"
@@ -47,7 +50,7 @@ interface TabConfig {
   label: string;
   icon: React.ReactNode;
   description: string;
-  group: number; // Usado apenas para definir a quebra de linha
+  group: number; 
 }
 
 // ============================================================
@@ -59,6 +62,7 @@ const TABS: TabConfig[] = [
   { key: "geral", label: "Ranking Geral", icon: <Trophy className="w-4 h-4" />, description: "Ranking acumulado de todas as edicoes", group: 1 },
   { key: "mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" />, description: "Ranking consolidado por mes com variacao", group: 1 },
   { key: "semanal", label: "Ranking Semanal", icon: <Calendar className="w-4 h-4" />, description: "Ranking consolidado por semana", group: 1 },
+  { key: "clas", label: "Ranking Clãs", icon: <Shield className="w-4 h-4" />, description: "Ranking acumulando todas as lines do mesmo clã", group: 1 }, // NOVA ABA
   { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: 1 },
   
   // Grupo 2
@@ -79,12 +83,10 @@ export default function Rankings() {
 
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
 
-  // Separar abas em grupos usando o número
   const group1Tabs = TABS.filter((t) => t.group === 1);
   const group2Tabs = TABS.filter((t) => t.group === 2);
   const group3Tabs = TABS.filter((t) => t.group === 3);
 
-  // Função auxiliar para renderizar os botões
   const renderTabButton = (tab: TabConfig, isActive: boolean) => (
     <button
       key={tab.key}
@@ -127,17 +129,14 @@ export default function Rankings() {
         {/* Tabs Navigation Agrupada */}
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
           
-          {/* Grupo 1 */}
           <div className="flex flex-wrap gap-1">
             {group1Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
 
-          {/* Separador e Grupo 2 */}
           <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">
             {group2Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
 
-          {/* Separador e Grupo 3 */}
           <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">
             {group3Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
@@ -149,6 +148,7 @@ export default function Rankings() {
           {activeTab === "geral" && <RankingGeralTab />}
           {activeTab === "mensal" && <RankingMensalTab />}
           {activeTab === "semanal" && <RankingSemanalTab />}
+          {activeTab === "clas" && <RankingClasTab />} {/* NOVO RENDER */}
           {activeTab === "jogadores" && <JogadoresTab />}
           {activeTab === "duelo" && <DueloTab />}
           {activeTab === "h2h" && <HeadToHeadTab />}
