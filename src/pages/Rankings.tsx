@@ -6,6 +6,7 @@ import {
   Users,
   CalendarDays,
   Calendar,
+  Swords,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import XTreinosTab from "./components/XTreinosTab";
@@ -13,11 +14,12 @@ import JogadoresTab from "./Jogadores/JogadoresTab";
 import RankingGeralTab from "./components/RankingGeralTab";
 import RankingMensalTab from "./components/RankingMensalTab";
 import RankingSemanalTab from "./components/RankingSemanalTab";
+import DueloTab from "./components/DueloTab";
 
 // ============================================================
 // TIPOS
 // ============================================================
-type TabKey = "xtreinos" | "geral" | "mensal" | "semanal" | "jogadores";
+type TabKey = "xtreinos" | "geral" | "mensal" | "semanal" | "jogadores" | "duelo";
 
 interface TabConfig {
   key: TabKey;
@@ -60,6 +62,12 @@ const TABS: TabConfig[] = [
     icon: <Users className="w-4 h-4" />,
     description: "Estatisticas individuais",
   },
+  {
+    key: "duelo",
+    label: "Duelo",
+    icon: <Swords className="w-4 h-4" />,
+    description: "Comparativo entre times",
+  }
 ];
 
 // ============================================================
@@ -116,6 +124,7 @@ export default function Rankings() {
           {activeTab === "mensal" && <RankingMensalTab />}
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "jogadores" && <JogadoresTab />}
+          {activeTab === "duelo" && <DueloTab />}
         </div>
       </div>
     </MainLayout>

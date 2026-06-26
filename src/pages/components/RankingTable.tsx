@@ -353,7 +353,7 @@ function ExpandedTeamContent({
       {team.badges.length > 0 && (
         <div>
           <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2">
-            <Award className="w-3 h-3" /> Conquistas
+            <Award className="w-3 h-3" /> Conquistas do Time
           </h4>
           <div className="flex flex-wrap gap-2">
             {team.badges.map((badge) => (
@@ -369,110 +369,60 @@ function ExpandedTeamContent({
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard
-          label="Melhor"
-          value={team.bestPerformance}
-          color="text-green-400"
-        />
-        <StatCard
-          label="Pior"
-          value={team.worstPerformance}
-          color="text-red-400"
-        />
-        <StatCard
-          label="Consistencia"
-          value={team.consistency}
-          color="text-[#f0f0f5]"
-        />
-        <StatCard
-          label="Top 1s"
-          value={team.top1Count}
-          color="text-yellow-400"
-        />
+        <StatCard label="Melhor" value={team.bestPerformance} color="text-green-400" />
+        <StatCard label="Pior" value={team.worstPerformance} color="text-red-400" />
+        <StatCard label="Consistencia" value={team.consistency} color="text-[#f0f0f5]" />
+        <StatCard label="Top 1s" value={team.top1Count} color="text-yellow-400" />
       </div>
 
       {team.sparkline.length > 1 && (
         <div>
           <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2">
-            <TrendingUp className="w-3 h-3" /> Evolucao
+            <TrendingUp className="w-3 h-3" /> Evolucao do Time
           </h4>
           <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3">
-            <Sparkline data={team.sparkline} />
+            <Sparkline data={team.sparkline} width={300} height={40} />
           </div>
         </div>
       )}
 
       <div>
         <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2">
-          <Calendar className="w-3 h-3" /> Historico de X-Treinos (
-          {team.xtreinos.length})
+          <Calendar className="w-3 h-3" /> Historico de X-Treinos ({team.xtreinos.length})
         </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#2a2a3a]">
-                <th className="px-3 py-2 text-left text-xs text-[#5a5a6e]">
-                  Data
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Q1
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Q2
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Q3
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Pts Pos
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Kills
-                </th>
-                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                  Total
-                </th>
+                <th className="px-3 py-2 text-left text-xs text-[#5a5a6e]">Data</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q1</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q2</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q3</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Pts Pos</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Kills</th>
+                <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#2a2a3a]/50">
               {team.xtreinos
-                .sort(
-                  (a, b) =>
-                    new Date(b.date).getTime() -
-                    new Date(a.date).getTime()
-                )
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((xt) => (
-                  <tr
-                    key={xt.date}
-                    className="hover:bg-[#1a1a24]/50"
-                  >
+                  <tr key={xt.date} className="hover:bg-[#1a1a24]/50">
                     <td className="px-3 py-2 text-[#8a8a9e]">
                       {xt.date.split("-")[2]}/{xt.date.split("-")[1]}
                     </td>
                     <td className="px-3 py-2 text-center">
-                      <span className={getPosColor(xt.q1Pos)}>
-                        {xt.q1Pos ?? "-"}
-                      </span>
+                      <span className={getPosColor(xt.q1Pos)}>{xt.q1Pos ?? "-"}</span>
                     </td>
                     <td className="px-3 py-2 text-center">
-                      <span className={getPosColor(xt.q2Pos)}>
-                        {xt.q2Pos ?? "-"}
-                      </span>
+                      <span className={getPosColor(xt.q2Pos)}>{xt.q2Pos ?? "-"}</span>
                     </td>
                     <td className="px-3 py-2 text-center">
-                      <span className={getPosColor(xt.q3Pos)}>
-                        {xt.q3Pos ?? "-"}
-                      </span>
+                      <span className={getPosColor(xt.q3Pos)}>{xt.q3Pos ?? "-"}</span>
                     </td>
-                    <td className="px-3 py-2 text-center text-yellow-400 font-bold">
-                      {xt.totalPosPoints}
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#8a8a9e]">
-                      {xt.totalKills}
-                    </td>
-                    <td className="px-3 py-2 text-center text-green-400 font-bold">
-                      {xt.totalPoints}
-                    </td>
+                    <td className="px-3 py-2 text-center text-yellow-400 font-bold">{xt.totalPosPoints}</td>
+                    <td className="px-3 py-2 text-center text-[#8a8a9e]">{xt.totalKills}</td>
+                    <td className="px-3 py-2 text-center text-green-400 font-bold">{xt.totalPoints}</td>
                   </tr>
                 ))}
             </tbody>
@@ -480,106 +430,126 @@ function ExpandedTeamContent({
         </div>
       </div>
 
+      {/* ============================================================ */}
+      {/* NOVA SEÇÃO DE JOGADORES ENRIQUECIDA (Ideia #2)               */}
+      {/* ============================================================ */}
       {players.length > 0 && (
         <div>
           <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2">
-            <Users className="w-3 h-3" /> Jogadores ({players.length}
-            )
+            <Users className="w-3 h-3" /> Jogadores ({players.length})
           </h4>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#2a2a3a]">
-                  <th className="px-3 py-2 text-left text-xs text-[#5a5a6e]">
-                    #
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs text-[#5a5a6e]">
-                    Jogador
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Q1
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Q2
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Q3
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Total
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Partic.
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">
-                    Media
-                  </th>
+                  <th className="px-3 py-2 text-left text-xs text-[#5a5a6e] w-8">#</th>
+                  <th className="px-3 py-2 text-left text-xs text-[#5a5a6e]">Jogador</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Partic.</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q1</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q2</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Q3</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Media</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e]">Evol.</th>
+                  <th className="px-3 py-2 text-center text-xs text-[#5a5a6e] bg-green-500/5">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2a2a3a]/50">
-                {players.map((player, idx) => (
-                  <tr
-                    key={player.id}
-                    className="hover:bg-[#1a1a24]/50"
-                  >
-                    <td className="px-3 py-2 text-[#5a5a6e] text-xs">
-                      {idx + 1}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                            <Target className="w-3 h-3 text-green-400" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-[#f0f0f5]">
-                              {player.nickname}
-                            </span>
-                            {player.id > 0 && (
-                              <span className="text-[10px] text-[#5a5a6e]">
-                                ID: {player.id}
+                {players.map((player, idx) => {
+                  // Cálculo de Badges individuais ( mesma lógica da JogadoresTab )
+                  const playerBadges: string[] = [];
+                  if (player.totalKills >= 100) playerBadges.push("100 Kills");
+                  if (player.totalKills >= 300) playerBadges.push("300 Kills");
+                  if (player.participations >= 5) playerBadges.push("5 XTs");
+                  if (player.participations >= 10) playerBadges.push("10 XTs");
+                  if (player.avgKills >= 8) playerBadges.push("Sniper");
+                  if (player.avgKills >= 12) playerBadges.push("Elite");
+
+                  // Tendência simples baseada na média (Up se >= 7, Down se < 4)
+                  const playerTrend: "up" | "down" | "same" = player.avgKills >= 7 ? "up" : player.avgKills < 4 ? "down" : "same";
+
+                  return (
+                    <tr key={player.id} className="hover:bg-[#1a1a24]/50">
+                      <td className="px-3 py-2 text-[#5a5a6e] text-xs">{idx + 1}</td>
+                      
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                              <Target className="w-3 h-3 text-green-400" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-[#f0f0f5]">
+                                {player.nickname}
                               </span>
-                            )}
-                          </div>
-                        </div>
-                        {player.previousNicks.length > 0 && (
-                          <div className="flex items-center gap-1 ml-8">
-                            <History className="w-3 h-3 text-[#5a5a6e]" />
-                            <div className="flex flex-wrap gap-1">
-                              {player.previousNicks.map((nick) => (
-                                <span
-                                  key={nick}
-                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]"
-                                >
-                                  <Tag className="w-2 h-2 text-[#5a5a6e]" />{" "}
-                                  {nick}
-                                </span>
-                              ))}
+                              {player.id > 0 && (
+                                <span className="text-[10px] text-[#5a5a6e]">ID: {player.id}</span>
+                              )}
                             </div>
                           </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#8a8a9e]">
-                      {player.totalQ1Kills}
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#8a8a9e]">
-                      {player.totalQ2Kills}
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#8a8a9e]">
-                      {player.totalQ3Kills}
-                    </td>
-                    <td className="px-3 py-2 text-center text-green-400 font-bold">
-                      {player.totalKills}
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#5a5a6e]">
-                      {player.participations}
-                    </td>
-                    <td className="px-3 py-2 text-center text-[#8a8a9e]">
-                      {player.avgKills}
-                    </td>
-                  </tr>
-                ))}
+                          
+                          {/* Badges do Jogador */}
+                          {playerBadges.length > 0 && (
+                            <div className="flex items-center gap-1 ml-8 flex-wrap">
+                              {playerBadges.slice(0, 3).map((badge) => (
+                                <span
+                                  key={badge}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]"
+                                >
+                                  <BadgeIcon badge={badge} /> {badge}
+                                </span>
+                              ))}
+                              {playerBadges.length > 3 && (
+                                <span className="text-[10px] text-[#5a5a6e]">
+                                  +{playerBadges.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Nicks Anteriores */}
+                          {player.previousNicks.length > 0 && (
+                            <div className="flex items-center gap-1 ml-8">
+                              <History className="w-3 h-3 text-[#5a5a6e]" />
+                              <div className="flex flex-wrap gap-1">
+                                {player.previousNicks.map((nick) => (
+                                  <span
+                                    key={nick}
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]"
+                                  >
+                                    <Tag className="w-2 h-2 text-[#5a5a6e]" /> {nick}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-3 py-2 text-center text-[#8a8a9e]">{player.participations}</td>
+                      
+                      {/* Cores por Quarto (igual na JogadoresTab) */}
+                      <td className="px-3 py-2 text-center text-red-400/80">{player.totalQ1Kills}</td>
+                      <td className="px-3 py-2 text-center text-orange-400/80">{player.totalQ2Kills}</td>
+                      <td className="px-3 py-2 text-center text-purple-400/80">{player.totalQ3Kills}</td>
+                      
+                      <td className="px-3 py-2 text-center text-[#8a8a9e]">{player.avgKills}</td>
+                      
+                      {/* Nova coluna Evolução + Tendência */}
+                      <td className="px-3 py-2 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {/* Usamos o total de kills como dado genérico para a sparkline, 
+                              pois o MergedPlayer não tem histórico de datas separado. */}
+                          <span className="text-xs text-[#5a5a6e]">—</span> 
+                          <TrendIcon trend={playerTrend} />
+                        </div>
+                      </td>
+
+                      <td className="px-3 py-2 text-center text-green-400 font-bold bg-green-500/5">
+                        {player.totalKills}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
