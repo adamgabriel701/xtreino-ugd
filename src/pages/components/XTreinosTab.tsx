@@ -1,3 +1,7 @@
+// ============================================================
+// XTreinosTab.tsx
+// ============================================================
+
 import { useState, useMemo } from "react";
 import {
   Calendar,
@@ -9,7 +13,6 @@ import {
   Medal,
   BarChart3,
   Users,
-
   Flame,
   Crown,
   Award,
@@ -41,6 +44,7 @@ import {
   ExpandableRow,
   ComparisonBar,
 } from "./xtreino";
+import { getPosColor, getPosBg, getRankStyle } from "./xtreino-shared";
 
 // ============================================================
 // TIPOS
@@ -56,16 +60,6 @@ interface TeamXtreinoStat {
   totalKills: number;
   totalKillPoints: number;
   totalPoints: number;
-}
-
-interface PlayerXtreinoStat {
-  date: string;
-  teamName: string;
-  playerName: string;
-  q1Kills: number;
-  q2Kills: number;
-  q3Kills: number;
-  totalKills: number;
 }
 
 interface EnrichedTeam extends TeamXtreinoStat {
@@ -180,29 +174,6 @@ function countTopPositions(allStats: TeamXtreinoStat[], teamName: string): { top
     });
   });
   return { top1, top3 };
-}
-
-function getPosColor(pos: number | null): string {
-  if (!pos) return "text-[#5a5a6e]";
-  if (pos === 1) return "text-yellow-400 font-bold";
-  if (pos === 2) return "text-gray-300 font-bold";
-  if (pos === 3) return "text-amber-500 font-bold";
-  return "text-[#8a8a9e]";
-}
-
-function getPosBg(pos: number | null): string {
-  if (!pos) return "";
-  if (pos === 1) return "bg-yellow-500/10";
-  if (pos === 2) return "bg-gray-400/10";
-  if (pos === 3) return "bg-amber-500/10";
-  return "";
-}
-
-function getRankStyle(index: number): string {
-  if (index === 0) return "bg-yellow-500/5 border-l-2 border-yellow-500";
-  if (index === 1) return "bg-gray-400/5 border-l-2 border-gray-400";
-  if (index === 2) return "bg-amber-500/5 border-l-2 border-amber-500";
-  return "border-l-2 border-transparent";
 }
 
 // ============================================================
@@ -354,7 +325,12 @@ export default function XTreinosTab() {
     setSortDir("desc");
   };
 
-  const hasFilters = Boolean(search) || Boolean(selectedDate) || Boolean(selectedMonth) || sortBy !== "total" || compareMode;
+  const hasFilters =
+    Boolean(search) ||
+    Boolean(selectedDate) ||
+    Boolean(selectedMonth) ||
+    sortBy !== "total" ||
+    compareMode;
 
   // Cards de resumo
   const summaryCards = periodSummary
@@ -386,7 +362,9 @@ export default function XTreinosTab() {
     : [];
 
   return (
-    <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
+    <div
+      className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}
+    >
       {/* Filtros */}
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput
@@ -458,7 +436,9 @@ export default function XTreinosTab() {
       </FilterBar>
 
       {/* Loading */}
-      {isLoading && <LoadingSpinner text="Carregando estatisticas..." />}
+      {isLoading && (
+        <LoadingSpinner text="Carregando estatisticas..." />
+      )}
 
       {/* Cards de Resumo */}
       {summaryCards.length > 0 && !isLoading && (
@@ -478,7 +458,11 @@ export default function XTreinosTab() {
                 name={t.teamName}
                 rank={i}
                 stats={[
-                  { label: "Kills", value: t.totalKills, color: "text-green-400" },
+                  {
+                    label: "Kills",
+                    value: t.totalKills,
+                    color: "text-green-400",
+                  },
                   { label: "XTs", value: t.streak || 1 },
                   { label: "Media", value: t.avgPosition },
                 ]}
@@ -499,8 +483,8 @@ export default function XTreinosTab() {
               {selectedDate
                 ? `— ${selectedDate.split("-")[2]}/${selectedDate.split("-")[1]}`
                 : selectedMonth
-                ? `— ${selectedMonth.split("-")[1]}/${selectedMonth.split("-")[0]}`
-                : `— Todos os periodos`}
+                  ? `— ${selectedMonth.split("-")[1]}/${selectedMonth.split("-")[0]}`
+                  : `— Todos os periodos`}
             </h3>
             <div className="flex items-center gap-3">
               {compareMode && (
@@ -562,7 +546,9 @@ export default function XTreinosTab() {
                     />
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <span className="text-xs font-medium text-[#5a5a6e] uppercase">Evol.</span>
+                    <span className="text-xs font-medium text-[#5a5a6e] uppercase">
+                      Evol.
+                    </span>
                   </th>
                   <th className="px-4 py-3 text-center bg-yellow-500/5">
                     <SortHeader
@@ -583,7 +569,9 @@ export default function XTreinosTab() {
                     />
                   </th>
                   <th className="px-4 py-3 text-center bg-red-500/5">
-                    <span className="text-xs font-medium text-[#5a5a6e] uppercase">Pts Kill</span>
+                    <span className="text-xs font-medium text-[#5a5a6e] uppercase">
+                      Pts Kill
+                    </span>
                   </th>
                   <th className="px-4 py-3 text-center bg-green-500/5">
                     <SortHeader
@@ -600,8 +588,6 @@ export default function XTreinosTab() {
               <tbody className="divide-y divide-[#2a2a3a]">
                 {sortedStats.map((team, index) => {
                   const rowKey = `${team.date}-${team.teamName}`;
-                  const isExpanded = expandedTeam === rowKey;
-                  const teamPlayers = getTeamPlayers(team.teamName, team.date);
 
                   return (
                     <ExpandableRow
@@ -636,40 +622,68 @@ export default function XTreinosTab() {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3 text-center">
                               <p className="text-xs text-[#5a5a6e] mb-1">Melhor</p>
-                              <p className="text-lg font-bold text-green-400">{team.bestPerformance}</p>
+                              <p className="text-lg font-bold text-green-400">
+                                {team.bestPerformance}
+                              </p>
                             </div>
                             <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3 text-center">
                               <p className="text-xs text-[#5a5a6e] mb-1">Pior</p>
-                              <p className="text-lg font-bold text-red-400">{team.worstPerformance}</p>
+                              <p className="text-lg font-bold text-red-400">
+                                {team.worstPerformance}
+                              </p>
                             </div>
                             <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3 text-center">
                               <p className="text-xs text-[#5a5a6e] mb-1">Consistencia</p>
-                              <p className="text-lg font-bold text-[#f0f0f5]">{team.consistency}</p>
+                              <p className="text-lg font-bold text-[#f0f0f5]">
+                                {team.consistency}
+                              </p>
                             </div>
                             <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3 text-center">
                               <p className="text-xs text-[#5a5a6e] mb-1">Top 1s</p>
-                              <p className="text-lg font-bold text-yellow-400">{team.top1Count}</p>
+                              <p className="text-lg font-bold text-yellow-400">
+                                {team.top1Count}
+                              </p>
                             </div>
                           </div>
 
-                          {/* Jogadores do time */}
-                          {teamPlayers.length > 0 && (
+                          {/* Sparkline de evolucao */}
+                          {team.sparkline.length > 1 && (
                             <div>
-                              <h4 className="text-xs font-medium text-[#5a5a6e] mb-2">Jogadores</h4>
+                              <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2">
+                                <TrendingUp className="w-3 h-3" /> Evolucao
+                              </h4>
+                              <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3">
+                                <Sparkline data={team.sparkline} />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Jogadores do time */}
+                          {getTeamPlayers(team.teamName, team.date).length > 0 && (
+                            <div>
+                              <h4 className="text-xs font-medium text-[#5a5a6e] mb-2">
+                                Jogadores
+                              </h4>
                               <div className="flex flex-wrap gap-2">
-                                {teamPlayers.map((player) => (
-                                  <div
-                                    key={player.playerName}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1a24] border border-[#2a2a3a]"
-                                  >
-                                    <Target className="w-3 h-3 text-green-400" />
-                                    <span className="text-sm text-[#f0f0f5]">{player.playerName}</span>
-                                    <span className="text-xs text-green-400 font-bold">{player.totalKills}k</span>
-                                    <span className="text-xs text-[#5a5a6e]">
-                                      ({player.q1Kills}/{player.q2Kills}/{player.q3Kills})
-                                    </span>
-                                  </div>
-                                ))}
+                                {getTeamPlayers(team.teamName, team.date).map(
+                                  (player) => (
+                                    <div
+                                      key={player.playerName}
+                                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1a24] border border-[#2a2a3a]"
+                                    >
+                                      <Target className="w-3 h-3 text-green-400" />
+                                      <span className="text-sm text-[#f0f0f5]">
+                                        {player.playerName}
+                                      </span>
+                                      <span className="text-xs text-green-400 font-bold">
+                                        {player.totalKills}k
+                                      </span>
+                                      <span className="text-xs text-[#5a5a6e]">
+                                        ({player.q1Kills}/{player.q2Kills}/{player.q3Kills})
+                                      </span>
+                                    </div>
+                                  )
+                                )}
                               </div>
                             </div>
                           )}
@@ -727,40 +741,60 @@ export default function XTreinosTab() {
                           {team.date.split("-")[2]}/{team.date.split("-")[1]}
                         </td>
                       )}
-                      <td className={`px-4 py-3 text-center ${getPosBg(team.q1Pos)}`}>
+                      <td
+                        className={`px-4 py-3 text-center ${getPosBg(team.q1Pos)}`}
+                      >
                         <span className={`text-sm font-medium ${getPosColor(team.q1Pos)}`}>
                           {team.q1Pos ?? "-"}
                         </span>
                         {team.q1Pos && team.q1Pos <= 3 && (
                           <span className="ml-1 text-xs">
-                            {team.q1Pos === 1 ? "🥇" : team.q1Pos === 2 ? "🥈" : "🥉"}
+                            {team.q1Pos === 1
+                              ? "🥇"
+                              : team.q1Pos === 2
+                                ? "🥈"
+                                : "🥉"}
                           </span>
                         )}
                       </td>
-                      <td className={`px-4 py-3 text-center ${getPosBg(team.q2Pos)}`}>
+                      <td
+                        className={`px-4 py-3 text-center ${getPosBg(team.q2Pos)}`}
+                      >
                         <span className={`text-sm font-medium ${getPosColor(team.q2Pos)}`}>
                           {team.q2Pos ?? "-"}
                         </span>
                         {team.q2Pos && team.q2Pos <= 3 && (
                           <span className="ml-1 text-xs">
-                            {team.q2Pos === 1 ? "🥇" : team.q2Pos === 2 ? "🥈" : "🥉"}
+                            {team.q2Pos === 1
+                              ? "🥇"
+                              : team.q2Pos === 2
+                                ? "🥈"
+                                : "🥉"}
                           </span>
                         )}
                       </td>
-                      <td className={`px-4 py-3 text-center ${getPosBg(team.q3Pos)}`}>
+                      <td
+                        className={`px-4 py-3 text-center ${getPosBg(team.q3Pos)}`}
+                      >
                         <span className={`text-sm font-medium ${getPosColor(team.q3Pos)}`}>
                           {team.q3Pos ?? "-"}
                         </span>
                         {team.q3Pos && team.q3Pos <= 3 && (
                           <span className="ml-1 text-xs">
-                            {team.q3Pos === 1 ? "🥇" : team.q3Pos === 2 ? "🥈" : "🥉"}
+                            {team.q3Pos === 1
+                              ? "🥇"
+                              : team.q3Pos === 2
+                                ? "🥈"
+                                : "🥉"}
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-[#8a8a9e]">
                         {team.streak > 0 ? (
                           <span className="inline-flex items-center gap-1">
-                            {team.streak >= 3 && <Flame className="w-3.5 h-3.5 text-orange-400" />}
+                            {team.streak >= 3 && (
+                              <Flame className="w-3.5 h-3.5 text-orange-400" />
+                            )}
                             {team.streak}
                           </span>
                         ) : (
@@ -777,16 +811,24 @@ export default function XTreinosTab() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center bg-yellow-500/5">
-                        <span className="text-sm font-bold text-yellow-400">{team.totalPosPoints}</span>
+                        <span className="text-sm font-bold text-yellow-400">
+                          {team.totalPosPoints}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="text-sm text-[#8a8a9e]">{team.totalKills}</span>
+                        <span className="text-sm text-[#8a8a9e]">
+                          {team.totalKills}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center bg-red-500/5">
-                        <span className="text-sm font-bold text-red-400">{team.totalKillPoints}</span>
+                        <span className="text-sm font-bold text-red-400">
+                          {team.totalKillPoints}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center bg-green-500/5">
-                        <span className="text-lg font-bold text-green-400">{team.totalPoints}</span>
+                        <span className="text-lg font-bold text-green-400">
+                          {team.totalPoints}
+                        </span>
                       </td>
                     </ExpandableRow>
                   );
@@ -803,8 +845,8 @@ export default function XTreinosTab() {
                 selectedDate
                   ? "Nenhum dado para esta data"
                   : selectedMonth
-                  ? "Nenhum dado para este mes"
-                  : "Nenhum dado disponivel"
+                    ? "Nenhum dado para este mes"
+                    : "Nenhum dado disponivel"
               }
             />
           )}
@@ -814,13 +856,16 @@ export default function XTreinosTab() {
       {/* Legenda */}
       <div className="grid md:grid-cols-3 gap-4 text-sm">
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
-          <h4 className="font-bold text-[#f0f0f5] mb-3 flex items-center gap-2">
+          <h4 className="font-bold text-[#f0f0f0f5] mb-3 flex items-center gap-2">
             <Trophy className="w-4 h-4 text-yellow-400" />
             Pontuacao por Posicao
           </h4>
           <div className="grid grid-cols-5 gap-x-2 gap-y-1 text-xs">
             {Object.entries(POSITION_POINTS).map(([pos, pts]) => (
-              <div key={pos} className="flex justify-between text-[#8a8a9e]">
+              <div
+                key={pos}
+                className="flex justify-between text-[#8a8a9e]"
+              >
                 <span>{pos}º</span>
                 <span className="font-bold text-yellow-400">{pts}pts</span>
               </div>
@@ -828,18 +873,19 @@ export default function XTreinosTab() {
           </div>
         </div>
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
-          <h4 className="font-bold text-[#f0f0f5] mb-3 flex items-center gap-2">
+          <h4 className="font-bold text-[#f0f0f0f5] mb-3 flex items-center gap-2">
             <Target className="w-4 h-4 text-red-400" />
             Pontuacao por Kill
           </h4>
           <p className="text-[#8a8a9e] text-xs">
-            Cada kill vale <span className="font-bold text-red-400">{KILL_POINTS} ponto</span>.
+            Cada kill vale{" "}
+            <span className="font-bold text-red-400">{KILL_POINTS} ponto</span>.
             <br />
             Total de kills do time × {KILL_POINTS} = Pontos de Kill
           </p>
         </div>
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
-          <h4 className="font-bold text-[#f0f0f5] mb-3 flex items-center gap-2">
+          <h4 className="font-bold text-[#f0f0f0f5] mb-3 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-green-400" />
             Calculo do Total
           </h4>
@@ -865,7 +911,10 @@ export default function XTreinosTab() {
               .filter((s) => s.status === "scheduled")
               .slice(0, 5)
               .map((s) => (
-                <div key={s.id} className="flex items-center justify-between px-6 py-3">
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between px-6 py-3"
+                >
                   <div className="flex items-center gap-4">
                     <span className="w-2 h-2 rounded-full bg-blue-400" />
                     <span className="text-sm text-[#f0f0f5]">{s.date}</span>
@@ -885,9 +934,21 @@ export default function XTreinosTab() {
         players={comparisonTeams.map((t) => ({
           name: t.teamName,
           stats: [
-            { label: "Kills", value: t.totalKills, color: "text-green-400" },
-            { label: "Total", value: t.totalPoints, color: "text-green-400" },
-            { label: "Pos", value: t.totalPosPoints, color: "text-yellow-400" },
+            {
+              label: "Kills",
+              value: t.totalKills,
+              color: "text-green-400",
+            },
+            {
+              label: "Total",
+              value: t.totalPoints,
+              color: "text-green-400",
+            },
+            {
+              label: "Pos",
+              value: t.totalPosPoints,
+              color: "text-yellow-400",
+            },
           ],
         }))}
         onRemove={(name) => toggleCompare(name)}

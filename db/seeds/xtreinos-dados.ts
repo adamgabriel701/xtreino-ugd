@@ -1101,6 +1101,49 @@ export const xtreinosRaw: XtreinoRaw[] = [
       ["K4F", "K4F ZAZA", 1, 0, 6],
     ],
   },
+  // ========================================
+  // XTreino 16 — 2026-06-25
+  // ========================================
+  {
+    id: 16,
+    date: "2026-06-25",
+    colocacoes: [
+      ["UGD Threat", 1, 4, 5],
+      ["FURY ELITE", 2, 1, 4],
+      ["K4F", 3, 3, 2],
+      ["UGD OLYMPIQUE", 4, 5, 3],
+      ["RED INSS", 5, 2, 1],
+      ["UGD LIGHT", 0, 0, 6],
+      
+    ],
+    jogadores: [
+      ["UGD Threat", "Lorex", 9, 11, 3],
+      ["UGD Threat", "Treon", 12, 7, 8],
+      ["UGD Threat", "Arise", 7, 7, 6],
+      ["UGD Threat", "Kaze", 7, 1, 8],
+      ["FURY ELITE", "DIANA", 1, 1, 2],
+      ["FURY ELITE", "DEX", 4, 5, 9],
+      ["FURY ELITE", "TRY", 8, 2, 4],
+      ["FURY ELITE", "RAUAN", 4, 8, 3],
+      ["K4F", "K4F Nine", 1, 3, 1],
+      ["K4F", "K4F Guilok07", 2, 3, 0],
+      ["K4F", "NyE Wendxz", 7, 6, 4],
+      ["K4F", "K4F ZAZA", 3, 2, 0],
+      ["UGD OLYMPIQUE", "Santz", 5, 5, 8],
+      ["UGD OLYMPIQUE", "Buzeira", 2, 3, 3],
+      ["UGD OLYMPIQUE", "Duardin", 2, 2, 4],
+      ["UGD OLYMPIQUE", "FUR next", 0, 0, 0],
+      ["UGD OLYMPIQUE", "LMF_BOSS", 0, 4, 6],
+      ["RED INSS", "RED snow777", 2, 3, 9],
+      ["RED INSS", "RED iVERONz", 8, 10, 3],
+      ["RED INSS", "yKWIM", 6, 12, 9],
+      ["RED INSS", "RED LORD", 4, 9, 15],
+      ["UGD LIGHT", "Zann", 0, 0, 2],
+      ["UGD LIGHT", "Hz", 0, 0, 0],
+      ["UGD LIGHT", "Dopped", 0, 0, 6],
+      ["UGD LIGHT", "Sike", 0, 0, 2],
+    ],
+  },
   
 
   // ========================================
