@@ -8,12 +8,9 @@ import {
   UserCircle,
   BarChart3,
   Shield,
-  Menu,
-  X,
   ChevronDown,
   Gamepad2,
   Crown,
-  LogIn,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -183,26 +180,6 @@ export default function Navbar() {
             <DropdownMenu group={eventosGroup} />
             <DropdownMenu group={comunidadeGroup} />
           </div>
-
-          {/* Right Side - Admin + Mobile Toggle */}
-          <div className="flex items-center gap-2">
-            {/* Admin Link - Desktop */}
-            <Link
-              to="/admin"
-              className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#8a8a9e] hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-200 border border-transparent hover:border-emerald-500/20"
-            >
-              <LogIn className="w-4 h-4" />
-              <span className="hidden lg:inline">Painel</span>
-            </Link>
-
-            {/* Mobile Toggle */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden w-10 h-10 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] flex items-center justify-center text-[#8a8a9e] hover:text-[#f0f0f5] transition-colors"
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
         </div>
       </div>
 
@@ -294,15 +271,6 @@ export default function Navbar() {
           </div>
 
           <div className="my-2 border-t border-[#2a2a3a]" />
-
-          {/* Admin - Mobile */}
-          <Link
-            to="/admin"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#8a8a9e] hover:text-emerald-400 hover:bg-emerald-500/10 transition-all border border-transparent hover:border-emerald-500/20"
-          >
-            <LogIn className="w-5 h-5" />
-            Painel Administrativo
-          </Link>
         </div>
       </div>
     </nav>
