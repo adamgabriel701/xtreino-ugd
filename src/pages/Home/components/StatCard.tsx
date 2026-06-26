@@ -17,7 +17,18 @@ function useAnimatedCounter(target: number, duration = 1200) {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
             const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.round(eased * target));
+            const newCount = Math.round(eased * target);
+            
+            setCount(newCount);
+            
+            // MELHORIA 4: Efeito de "pulo" ao terminar de contar
+            if (progress >= 1 && ref.current) {
+              ref.current.style.transform = "scale(1.15)";
+              setTimeout(() => {
+                if(ref.current) ref.current.style.transform = "scale(1)";
+              }, 200);
+            }
+
             if (progress < 1) requestAnimationFrame(step);
           };
           requestAnimationFrame(step);
@@ -36,7 +47,7 @@ function useAnimatedCounter(target: number, duration = 1200) {
 export default function StatCard({ label, value, icon: Icon, trend }: { label: string; value: number; icon: LucideIcon; trend?: number }) {
   const { count, ref } = useAnimatedCounter(value);
   return (
-    <div ref={ref} className="bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a] hover:border-emerald-500/30 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/5 relative overflow-hidden">
+    <div ref={ref} className="counter-bounce bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a] hover:border-emerald-500/30 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/5 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500" />
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
