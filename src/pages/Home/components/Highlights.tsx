@@ -5,12 +5,12 @@ import type { LucideIcon } from "../types";
 
 export default function Highlights({
   topPlayers,
-  fallbackPlayers,
   upcomingEvents,
   recentActivities,
+  fallbackPlayers, // AGORA É OPCIONAL
 }: {
   topPlayers: Array<{ name: string; entityName: string; points: number; kills: number; wins: number }>;
-  fallbackPlayers: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }> | undefined;
+  fallbackPlayers?: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }>;
   upcomingEvents: Array<{ id: number; name: string; date: string; type: string; modality: string }>;
   recentActivities: Array<{ id: number; text: string; time: string; type: string }>;
 }) {

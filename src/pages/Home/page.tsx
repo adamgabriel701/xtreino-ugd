@@ -22,23 +22,15 @@ export default function Home() {
   const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
+  
+  // CORRIGIDO 1: Passando objeto vazio {} em vez de undefined
+  // CORRIGIDO 2: Usando teamResultsAllTimeBR que já retorna os dados totalizados
+  const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
 
   const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
     results: allResults ?? [],
     playerStats: allPlayerStats ?? [],
   });
-
-  const {
-    data: allTeamRankings,
-    isLoading: isLoadingTeamRankings,
-    isError: isErrorTeamRankings,
-  } = trpc.rankings.teams.useQuery({ limit: 50, rankType: "xtreino" });
-
-  const {
-    data: allPlayerRankings,
-    isLoading: isLoadingPlayerRankings,
-    isError: isErrorPlayerRankings,
-  } = trpc.rankings.players.useQuery({ limit: 50, rankType: "xtreino" });
 
   const utils = trpc.useUtils();
   const recalculateMutation = trpc.rankings.recalculate.useMutation({
@@ -78,6 +70,20 @@ export default function Home() {
       totalXtreinos: teamRanking.reduce((acc, t) => acc + t.xtreinosPlayed, 0),
     };
   }, [teamRanking]);
+
+  // CORRIGIDO 3: Usando os dados da query correta que possui totalKills, totalPoints e matches
+  const scrimRealStats = useMemo(() => {
+    if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) {
+      return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalScrims: 0 };
+    }
+    
+    return {
+      totalTeams: scrimTeamAllTime.length,
+      totalKills: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalKills || 0), 0),
+      totalPoints: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalPoints || 0), 0),
+      totalScrims: scrimTeamAllTime.reduce((acc, t) => acc + (t.matches || 0), 0),
+    };
+  }, [scrimTeamAllTime]);
 
   const upcomingEvents = useMemo(() => {
     return [
@@ -167,19 +173,29 @@ export default function Home() {
 
       <HeroSection orgName={settings?.orgName ?? "Underground"} />
       <StatsBar teams={teamsList?.length ?? 0} players={playersList?.length ?? 0} xtreinos={xtreinoStats} championships={championshipStats} />
-      <DetailedStats xtreinoStats={xtreinoStats} championshipStats={championshipStats} scrimStats={scrimStats} xtreinoRealStats={xtreinoRealStats} />
-      <ActiveEvents championships={championships} xtreinosList={xtreinosList} />
-      <Highlights topPlayers={topXtreinoPlayers} fallbackPlayers={allPlayerRankings} upcomingEvents={upcomingEvents} recentActivities={recentActivities} />
-      <RankingsPreview
-        allTeamRankings={allTeamRankings}
-        allPlayerRankings={allPlayerRankings}
-        isLoadingTeamRankings={isLoadingTeamRankings}
-        isErrorTeamRankings={isErrorTeamRankings}
-        isLoadingPlayerRankings={isLoadingPlayerRankings}
-        isErrorPlayerRankings={isErrorPlayerRankings}
-        onRecalculate={() => recalculateMutation.mutate()}
-        isRecalculating={recalculateMutation.isPending}
+      
+      <DetailedStats 
+        xtreinoStats={xtreinoStats} 
+        championshipStats={championshipStats} 
+        scrimStats={scrimStats} 
+        xtreinoRealStats={xtreinoRealStats}
+        scrimRealStats={scrimRealStats} 
       />
+
+      <ActiveEvents championships={championships} xtreinosList={xtreinosList} />
+      
+      {/* CORRIGIDO 4: Removida a prop fallbackPlayers que o componente não aceita mais */}
+      <Highlights 
+        topPlayers={topXtreinoPlayers} 
+        upcomingEvents={upcomingEvents} 
+        recentActivities={recentActivities} 
+      />
+      
+      <RankingsPreview 
+        onRecalculate={() => recalculateMutation.mutate()} 
+        isRecalculating={recalculateMutation.isPending} 
+      />
+      
       <CallToAction />
     </MainLayout>
   );

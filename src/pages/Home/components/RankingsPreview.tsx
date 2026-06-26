@@ -1,27 +1,33 @@
 import { Link } from "react-router";
 import { useState } from "react";
 import { TrendingUp, UserCircle, Eye, RefreshCw, Loader2, Dumbbell, Trophy, Swords } from "lucide-react";
+import { trpc } from "@/providers/trpc";
 import RankTab from "./RankTab";
 import RankList from "./RankList";
 import type { LucideIcon, RankCategory } from "../types";
 
 interface RankingsPreviewProps {
-  allTeamRankings: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }> | undefined;
-  allPlayerRankings: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }> | undefined;
-  isLoadingTeamRankings: boolean;
-  isErrorTeamRankings: boolean;
-  isLoadingPlayerRankings: boolean;
-  isErrorPlayerRankings: boolean;
   onRecalculate: () => void;
   isRecalculating: boolean;
 }
 
 export default function RankingsPreview({
-  allTeamRankings, allPlayerRankings, isLoadingTeamRankings, isErrorTeamRankings,
-  isLoadingPlayerRankings, isErrorPlayerRankings, onRecalculate, isRecalculating,
+  onRecalculate,
+  isRecalculating,
 }: RankingsPreviewProps) {
   const [teamRankType, setTeamRankType] = useState<RankCategory>("xtreino");
   const [playerRankType, setPlayerRankType] = useState<RankCategory>("xtreino");
+
+  // As queries agora reagem dinamicamente ao clique nas abas
+  const { data: allTeamRankings, isLoading: isLoadingTeamRankings, isError: isErrorTeamRankings } = trpc.rankings.teams.useQuery({ 
+    limit: 50, 
+    rankType: teamRankType 
+  });
+  
+  const { data: allPlayerRankings, isLoading: isLoadingPlayerRankings, isError: isErrorPlayerRankings } = trpc.rankings.players.useQuery({ 
+    limit: 50, 
+    rankType: playerRankType 
+  });
 
   const rankTabs: { key: RankCategory; label: string; icon: LucideIcon }[] = [
     { key: "xtreino", label: "XTreinos", icon: Dumbbell },
@@ -37,7 +43,9 @@ export default function RankingsPreview({
           <h2 className="text-2xl font-bold text-[#f0f0f5]">Rankings</h2>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/rankings" className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-[#1a1a24] text-[#8a8a9e] border border-[#2a2a3a] hover:border-emerald-500/30 hover:text-emerald-400 transition-all"><Eye className="w-3.5 h-3.5" />Ver Completo</Link>
+          <Link to="/rankings" className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-[#1a1a24] text-[#8a8a9e] border border-[#2a2a3a] hover:border-emerald-500/30 hover:text-emerald-400 transition-all">
+            <Eye className="w-3.5 h-3.5" />Ver Completo
+          </Link>
           <button onClick={onRecalculate} disabled={isRecalculating} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all disabled:opacity-50">
             {isRecalculating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
             {isRecalculating ? "Recalculando..." : "Recalcular"}

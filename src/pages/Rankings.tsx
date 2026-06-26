@@ -47,42 +47,61 @@ interface TabConfig {
   label: string;
   icon: React.ReactNode;
   description: string;
-  group?: "principal" | "avancado" | "ousado";
+  group: number; // Usado apenas para definir a quebra de linha
 }
 
 // ============================================================
 // CONFIGURACAO DAS ABAS
 // ============================================================
 const TABS: TabConfig[] = [
-  // Grupo Principal
-  { key: "xtreinos", label: "X-Treinos", icon: <Dumbbell className="w-4 h-4" />, description: "Classificacao completa dos x-treinos", group: "principal" },
-  { key: "geral", label: "Ranking Geral", icon: <Trophy className="w-4 h-4" />, description: "Ranking acumulado de todas as edicoes", group: "principal" },
-  { key: "mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" />, description: "Ranking consolidado por mes com variacao", group: "principal" },
-  { key: "semanal", label: "Ranking Semanal", icon: <Calendar className="w-4 h-4" />, description: "Ranking consolidado por semana", group: "principal" },
-  { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: "principal" },
+  // Grupo 1
+  { key: "xtreinos", label: "X-Treinos", icon: <Dumbbell className="w-4 h-4" />, description: "Classificacao completa dos x-treinos", group: 1 },
+  { key: "geral", label: "Ranking Geral", icon: <Trophy className="w-4 h-4" />, description: "Ranking acumulado de todas as edicoes", group: 1 },
+  { key: "mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" />, description: "Ranking consolidado por mes com variacao", group: 1 },
+  { key: "semanal", label: "Ranking Semanal", icon: <Calendar className="w-4 h-4" />, description: "Ranking consolidado por semana", group: 1 },
+  { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: 1 },
   
-  // Grupo Avançado
-  { key: "duelo", label: "Duelo de Times", icon: <Swords className="w-4 h-4" />, description: "Comparacao direta lado a lado entre dois times em um XT", group: "avancado" },
-  { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: "avancado" },
-  { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: "avancado" },
+  // Grupo 2
+  { key: "duelo", label: "Duelo de Times", icon: <Swords className="w-4 h-4" />, description: "Comparacao direta lado a lado entre dois times em um XT", group: 2 },
+  { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: 2 },
+  { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: 2 },
   
-  // Grupo Ousado
-  { key: "predicoes", label: "Predicoes", icon: <Zap className="w-4 h-4" />, description: "Projecoes baseadas em media movel e tendencias", group: "ousado" },
-  { key: "crossfire", label: "Crossfire", icon: <Crosshair className="w-4 h-4" />, description: "Historico de confrontos diretos e rivalidades entre times", group: "ousado" },
+  // Grupo 3
+  { key: "predicoes", label: "Predicoes", icon: <Zap className="w-4 h-4" />, description: "Projecoes baseadas em media movel e tendencias", group: 3 },
+  { key: "crossfire", label: "Crossfire", icon: <Crosshair className="w-4 h-4" />, description: "Historico de confrontos diretos e rivalidades entre times", group: 3 },
 ];
 
 // ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  const [activeTab, setActiveTab] = useState<TabKey>("geral"); // Mudado para abrir direto no Geral
+  const [activeTab, setActiveTab] = useState<TabKey>("geral");
 
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
 
-  // Separar abas em grupos para organizar a UI
-  const principalTabs = TABS.filter((t) => t.group === "principal");
-  const avancadoTabs = TABS.filter((t) => t.group === "avancado");
-  const ousadoTabs = TABS.filter((t) => t.group === "ousado");
+  // Separar abas em grupos usando o número
+  const group1Tabs = TABS.filter((t) => t.group === 1);
+  const group2Tabs = TABS.filter((t) => t.group === 2);
+  const group3Tabs = TABS.filter((t) => t.group === 3);
+
+  // Função auxiliar para renderizar os botões
+  const renderTabButton = (tab: TabConfig, isActive: boolean) => (
+    <button
+      key={tab.key}
+      onClick={() => setActiveTab(tab.key)}
+      className={`
+        flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
+        ${
+          isActive
+            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5"
+            : "text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
+        }
+      `}
+    >
+      {tab.icon}
+      {tab.label}
+    </button>
+  );
 
   return (
     <MainLayout>
@@ -108,69 +127,19 @@ export default function Rankings() {
         {/* Tabs Navigation Agrupada */}
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
           
-          {/* Grupo Principal */}
+          {/* Grupo 1 */}
           <div className="flex flex-wrap gap-1">
-            {principalTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
-                  ${
-                    activeTab === tab.key
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5"
-                      : "text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-                  }
-                `}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+            {group1Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
 
-          {/* Separador e Grupo Avançado */}
+          {/* Separador e Grupo 2 */}
           <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">
-            <span className="flex items-center px-2 text-[10px] uppercase text-[#5a5a6e] font-bold tracking-widest">Avançado</span>
-            {avancadoTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all
-                  ${
-                    activeTab === tab.key
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                      : "text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-                  }
-                `}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+            {group2Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
 
-          {/* Separador e Grupo Ousado */}
+          {/* Separador e Grupo 3 */}
           <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">
-            <span className="flex items-center px-2 text-[10px] uppercase text-purple-400 font-bold tracking-widest">Ousado</span>
-            {ousadoTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all
-                  ${
-                    activeTab === tab.key
-                      ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                      : "text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-                  }
-                `}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+            {group3Tabs.map((tab) => renderTabButton(tab, activeTab === tab.key))}
           </div>
         </div>
 
