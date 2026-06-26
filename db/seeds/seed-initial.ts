@@ -82,6 +82,7 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["UGD Light", "UGD", "Underground", "active", "Line dos Manitos da Underground."],
   ["UGD LEGENDS", "UGD", "Underground", "active", "Line Legends da Underground."],
   ["UGD OLYMPIQUE", "UGD", "Underground", "active", "Line Olympique da Underground."],
+  ["UGD OLYMPIQUE / LEGENDS", "UGD", "Underground", "active", "Line mista Olympique/Legends da Underground."],
 
   // FURY
   ["FURY", "FURY", "FURY", "active", "Line principal da FURY."],
@@ -371,6 +372,12 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["UGD cool⁷", "UGD Threat", "off"],
   ["UGD Sant", "UGD Threat", "res"],
   ["Santz", "UGD Threat", "res"],
+
+  // UGD OLYMPIQUE / LEGENDS
+  ["UGD OLYMPIQUE / LEGENDS", "Cants", "off"],
+  ["UGD OLYMPIQUE / LEGENDS", "Weenot", "off"],
+  ["UGD OLYMPIQUE / LEGENDS", "Xoxoto", "off"],
+  ["UGD OLYMPIQUE / LEGENDS", "Buzeira", "off"],
 
   // Λつつ
   ["Striker71", "Λつつ", "off"],
