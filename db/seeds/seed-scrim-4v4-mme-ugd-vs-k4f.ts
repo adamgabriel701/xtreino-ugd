@@ -4,7 +4,7 @@
 
 import { getDb } from "../../api/queries/connection.js";
 import { scrims, scrimResults, scrimResultRounds, scrimPlayerStats, scrimPlayerStatRounds, seedRuns } from "../schema.js";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm"; // <-- ADICIONADO o inArray AQUI
 
 // ============================================================
 // DADOS DA SCRIM
@@ -98,9 +98,24 @@ export function seed() {
   console.log("[SEED] Starting scrim 4v4 MME seed (Forçando ID 1)...");
 
   // 0. Limpa dados antigos do ID 1 para poder re-rodar o seed sem erro de chave duplicada
-  db.delete(scrimPlayerStatRounds).where(eq(scrimPlayerStatRounds.scrimPlayerStatId, sql`select sps.id from scrim_player_stats sps where sps.scrimId = ${SCRIM_ID}`)).run();
+  // CORREÇÃO AQUI: Uso do inArray com subquery em vez do eq com sql bruto
+  db.delete(scrimPlayerStatRounds).where(
+    inArray(
+      scrimPlayerStatRounds.scrimPlayerStatId, 
+      db.select({ id: scrimPlayerStats.id }).from(scrimPlayerStats).where(eq(scrimPlayerStats.scrimId, SCRIM_ID))
+    )
+  ).run();
+
   db.delete(scrimPlayerStats).where(eq(scrimPlayerStats.scrimId, SCRIM_ID)).run();
-  db.delete(scrimResultRounds).where(eq(scrimResultRounds.scrimResultId, sql`select sr.id from scrim_results sr where sr.scrimId = ${SCRIM_ID}`)).run();
+
+  // CORREÇÃO AQUI: Uso do inArray com subquery em vez do eq com sql bruto
+  db.delete(scrimResultRounds).where(
+    inArray(
+      scrimResultRounds.scrimResultId, 
+      db.select({ id: scrimResults.id }).from(scrimResults).where(eq(scrimResults.scrimId, SCRIM_ID))
+    )
+  ).run();
+
   db.delete(scrimResults).where(eq(scrimResults.scrimId, SCRIM_ID)).run();
   db.delete(scrims).where(eq(scrims.id, SCRIM_ID)).run();
   console.log("[SEED] Limpei dados antigos do ID 1.");
