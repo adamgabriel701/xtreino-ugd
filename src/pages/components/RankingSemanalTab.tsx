@@ -7,6 +7,8 @@ import {
   Calendar,
   TrendingUp,
   BarChart2,
+  Minimize2,
+  Maximize2,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 
@@ -19,7 +21,6 @@ import {
   PodiumCard,
 } from "./xtreino";
 import {
-  type EnrichedTeam,
   type MergedPlayer,
   type SortField,
   getWeekLabel,
@@ -37,6 +38,7 @@ import {
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
+import { useCompactMode } from "./xtreino-ousado";
 
 export default function RankingSemanalTab() {
   const { sortBy, sortDir, handleSort } = useSortState();
@@ -50,6 +52,9 @@ export default function RankingSemanalTab() {
     clear: clearCompare,
   } = useCompareState();
   const [search, setSearch] = useState("");
+  
+  // Ideia #14: Modo Compacto
+  const { isCompact, toggle: toggleCompact } = useCompactMode();
 
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
@@ -58,7 +63,6 @@ export default function RankingSemanalTab() {
   const isLoading = !allResults || !allPlayerStats;
   const playersByName = usePlayersByName(playersList);
 
-  // Semanas disponíveis
   const availableWeeks = useMemo(() => {
     if (!allResults) return [];
     const weeks = new Set<string>();
@@ -68,14 +72,12 @@ export default function RankingSemanalTab() {
     return Array.from(weeks).sort().reverse();
   }, [allResults]);
 
-  // Seleciona a semana mais recente por padrão
   useEffect(() => {
     if (availableWeeks.length > 0 && !selectedWeek) {
       setSelectedWeek(availableWeeks[0]);
     }
   }, [availableWeeks, selectedWeek]);
 
-  // Filtra dados pela semana
   const filteredResults = useMemo(() => {
     if (!selectedWeek || !allResults) return [];
     return allResults.filter((r) => getWeekKey(r.date) === selectedWeek);
@@ -86,29 +88,24 @@ export default function RankingSemanalTab() {
     return allPlayerStats.filter((s) => getWeekKey(s.date) === selectedWeek);
   }, [allPlayerStats, selectedWeek]);
 
-  // Calcula ranking da semana
   const weekTeamRanking = useMemo(
     () => buildTeamRanking(filteredResults, filteredPlayerStats as any),
     [filteredResults, filteredPlayerStats]
   );
 
-  // Enriquece
   const enrichedRanking = useMemo(
     () => weekTeamRanking.map((t) => enrichTeam(t, "semanal")),
     [weekTeamRanking]
   );
 
-  // Ordena
   const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
 
-  // Filtra por busca
   const finalRanking = useMemo(() => {
     if (!search.trim()) return sorted;
     const q = search.toLowerCase();
     return sorted.filter((t) => t.teamName.toLowerCase().includes(q));
   }, [sorted, search]);
 
-  // Jogadores por time
   const weekTeamPlayers = useMemo(
     () => groupPlayersByTeam(filteredPlayerStats as any),
     [filteredPlayerStats]
@@ -119,19 +116,16 @@ export default function RankingSemanalTab() {
     return mergePlayersById(rawPlayers, playersByName);
   };
 
-  // Top 3
   const top3 = useMemo(
     () => (finalRanking.length >= 3 ? finalRanking.slice(0, 3) : []),
     [finalRanking]
   );
 
-  // Comparação
   const comparisonTeams = useMemo(
     () => sorted.filter((t) => selectedForCompare.has(t.teamName)),
     [sorted, selectedForCompare]
   );
 
-  // X-Treinos únicos da semana
   const totalXtreinosUnicos = useMemo(() => {
     const ids = new Set<number>();
     filteredResults.forEach((r) => ids.add(r.xtreinoId));
@@ -146,12 +140,11 @@ export default function RankingSemanalTab() {
     clearCompare();
   };
 
-  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode;
+  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(weekTeamRanking, totalXtreinosUnicos);
 
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
-      {/* Seletor de Semana */}
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
         <div className="flex items-center gap-3 flex-wrap">
           <Calendar className="w-5 h-5 text-emerald-400" />
@@ -173,7 +166,6 @@ export default function RankingSemanalTab() {
         </div>
       </div>
 
-      {/* Filtros */}
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput
           value={search}
@@ -197,6 +189,19 @@ export default function RankingSemanalTab() {
             <option value="streak">Ordenar: Streak</option>
           </select>
         </div>
+        
+        <button
+          onClick={toggleCompact}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            isCompact
+              ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
+              : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
+          }`}
+        >
+          {isCompact ? <Maximize2 className="w-4 h-4 inline mr-1.5" /> : <Minimize2 className="w-4 h-4 inline mr-1.5" />}
+          {isCompact ? "Detalhado" : "Compacto"}
+        </button>
+
         <button
           onClick={() => {
             setCompareMode((m) => !m);
@@ -215,7 +220,6 @@ export default function RankingSemanalTab() {
       {isLoading && <LoadingSpinner text="Carregando ranking semanal..." />}
       {!isLoading && selectedWeek && <SummaryCards cards={summaryCards} columns={5} />}
 
-      {/* Podio */}
       {!isLoading && selectedWeek && top3.length === 3 && (
         <div>
           <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">🏆 Podio</h3>
@@ -237,9 +241,9 @@ export default function RankingSemanalTab() {
         </div>
       )}
 
-      {/* Tabela */}
       {!isLoading && selectedWeek && (
         <RankingTable
+          isCompact={isCompact}
           teams={finalRanking}
           compareMode={compareMode}
           selectedForCompare={selectedForCompare}

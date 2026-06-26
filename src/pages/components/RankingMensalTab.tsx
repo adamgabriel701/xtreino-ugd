@@ -7,6 +7,8 @@ import {
   Calendar,
   TrendingUp,
   BarChart2,
+  Minimize2,
+  Maximize2,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 
@@ -19,7 +21,6 @@ import {
   PodiumCard,
 } from "./xtreino";
 import {
-  type EnrichedTeam,
   type MergedPlayer,
   type SortField,
   getMonthName,
@@ -27,15 +28,16 @@ import {
   buildTeamRanking,
   groupPlayersByTeam,
   mergePlayersById,
+  calcPointsVsPrevMonth,
   usePlayersByName,
   useSortState,
   useCompareState,
   useRankingSort,
-  calcPointsVsPrevMonth,
 } from "./xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
+import { useCompactMode } from "./xtreino-ousado";
 
 export default function RankingMensalTab() {
   const { sortBy, sortDir, handleSort } = useSortState();
@@ -49,6 +51,9 @@ export default function RankingMensalTab() {
     clear: clearCompare,
   } = useCompareState();
   const [search, setSearch] = useState("");
+  
+  // Ideia #14: Modo Compacto
+  const { isCompact, toggle: toggleCompact } = useCompactMode();
 
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
@@ -57,7 +62,6 @@ export default function RankingMensalTab() {
   const isLoading = !allResults || !allPlayerStats;
   const playersByName = usePlayersByName(playersList);
 
-  // Meses disponíveis
   const availableMonths = useMemo(() => {
     if (!allResults) return [];
     const months = new Set<string>();
@@ -67,14 +71,12 @@ export default function RankingMensalTab() {
     return Array.from(months).sort().reverse();
   }, [allResults]);
 
-  // useEffect para selecionar mês padrão
   useEffect(() => {
     if (availableMonths.length > 0 && !selectedMonth) {
       setSelectedMonth(availableMonths[0]);
     }
   }, [availableMonths, selectedMonth]);
 
-  // Filtra dados pelo mês
   const filteredResults = useMemo(() => {
     if (!selectedMonth || !allResults) return [];
     return allResults.filter((r) => r.date?.startsWith(selectedMonth));
@@ -85,17 +87,16 @@ export default function RankingMensalTab() {
     return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth));
   }, [allPlayerStats, selectedMonth]);
 
-  // Calcula ranking do mês
   const monthTeamRanking = useMemo(
     () => buildTeamRanking(filteredResults, filteredPlayerStats as any),
     [filteredResults, filteredPlayerStats]
   );
 
-  // Calcula ranking do mês ANTERIOR (NOVO)
+  // --- IDEIA #9: VARIAÇÃO VS MÊS ANTERIOR ---
   const previousMonthStr = useMemo(() => {
     if (!selectedMonth || selectedMonth.length < 7) return "";
     const [year, month] = selectedMonth.split("-").map(Number);
-    const d = new Date(year, month - 2, 1); // Mês anterior
+    const d = new Date(year, month - 2, 1);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     return `${y}-${m}`;
@@ -116,13 +117,12 @@ export default function RankingMensalTab() {
     [prevMonthResults, prevMonthPlayerStats]
   );
 
-  // Calcula o Map de variação (NOVO)
   const pointsDeltaMap = useMemo(
     () => calcPointsVsPrevMonth(monthTeamRanking, prevMonthTeamRanking),
     [monthTeamRanking, prevMonthTeamRanking]
   );
+  // -----------------------------------------
 
-  // Enriquece (ALTERADO PARA INCLUIR O DELTA)
   const enrichedRanking = useMemo(
     () =>
       monthTeamRanking.map((t) => {
@@ -132,17 +132,14 @@ export default function RankingMensalTab() {
     [monthTeamRanking, pointsDeltaMap]
   );
 
-  // Ordena
   const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
 
-  // Filtra por busca
   const finalRanking = useMemo(() => {
     if (!search.trim()) return sorted;
     const q = search.toLowerCase();
     return sorted.filter((t) => t.teamName.toLowerCase().includes(q));
   }, [sorted, search]);
 
-  // Jogadores por time
   const monthTeamPlayers = useMemo(
     () => groupPlayersByTeam(filteredPlayerStats as any),
     [filteredPlayerStats]
@@ -153,19 +150,16 @@ export default function RankingMensalTab() {
     return mergePlayersById(rawPlayers, playersByName);
   };
 
-  // Top 3
   const top3 = useMemo(
     () => (finalRanking.length >= 3 ? finalRanking.slice(0, 3) : []),
     [finalRanking]
   );
 
-  // Comparação
   const comparisonTeams = useMemo(
     () => sorted.filter((t) => selectedForCompare.has(t.teamName)),
     [sorted, selectedForCompare]
   );
 
-  // X-Treinos únicos
   const totalXtreinosUnicos = useMemo(() => {
     const ids = new Set<number>();
     filteredResults.forEach((r) => ids.add(r.xtreinoId));
@@ -178,12 +172,11 @@ export default function RankingMensalTab() {
     clearCompare();
   };
 
-  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode;
+  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(monthTeamRanking, totalXtreinosUnicos);
 
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
-      {/* Seletor de Mês */}
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
         <div className="flex items-center gap-3">
           <Calendar className="w-5 h-5 text-emerald-400" />
@@ -203,7 +196,6 @@ export default function RankingMensalTab() {
         </div>
       </div>
 
-      {/* Filtros */}
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput
           value={search}
@@ -227,6 +219,19 @@ export default function RankingMensalTab() {
             <option value="streak">Ordenar: Streak</option>
           </select>
         </div>
+        
+        <button
+          onClick={toggleCompact}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            isCompact
+              ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
+              : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
+          }`}
+        >
+          {isCompact ? <Maximize2 className="w-4 h-4 inline mr-1.5" /> : <Minimize2 className="w-4 h-4 inline mr-1.5" />}
+          {isCompact ? "Detalhado" : "Compacto"}
+        </button>
+
         <button
           onClick={() => {
             setCompareMode((m) => !m);
@@ -245,7 +250,6 @@ export default function RankingMensalTab() {
       {isLoading && <LoadingSpinner text="Carregando ranking mensal..." />}
       {!isLoading && selectedMonth && <SummaryCards cards={summaryCards} columns={5} />}
 
-      {/* Podio */}
       {!isLoading && selectedMonth && top3.length === 3 && (
         <div>
           <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">🏆 Podio</h3>
@@ -260,16 +264,16 @@ export default function RankingMensalTab() {
                   { label: "XTs", value: t.xtreinosPlayed },
                   { label: "Media", value: t.avgPosition },
                 ]}
-                streak={t.streak >= 3 ? t.streak : undefined}
+                streak={t.streak >= 5 ? t.streak : undefined}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* Tabela */}
       {!isLoading && selectedMonth && (
         <RankingTable
+          isCompact={isCompact}
           teams={finalRanking}
           compareMode={compareMode}
           selectedForCompare={selectedForCompare}

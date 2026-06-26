@@ -7,12 +7,8 @@ import {
   Swords,
   Calendar,
   Target,
-  TrendingUp,
   BarChart3,
   Trophy,
-  Medal,
-  Award,
-  ChevronDown,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 
@@ -21,9 +17,6 @@ import {
   SelectFilter,
   LoadingSpinner,
   EmptyState,
-  Sparkline,
-  TrendIcon,
-  BadgeIcon,
 } from "./xtreino";
 import { getPosColor } from "./xtreino-shared";
 

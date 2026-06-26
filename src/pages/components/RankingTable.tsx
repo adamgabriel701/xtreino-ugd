@@ -1,5 +1,5 @@
 // ============================================================
-// RankingTable.tsx — Tabela reutilizável
+// RankingTable.tsx — Tabela reutilizável (Atualizado com Modo Compacto)
 // ============================================================
 
 import {
@@ -34,6 +34,7 @@ import {
 import { TrendIcon, BadgeIcon } from "./xtreino-shared-components";
 
 interface RankingTableProps {
+  isCompact?: boolean; // NOVA PROPRIEDADE
   teams: EnrichedTeam[];
   compareMode: boolean;
   selectedForCompare: Set<string>;
@@ -50,6 +51,7 @@ interface RankingTableProps {
 }
 
 export function RankingTable({
+  isCompact = false, // NOVA PROP DESTRUTURADA
   teams,
   compareMode,
   selectedForCompare,
@@ -64,6 +66,13 @@ export function RankingTable({
   subtitle,
   flameThreshold = 10,
 }: RankingTableProps) {
+  
+  // Calcula dinamicamente quantas colunas a tabela tem para o colSpan do expanded
+  const baseCols = 6; // #, Equipe, XTs, Media Pos, Kills, Total
+  const dynamicCols = isCompact ? 0 : 6; // 🥇🥈🥉, Melhor Pos, Evol., Pts Pos, Pts Kill, Seta
+  const compareCol = compareMode ? 1 : 0;
+  const totalCols = baseCols + dynamicCols + compareCol;
+
   return (
     <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
       <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
@@ -94,9 +103,7 @@ export function RankingTable({
             <tr className="border-b border-[#2a2a3a] bg-[#0a0a0f]">
               {compareMode && (
                 <th className="px-3 py-3 text-center w-10">
-                  <span className="text-xs font-medium text-[#5a5a6e]">
-                    #
-                  </span>
+                  <span className="text-xs font-medium text-[#5a5a6e]">#</span>
                 </th>
               )}
               <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase w-14">
@@ -114,12 +121,19 @@ export function RankingTable({
                   onSort={onSort}
                 />
               </th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
-                🥇 🥈 🥉
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
-                Melhor Pos
-              </th>
+              
+              {/* COLUNAS OCULTAS NO MODO COMPACTO */}
+              {!isCompact && (
+                <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
+                  🥇 🥈 🥉
+                </th>
+              )}
+              {!isCompact && (
+                <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
+                  Melhor Pos
+                </th>
+              )}
+              
               <th className="px-4 py-3 text-center">
                 <SortHeader
                   field="avgPos"
@@ -129,18 +143,25 @@ export function RankingTable({
                   onSort={onSort}
                 />
               </th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
-                Evol.
-              </th>
-              <th className="px-4 py-3 text-center bg-yellow-500/5">
-                <SortHeader
-                  field="pos"
-                  label="Pts Pos"
-                  currentField={sortBy}
-                  direction={sortDir}
-                  onSort={onSort}
-                />
-              </th>
+              
+              {!isCompact && (
+                <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase">
+                  Evol.
+                </th>
+              )}
+              
+              {!isCompact && (
+                <th className="px-4 py-3 text-center bg-yellow-500/5">
+                  <SortHeader
+                    field="pos"
+                    label="Pts Pos"
+                    currentField={sortBy}
+                    direction={sortDir}
+                    onSort={onSort}
+                  />
+                </th>
+              )}
+              
               <th className="px-4 py-3 text-center">
                 <SortHeader
                   field="kills"
@@ -150,11 +171,15 @@ export function RankingTable({
                   onSort={onSort}
                 />
               </th>
-              <th className="px-4 py-3 text-center bg-red-500/5">
-                <span className="text-xs font-medium text-[#5a5a6e] uppercase">
-                  Pts Kill
-                </span>
-              </th>
+              
+              {!isCompact && (
+                <th className="px-4 py-3 text-center bg-red-500/5">
+                  <span className="text-xs font-medium text-[#5a5a6e] uppercase">
+                    Pts Kill
+                  </span>
+                </th>
+              )}
+              
               <th className="px-4 py-3 text-center bg-green-500/5">
                 <SortHeader
                   field="total"
@@ -177,12 +202,8 @@ export function RankingTable({
                 <>
                   <tr
                     key={rowKey}
-                    className={`${getRankStyle(
-                      index
-                    )} hover:bg-[#1a1a24]/50 transition-colors cursor-pointer`}
-                    onClick={() =>
-                      onToggleExpand(isExpanded ? null : rowKey)
-                    }
+                    className={`${getRankStyle(index)} hover:bg-[#1a1a24]/50 transition-colors cursor-pointer`}
+                    onClick={() => onToggleExpand(isExpanded ? null : rowKey)}
                   >
                     {compareMode && (
                       <td className="px-3 py-3 text-center">
@@ -211,7 +232,7 @@ export function RankingTable({
                             {team.teamName}
                           </span>
                           
-                          {/* NOVO: Indicador de Variação vs Mês Anterior */}
+                          {/* Indicador de Variação vs Mês Anterior */}
                           {team.pointsVsPrevMonth !== null && team.pointsVsPrevMonth !== 0 && (
                             <span
                               className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${
@@ -226,7 +247,8 @@ export function RankingTable({
                           )}
                         </div>
                         
-                        {team.badges.length > 0 && (
+                        {/* Badges ocultos no modo compacto */}
+                        {!isCompact && team.badges.length > 0 && (
                           <div className="flex items-center gap-1 flex-wrap">
                             {team.badges.slice(0, 2).map((badge) => (
                               <span
@@ -253,71 +275,72 @@ export function RankingTable({
                         {team.xtreinosPlayed}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2 text-xs">
-                        {team.top1Count > 0 && (
-                          <span className="text-yellow-400 font-bold">
-                            {team.top1Count}🥇
-                          </span>
-                        )}
-                        {team.top2Count > 0 && (
-                          <span className="text-gray-300 font-bold">
-                            {team.top2Count}🥈
-                          </span>
-                        )}
-                        {team.top3Count > 0 && (
-                          <span className="text-amber-500 font-bold">
-                            {team.top3Count}🥉
-                          </span>
-                        )}
-                        {team.top1Count === 0 &&
-                          team.top2Count === 0 &&
-                          team.top3Count === 0 && (
+                    
+                    {/* --- COLUNAS CORPO OCULTAS NO MODO COMPACTO --- */}
+                    {!isCompact && (
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2 text-xs">
+                          {team.top1Count > 0 && (
+                            <span className="text-yellow-400 font-bold">{team.top1Count}🥇</span>
+                          )}
+                          {team.top2Count > 0 && (
+                            <span className="text-gray-300 font-bold">{team.top2Count}🥈</span>
+                          )}
+                          {team.top3Count > 0 && (
+                            <span className="text-amber-500 font-bold">{team.top3Count}🥉</span>
+                          )}
+                          {team.top1Count === 0 && team.top2Count === 0 && team.top3Count === 0 && (
                             <span className="text-[#5a5a6e]">-</span>
                           )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`text-sm font-bold ${
-                          team.bestPosition && team.bestPosition <= 3
-                            ? getPosColor(team.bestPosition)
-                            : "text-[#8a8a9e]"
-                        }`}
-                      >
-                        {team.bestPosition
-                          ? `${team.bestPosition}º`
-                          : "-"}
-                      </span>
-                    </td>
+                        </div>
+                      </td>
+                    )}
+                    
+                    {!isCompact && (
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`text-sm font-bold ${
+                            team.bestPosition && team.bestPosition <= 3
+                              ? getPosColor(team.bestPosition)
+                              : "text-[#8a8a9e]"
+                          }`}
+                        >
+                          {team.bestPosition ? `${team.bestPosition}º` : "-"}
+                        </span>
+                      </td>
+                    )}
+
                     <td className="px-4 py-3 text-center text-sm text-[#8a8a9e]">
                       {team.avgPosition > 0 ? team.avgPosition : "-"}
                     </td>
+                    
+                    {!isCompact && (
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <Sparkline data={team.sparkline} />
+                          <TrendIcon trend={team.trend} />
+                        </div>
+                      </td>
+                    )}
+                    
+                    {!isCompact && (
+                      <td className="px-4 py-3 text-center bg-yellow-500/5">
+                        <span className="text-sm font-bold text-yellow-400">{team.totalPosPoints}</span>
+                      </td>
+                    )}
+
                     <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <Sparkline data={team.sparkline} />
-                        <TrendIcon trend={team.trend} />
-                      </div>
+                      <span className="text-sm text-[#8a8a9e]">{team.totalKills}</span>
                     </td>
-                    <td className="px-4 py-3 text-center bg-yellow-500/5">
-                      <span className="text-sm font-bold text-yellow-400">
-                        {team.totalPosPoints}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-sm text-[#8a8a9e]">
-                        {team.totalKills}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center bg-red-500/5">
-                      <span className="text-sm font-bold text-red-400">
-                        {team.totalKillPoints}
-                      </span>
-                    </td>
+                    
+                    {!isCompact && (
+                      <td className="px-4 py-3 text-center bg-red-500/5">
+                        <span className="text-sm font-bold text-red-400">{team.totalKillPoints}</span>
+                      </td>
+                    )}
+
                     <td className="px-4 py-3 text-center bg-green-500/5">
-                      <span className="text-lg font-bold text-green-400">
-                        {team.totalPoints}
-                      </span>
+                      <span className="text-lg font-bold text-green-400">{team.totalPoints}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {isExpanded ? (
@@ -330,10 +353,8 @@ export function RankingTable({
 
                   {isExpanded && (
                     <tr className="bg-[#0a0a0f]/50">
-                      <td
-                        colSpan={compareMode ? 13 : 12}
-                        className="px-6 py-4"
-                      >
+                      {/* Usando o totalCols dinâmico aqui para não quebrar o layout ao expandir */}
+                      <td colSpan={totalCols} className="px-6 py-4">
                         <ExpandedTeamContent
                           team={team}
                           players={teamPlayers}
@@ -554,8 +575,6 @@ function ExpandedTeamContent({
                       {/* Nova coluna Evolução + Tendência */}
                       <td className="px-3 py-2 text-center">
                         <div className="flex flex-col items-center gap-1">
-                          {/* Usamos o total de kills como dado genérico para a sparkline, 
-                              pois o MergedPlayer não tem histórico de datas separado. */}
                           <span className="text-xs text-[#5a5a6e]">—</span> 
                           <TrendIcon trend={playerTrend} />
                         </div>
