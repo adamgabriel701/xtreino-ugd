@@ -135,13 +135,14 @@ export default function RankingClasTab() {
   }, [allPlayerStats, selectedMonth]);
 
   // ============================================================
-  // NOVA LÓGICA DE AGRUPAMENTO: Calcula tudo a partir dos resultados brutos
-  // Isso resolve o bug do Acumulado Geral que não tinha as propriedades de Top 1/2/3
+  // LÓGICA DE AGRUPAMENTO: Calcula tudo a partir dos resultados (Positions) + PlayerStats (Kills)
   // ============================================================
   const clanRankingRaw = useMemo(() => {
     const resultsToUse = filteredResults;
+    const statsToUse = filteredPlayerStats;
     const clanMap = new Map<string, any>();
 
+    // 1. Soma Pontos de Posição e conta Top 1/2/3 usando a tabela de Resultados
     resultsToUse.forEach((result) => {
       const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
@@ -163,15 +164,12 @@ export default function RankingClasTab() {
       }
 
       const clan = clanMap.get(clanName);
-      clan.totalPoints += result.totalPoints;
-      clan.totalPosPoints += result.totalPosPoints;
-      clan.totalKillPoints += result.totalKillPoints;
-      clan.totalKills += result.totalKills;
-      clan.xtreinosPlayed += 1; // Cada resultado é 1 XT
+      clan.totalPoints += result.totalPoints || 0;
+      clan.totalPosPoints += result.totalPoints || 0; // Na sua tabela, o totalPoints É os pontos de posição
+      clan.xtreinosPlayed += 1; 
       clan.lines.add(result.teamName);
 
-      // Calcula Top 1, 2 e 3 baseado nas posições de quarto (Q1, Q2, Q3)
-      const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter(p => p !== null && p !== undefined) as number[];
+      const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter((p): p is number => p !== null && p !== undefined);
       
       positions.forEach(pos => {
         if (pos === 1) clan.top1Count++;
@@ -184,12 +182,28 @@ export default function RankingClasTab() {
       });
     });
 
-    // Converte o Set de lines de volta para Array
+    // 2. Soma as Kills usando a tabela de PlayerStats (e calcula os Pontos de Kill)
+    statsToUse.forEach((stat) => {
+      const teamKey = stat.teamName.trim().toLowerCase();
+      const clanName = lineToClanMap.get(teamKey);
+
+      if (clanName && clanMap.has(clanName)) {
+        const clan = clanMap.get(clanName);
+        clan.totalKills += stat.totalKills || 0;
+      }
+    });
+
+    // Finaliza a transformação
     const finalArray = Array.from(clanMap.values());
-    finalArray.forEach(c => c.lines = Array.from(c.lines));
+    finalArray.forEach(c => {
+      c.lines = Array.from(c.lines);
+      c.totalKillPoints = calcKillPoints(c.totalKills); // Usa a função oficial do seu sistema
+      // Recalcula o Total Geral somando Posição + Kill (caso o totalPoints antigo não tenha kills)
+      c.totalPoints = c.totalPosPoints + c.totalKillPoints; 
+    });
     
     return finalArray;
-  }, [filteredResults, lineToClanMap]);
+  }, [filteredResults, filteredPlayerStats, lineToClanMap]);
 
   const enrichedRanking: EnrichedTeam[] = useMemo(() => {
     return clanRankingRaw.map(adaptClanToEnrichedTeam);
