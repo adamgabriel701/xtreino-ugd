@@ -206,9 +206,26 @@ export function RankingTable({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-bold text-[#f0f0f5]">
-                          {team.teamName}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#f0f0f5]">
+                            {team.teamName}
+                          </span>
+                          
+                          {/* NOVO: Indicador de Variação vs Mês Anterior */}
+                          {team.pointsVsPrevMonth !== null && team.pointsVsPrevMonth !== 0 && (
+                            <span
+                              className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                team.pointsVsPrevMonth > 0
+                                  ? "text-green-400 bg-green-500/10"
+                                  : "text-red-400 bg-red-500/10"
+                              }`}
+                            >
+                              {team.pointsVsPrevMonth > 0 ? "↑" : "↓"}{" "}
+                              {Math.abs(team.pointsVsPrevMonth)} pts
+                            </span>
+                          )}
+                        </div>
+                        
                         {team.badges.length > 0 && (
                           <div className="flex items-center gap-1 flex-wrap">
                             {team.badges.slice(0, 2).map((badge) => (

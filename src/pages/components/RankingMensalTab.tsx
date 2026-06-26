@@ -31,6 +31,7 @@ import {
   useSortState,
   useCompareState,
   useRankingSort,
+  calcPointsVsPrevMonth,
 } from "./xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
@@ -90,10 +91,45 @@ export default function RankingMensalTab() {
     [filteredResults, filteredPlayerStats]
   );
 
-  // Enriquece
+  // Calcula ranking do mês ANTERIOR (NOVO)
+  const previousMonthStr = useMemo(() => {
+    if (!selectedMonth || selectedMonth.length < 7) return "";
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const d = new Date(year, month - 2, 1); // Mês anterior
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    return `${y}-${m}`;
+  }, [selectedMonth]);
+
+  const prevMonthResults = useMemo(() => {
+    if (!previousMonthStr || !allResults) return [];
+    return allResults.filter((r) => r.date?.startsWith(previousMonthStr));
+  }, [allResults, previousMonthStr]);
+
+  const prevMonthPlayerStats = useMemo(() => {
+    if (!previousMonthStr || !allPlayerStats) return [];
+    return allPlayerStats.filter((s) => s.date?.startsWith(previousMonthStr));
+  }, [allPlayerStats, previousMonthStr]);
+
+  const prevMonthTeamRanking = useMemo(
+    () => buildTeamRanking(prevMonthResults, prevMonthPlayerStats as any),
+    [prevMonthResults, prevMonthPlayerStats]
+  );
+
+  // Calcula o Map de variação (NOVO)
+  const pointsDeltaMap = useMemo(
+    () => calcPointsVsPrevMonth(monthTeamRanking, prevMonthTeamRanking),
+    [monthTeamRanking, prevMonthTeamRanking]
+  );
+
+  // Enriquece (ALTERADO PARA INCLUIR O DELTA)
   const enrichedRanking = useMemo(
-    () => monthTeamRanking.map((t) => enrichTeam(t, "mensal")),
-    [monthTeamRanking]
+    () =>
+      monthTeamRanking.map((t) => {
+        const delta = pointsDeltaMap.get(t.teamName.trim().toLowerCase()) ?? null;
+        return enrichTeam(t, "mensal", delta);
+      }),
+    [monthTeamRanking, pointsDeltaMap]
   );
 
   // Ordena

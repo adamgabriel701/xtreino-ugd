@@ -53,6 +53,7 @@ export interface EnrichedTeam {
   avgPosition: number;
   trend: "up" | "down" | "same";
   consistency: number;
+  pointsVsPrevMonth: number | null;
 }
 
 export type SortField =
@@ -209,7 +210,8 @@ export function enrichTeam(
     bestPosition: number | null;
     xtreinos: TeamXtreinoHistory[];
   },
-  period: "geral" | "mensal" | "semanal" = "geral"
+  period: "geral" | "mensal" | "semanal" = "geral",
+  pointsVsPrevMonth?: number | null // NOVO PARÂMETRO
 ): EnrichedTeam {
   const enriched: EnrichedTeam = {
     ...base,
@@ -221,9 +223,37 @@ export function enrichTeam(
     avgPosition: calcAvgPosition(base as EnrichedTeam),
     trend: calcTrend(base as EnrichedTeam),
     consistency: calcConsistency(base as EnrichedTeam),
+    pointsVsPrevMonth: pointsVsPrevMonth ?? null, // ATRIBUIÇÃO NOVA
   };
   enriched.badges = calcTeamBadges(enriched, period);
   return enriched;
+}
+
+// ============================================================
+// CALCULO DE VARIAÇÃO VS MÊS ANTERIOR
+// ============================================================
+
+export function calcPointsVsPrevMonth(
+  currentMonthRanking: TeamRankingBase[],
+  prevMonthRanking: TeamRankingBase[]
+): Map<string, number> {
+  const prevMap = new Map<string, number>();
+  prevMonthRanking.forEach((t) => {
+    prevMap.set(t.teamName.trim().toLowerCase(), t.totalPoints);
+  });
+
+  const deltaMap = new Map<string, number>();
+  currentMonthRanking.forEach((t) => {
+    const key = t.teamName.trim().toLowerCase();
+    const prevPoints = prevMap.get(key);
+    if (prevPoints !== undefined) {
+      deltaMap.set(key, t.totalPoints - prevPoints);
+    } else {
+      deltaMap.set(key, 0); // Time novo no mês, variação neutra
+    }
+  });
+
+  return deltaMap;
 }
 
 // ============================================================
