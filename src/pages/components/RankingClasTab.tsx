@@ -11,9 +11,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
-import {
-  useXtreinoCalculations,
-} from "@/hooks/useXtreinoCalculations";
+import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
 
 import {
   SummaryCards,
@@ -24,9 +22,10 @@ import {
   PodiumCard,
 } from "./xtreino";
 import {
+  type EnrichedTeam,
+  type MergedPlayer,
   type SortField,
   getMonthName,
-  enrichTeam,
   buildTeamRanking,
   mergePlayersById,
   usePlayersByName,
@@ -39,8 +38,45 @@ import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
 import { useCompactMode } from "./xtreino-ousado";
 
+// ============================================================
+// FUNÇÃO AUXILIAR: Adapta a soma do Clã para o formato da RankingTable
+// ============================================================
+function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
+  return {
+    teamName: clanSum.teamName,
+    xtreinosPlayed: clanSum.xtreinosPlayed || 0,
+    totalPoints: clanSum.totalPoints || 0,
+    totalPosPoints: clanSum.totalPosPoints || 0,
+    totalKillPoints: clanSum.totalKillPoints || 0,
+    totalKills: clanSum.totalKills || 0,
+    
+    badges: [],
+    top1Count: clanSum.top1Count || 0,
+    top2Count: clanSum.top2Count || 0,
+    top3Count: clanSum.top3Count || 0,
+    bestPosition: clanSum.bestPosition || null,
+    
+    avgPosition: 0, 
+    consistency: 0,
+    streak: 0,
+    trend: "same" as const,
+    sparkline: clanSum.xtreinosPlayed > 0 ? [clanSum.totalPoints] : [],
+    xtreinos: [], 
+    
+    // PROPRIEDADES QUE ESTAVAM FALTANDO:
+    bestPerformance: clanSum.totalPoints || 0,
+    worstPerformance: clanSum.totalPoints || 0,
+    
+    pointsVsPrevMonth: null,
+  };
+}
+
+// ============================================================
+// COMPONENTE PRINCIPAL
+// ============================================================
 export default function RankingClasTab() {
   const { sortBy, sortDir, handleSort } = useSortState();
+  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState("");
   const {
     compareMode,
@@ -53,34 +89,25 @@ export default function RankingClasTab() {
   
   const { isCompact, toggle: toggleCompact } = useCompactMode();
 
-  // Queries
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
   const { data: playersList } = trpc.players.list.useQuery();
-  
-  // NOVA QUERY: Busca a estrutura dos clãs para saber a qual clã cada line pertence
   const { data: clansList } = trpc.clans.list.useQuery();
 
   const isLoading = !allResults || !allPlayerStats || !clansList;
   const playersByName = usePlayersByName(playersList);
 
-  // 1. Cria um mapa de Lines para Clãs (ex: "Line Alpha" -> "Clã Bravo")
   const lineToClanMap = useMemo(() => {
     const map = new Map<string, string>();
     if (!clansList) return map;
-    
     clansList.forEach((clan) => {
       clan.teams?.forEach((team) => {
-        // Normaliza o nome para garantir que o match funcione
-        const teamKey = team.name.trim().toLowerCase();
-        map.set(teamKey, clan.name);
+        map.set(team.name.trim().toLowerCase(), clan.name);
       });
     });
-    
     return map;
   }, [clansList]);
 
-  // 2. Calcula ranking normal de Lines (igual as outras tabs)
   const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
     results: allResults ?? [],
     playerStats: allPlayerStats ?? [],
@@ -89,9 +116,7 @@ export default function RankingClasTab() {
   const availableMonths = useMemo(() => {
     if (!allResults) return [];
     const months = new Set<string>();
-    allResults.forEach((r) => {
-      if (r.date) months.add(r.date.substring(0, 7));
-    });
+    allResults.forEach((r) => { if (r.date) months.add(r.date.substring(0, 7)); });
     return Array.from(months).sort().reverse();
   }, [allResults]);
 
@@ -101,7 +126,6 @@ export default function RankingClasTab() {
     }
   }, [availableMonths, selectedMonth]);
 
-  // 3. Filtra os resultados baseado no mês selecionado
   const filteredResults = useMemo(() => {
     if (!selectedMonth || !allResults) return [];
     return allResults.filter((r) => r.date?.startsWith(selectedMonth));
@@ -112,7 +136,6 @@ export default function RankingClasTab() {
     return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth));
   }, [allPlayerStats, selectedMonth]);
 
-  // 4. Agrupa as estatísticas por CLÃ em vez de por Line
   const clanRankingRaw = useMemo(() => {
     const sourceRanking = selectedMonth 
       ? buildTeamRanking(filteredResults, filteredPlayerStats as any)
@@ -120,31 +143,43 @@ export default function RankingClasTab() {
 
     const clanMap = new Map<string, any>();
 
-    sourceRanking.forEach((teamStat) => {
+    sourceRanking.forEach((teamStat: any) => {
       const teamKey = teamStat.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
 
       if (clanMap.has(clanName)) {
         const existing = clanMap.get(clanName);
-        // Soma os pontos e kills de todas as lines do clã
         existing.totalPoints += teamStat.totalPoints;
         existing.totalPosPoints += teamStat.totalPosPoints;
         existing.totalKillPoints += teamStat.totalKillPoints;
         existing.totalKills += teamStat.totalKills;
         existing.xtreinosPlayed += teamStat.xtreinosPlayed;
         existing.xtreinos = [...existing.xtreinos, ...teamStat.xtreinos];
-        // Adiciona a line à lista para referência futura
         existing.lines.push(teamStat.teamName);
+        
+        existing.top1Count += teamStat.top1Count || 0;
+        existing.top2Count += teamStat.top2Count || 0;
+        existing.top3Count += teamStat.top3Count || 0;
+        
+        if (teamStat.bestPosition !== null && teamStat.bestPosition !== undefined) {
+           if (existing.bestPosition === null || teamStat.bestPosition < existing.bestPosition) {
+             existing.bestPosition = teamStat.bestPosition;
+           }
+        }
       } else {
         clanMap.set(clanName, {
-          teamName: clanName, // Usamos o nome do clã como "nome do time" para o sistema de ranking aceitar
+          teamName: clanName,
           totalPoints: teamStat.totalPoints,
           totalPosPoints: teamStat.totalPosPoints,
           totalKillPoints: teamStat.totalKillPoints,
           totalKills: teamStat.totalKills,
           xtreinosPlayed: teamStat.xtreinosPlayed,
-          xtreinos: teamStat.xtreinos,
-          lines: [teamStat.teamName], // Guarda quais lines compõe esse clã
+          xtreinos: teamStat.xtreinos || [],
+          lines: [teamStat.teamName],
+          top1Count: teamStat.top1Count || 0,
+          top2Count: teamStat.top2Count || 0,
+          top3Count: teamStat.top3Count || 0,
+          bestPosition: teamStat.bestPosition !== null && teamStat.bestPosition !== undefined ? teamStat.bestPosition : null,
         });
       }
     });
@@ -152,9 +187,8 @@ export default function RankingClasTab() {
     return Array.from(clanMap.values());
   }, [teamRanking, filteredResults, filteredPlayerStats, selectedMonth, lineToClanMap]);
 
-  // 5. Enriquece os dados do clã (para calcular streak, sparkline, badges, etc)
-  const enrichedRanking = useMemo(() => {
-    return clanRankingRaw.map((clan) => enrichTeam(clan, "mensal"));
+  const enrichedRanking: EnrichedTeam[] = useMemo(() => {
+    return clanRankingRaw.map(adaptClanToEnrichedTeam);
   }, [clanRankingRaw]);
 
   const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
@@ -165,8 +199,7 @@ export default function RankingClasTab() {
     return sorted.filter((t) => t.teamName.toLowerCase().includes(q));
   }, [sorted, search]);
 
-  // Pega jogadores de um clã inteiro (juntando todos os jogadores de todas as suas lines)
-  const getTeamPlayers = (clanName: string) => {
+  const getTeamPlayers = (clanName: string): MergedPlayer[] => {
     const clanData = clanRankingRaw.find(c => c.teamName === clanName);
     if (!clanData) return [];
     
@@ -192,17 +225,18 @@ export default function RankingClasTab() {
 
   const totalXtreinosUnicos = useMemo(() => {
     const ids = new Set<number>();
-    (selectedMonth ? filteredResults : (allResults ?? [])).forEach((r) => ids.add(r.xtreinoId));
+    const dataSource = selectedMonth ? filteredResults : (allResults ?? []);
+    dataSource.forEach((r) => ids.add(r.xtreinoId));
     return ids.size;
   }, [allResults, filteredResults, selectedMonth]);
 
   const clearFilters = () => {
     setSearch("");
-    setSelectedMonth(availableMonths[0] ?? "");
+    setSelectedMonth("");
     clearCompare();
   };
 
-  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact || selectedMonth !== availableMonths[0];
+  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact || selectedMonth !== "";
   const summaryCards = buildSummaryCards(clanRankingRaw, totalXtreinosUnicos);
 
   return (
@@ -210,7 +244,7 @@ export default function RankingClasTab() {
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
         <div className="flex items-center gap-3 flex-wrap">
           <Shield className="w-5 h-5 text-emerald-400" />
-          <label className="text-sm font-medium text-[#f0f0f5]">Filtrar por Mês (Opcional):</label>
+          <label className="text-sm font-medium text-[#f0f0f5]">Filtrar por Mês:</label>
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -221,8 +255,10 @@ export default function RankingClasTab() {
               <option key={m} value={m}>{getMonthName(m)}</option>
             ))}
           </select>
-          {selectedMonth && (
+          {selectedMonth ? (
             <span className="text-xs text-[#5a5a6e]">{filteredResults.length} resultados no mês</span>
+          ) : (
+            <span className="text-xs text-[#5a5a6e]">Mostrando dados históricos de todos os meses</span>
           )}
         </div>
       </div>
@@ -295,9 +331,9 @@ export default function RankingClasTab() {
                 stats={[
                   { label: "Kills", value: t.totalKills, color: "text-green-400" },
                   { label: "XTs", value: t.xtreinosPlayed },
-                  { label: "Media", value: t.avgPosition },
+                  { label: "Total Pts", value: t.totalPoints },
                 ]}
-                streak={t.streak >= 5 ? t.streak : undefined}
+                streak={t.xtreinosPlayed >= 10 ? t.xtreinosPlayed : undefined}
               />
             ))}
           </div>
@@ -311,8 +347,8 @@ export default function RankingClasTab() {
           compareMode={compareMode}
           selectedForCompare={selectedForCompare}
           onToggleCompare={toggleCompare}
-          expandedTeam={null} // Desativado pois a lógica de expandir precisa ser adaptada para agrupar múltiplas lines
-          onToggleExpand={() => {}}
+          expandedTeam={expandedTeam}
+          onToggleExpand={setExpandedTeam}
           sortBy={sortBy}
           sortDir={sortDir}
           onSort={handleSort}
