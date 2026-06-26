@@ -55,12 +55,16 @@ function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
     top3Count: clanSum.top3Count || 0,
     bestPosition: clanSum.bestPosition || null,
     
-    avgPosition: 0, 
+    // NOVO: Usa as médias reais calculadas para o clã
+    avgPosition: clanSum.avgPosition || 0, 
     consistency: 0,
     streak: 0,
     trend: "same" as const,
-    sparkline: clanSum.xtreinosPlayed > 0 ? [clanSum.totalPoints] : [],
+    
+    // NOVO: Cria um gráfico de evolução baseado em quando as lines do clã participaram
+    sparkline: clanSum.sparklineData || [], 
     xtreinos: [], 
+    
     bestPerformance: clanSum.totalPoints || 0,
     worstPerformance: clanSum.totalPoints || 0,
     pointsVsPrevMonth: null,
@@ -73,7 +77,7 @@ function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
 export default function RankingClasTab() {
   const { sortBy, sortDir, handleSort } = useSortState();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string>(""); // MUDANÇA CHAVE: Começa vazio (Acumulado Geral)
+  const [selectedMonth, setSelectedMonth] = useState<string>(""); 
   const {
     compareMode,
     setCompareMode,
@@ -116,26 +120,25 @@ export default function RankingClasTab() {
     return Array.from(months).sort().reverse();
   }, [allResults]);
 
-  // REMOVIDO O useEffect que forçava o mês mais recente! 
-  // Agora ele começa no Acumulado Geral de verdade.
-
   const filteredResults = useMemo(() => {
-    // Se selectedMonth for vazio, retorna TODOS os resultados (Acumulado Geral)
     if (!selectedMonth || !allResults) return allResults ?? [];
     return allResults.filter((r) => r.date?.startsWith(selectedMonth));
   }, [allResults, selectedMonth]);
 
   const filteredPlayerStats = useMemo(() => {
-    // Se selectedMonth for vazio, retorna TODOS os stats (Acumulado Geral)
     if (!selectedMonth || !allPlayerStats) return allPlayerStats ?? [];
     return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth));
   }, [allPlayerStats, selectedMonth]);
 
+  // ============================================================
+  // LÓGICA DE AGRUPAMENTO POR CLÃ APRIMORADA
+  // ============================================================
   const clanRankingRaw = useMemo(() => {
     const resultsToUse = filteredResults;
     const statsToUse = filteredPlayerStats;
     const clanMap = new Map<string, any>();
 
+    // 1. Soma Pontos de Posição, conta Top 1/2/3 e calcula Médias
     resultsToUse.forEach((result) => {
       const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
@@ -153,6 +156,9 @@ export default function RankingClasTab() {
           top2Count: 0,
           top3Count: 0,
           bestPosition: null,
+          sumAllPositions: 0, // Novo: para calcular a média real
+          countAllPositions: 0, // Novo: para calcular a média real
+          datesPlayed: new Set<string>(), // Novo: para gerar o gráfico de evolução
         });
       }
 
@@ -161,6 +167,7 @@ export default function RankingClasTab() {
       clan.totalPosPoints += result.totalPoints || 0;
       clan.xtreinosPlayed += 1; 
       clan.lines.add(result.teamName);
+      if (result.date) clan.datesPlayed.add(result.date); // Registra a data para o gráfico
 
       const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter((p): p is number => p !== null && p !== undefined);
       
@@ -169,27 +176,62 @@ export default function RankingClasTab() {
         if (pos === 2) clan.top2Count++;
         if (pos === 3) clan.top3Count++;
         
+        // NOVO: Calcula a melhor posição e a soma das posições
         if (clan.bestPosition === null || pos < clan.bestPosition) {
           clan.bestPosition = pos;
         }
+        clan.sumAllPositions += pos;
+        clan.countAllPositions += 1;
       });
     });
 
+    // 2. Soma as Kills (COM BUSCA PARCIAL PARA ARRUMAR AS LINES SOLOS)
     statsToUse.forEach((stat) => {
-      const teamKey = stat.teamName.trim().toLowerCase();
-      const clanName = lineToClanMap.get(teamKey);
+      const statTeamName = stat.teamName.trim().toLowerCase();
+      let matchedClanName: string | null = null;
 
-      if (clanName && clanMap.has(clanName)) {
-        const clan = clanMap.get(clanName);
+      // Tenta achar o clã dono desta line
+      for (const [lineKey, clanName] of lineToClanMap.entries()) {
+        // Se o nome da stat contém o nome da line (ou vice-versa), eles são a mesma equipe
+        if (statTeamName.includes(lineKey) || lineKey.includes(statTeamName)) {
+          matchedClanName = clanName;
+          break;
+        }
+      }
+
+      // Se não achou dono, é solo/desconhecida
+      if (!matchedClanName) {
+        matchedClanName = "Lines Solos/Desconhecidas";
+      }
+
+      if (clanMap.has(matchedClanName)) {
+        const clan = clanMap.get(matchedClanName);
         clan.totalKills += stat.totalKills || 0;
       }
     });
 
+    // 3. Finaliza os cálculos matemáticos
     const finalArray = Array.from(clanMap.values());
     finalArray.forEach(c => {
       c.lines = Array.from(c.lines);
       c.totalKillPoints = calcKillPoints(c.totalKills);
       c.totalPoints = c.totalPosPoints + c.totalKillPoints; 
+      
+      // NOVO: Calcula a média de posição real do clã
+      c.avgPosition = c.countAllPositions > 0 
+        ? Math.round((c.sumAllPositions / c.countAllPositions) * 10) / 10 
+        : 0;
+
+      // NOVO: Gera o gráfico de evolução (quantas linhas desse clã jogaram por data)
+      const datesArray = Array.from(c.datesPlayed).sort();
+      // O valor do gráfico será quantas linhas diferentes do clã jogaram naquela data
+      c.sparklineData = datesArray.map(date => {
+        return resultsToUse.filter(r => {
+          const lineKey = r.teamName.trim().toLowerCase();
+          const clanName = lineToClanMap.get(lineKey) || "Lines Solos/Desconhecidas";
+          return r.date === date && clanName === c.teamName;
+        }).length;
+      });
     });
     
     return finalArray;
@@ -239,7 +281,7 @@ export default function RankingClasTab() {
 
   const clearFilters = () => {
     setSearch("");
-    setSelectedMonth(""); // Volta exato para o Acumulado Geral
+    setSelectedMonth(""); 
     clearCompare();
   };
 
