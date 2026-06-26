@@ -23,8 +23,6 @@ export default function Home() {
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
   
-  // CORRIGIDO 1: Passando objeto vazio {} em vez de undefined
-  // CORRIGIDO 2: Usando teamResultsAllTimeBR que já retorna os dados totalizados
   const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
 
   const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
@@ -71,12 +69,10 @@ export default function Home() {
     };
   }, [teamRanking]);
 
-  // CORRIGIDO 3: Usando os dados da query correta que possui totalKills, totalPoints e matches
   const scrimRealStats = useMemo(() => {
     if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) {
       return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalScrims: 0 };
     }
-    
     return {
       totalTeams: scrimTeamAllTime.length,
       totalKills: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalKills || 0), 0),
@@ -150,6 +146,18 @@ export default function Home() {
       .map((p) => ({ name: p.playerName, entityName: p.playerName, points: p.totalKills, kills: p.totalKills, wins: p.participations }));
   }, [teamPlayersGrouped]);
 
+  // NOVO: Fallbacks para preencher o Ranking quando o backend não tem dados oficiais de Scrim/Camp
+  const scrimRankingFallback = useMemo(() => {
+    if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) return [];
+    return scrimTeamAllTime.map((t, i) => ({
+      id: i + 1,
+      entityName: t.teamName,
+      points: t.totalPoints || 0,
+      kills: t.totalKills || 0,
+      wins: t.matches || 0,
+    })).sort((a, b) => b.points - a.points);
+  }, [scrimTeamAllTime]);
+
   return (
     <MainLayout>
       <style>{`
@@ -162,6 +170,19 @@ export default function Home() {
           50% { box-shadow: 0 0 40px rgba(16,185,129,0.2); }
         }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        
+        /* NOVO: Animação de entrada suave */
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+          opacity: 0;
+          animation: fadeUp 0.6s ease-out forwards;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
       `}</style>
 
       <section className="w-full bg-[#0a0a0f] relative">
@@ -184,16 +205,17 @@ export default function Home() {
 
       <ActiveEvents championships={championships} xtreinosList={xtreinosList} />
       
-      {/* CORRIGIDO 4: Removida a prop fallbackPlayers que o componente não aceita mais */}
       <Highlights 
         topPlayers={topXtreinoPlayers} 
         upcomingEvents={upcomingEvents} 
         recentActivities={recentActivities} 
       />
       
+      {/* NOVO: Passando o fallback do Scrim para o RankingsPreview */}
       <RankingsPreview 
         onRecalculate={() => recalculateMutation.mutate()} 
-        isRecalculating={recalculateMutation.isPending} 
+        isRecalculating={recalculateMutation.isPending}
+        scrimFallback={scrimRankingFallback}
       />
       
       <CallToAction />
