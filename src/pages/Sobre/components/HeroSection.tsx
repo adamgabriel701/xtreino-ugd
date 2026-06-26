@@ -5,42 +5,14 @@ export default function HeroSection() {
     <section className="relative min-h-[45vh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/20 via-transparent to-[#0a0a0f]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.1)_0%,_transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(16,185,129,0.05)_0%,_transparent_50%)]" />
-
-      {/* Partículas */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[
-          { top: "20%", left: "15%", size: 3, delay: 0, dur: 5 },
-          { top: "30%", right: "20%", size: 2, delay: 1, dur: 4 },
-          { top: "60%", left: "30%", size: 2.5, delay: 2, dur: 6 },
-          { top: "50%", right: "10%", size: 1.5, delay: 0.5, dur: 4.5 },
-          { top: "70%", left: "50%", size: 2, delay: 1.5, dur: 5.5 },
-        ].map((p, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-emerald-400/20"
-            style={{
-              top: p.top, left: p.left, right: p.right,
-              width: p.size, height: p.size,
-              animation: `float-sobre ${p.dur}s ease-in-out ${p.delay}s infinite`,
-            }}
-          />
-        ))}
-        <style>{`
-          @keyframes float-sobre {
-            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
-            50% { transform: translateY(-12px) scale(1.4); opacity: 0.6; }
-          }
-        `}</style>
-      </div>
-
-      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+      
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-up">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-6 backdrop-blur-sm">
           <Sparkles className="w-4 h-4" />
           Conheça nossa história
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-black mb-6 leading-tight">
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-black mb-6 leading-tight text-glow">
           <span className="bg-gradient-to-r from-white via-emerald-100 to-emerald-400 bg-clip-text text-transparent">
             Underground
           </span>

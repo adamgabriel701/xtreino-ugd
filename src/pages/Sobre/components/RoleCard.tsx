@@ -15,13 +15,13 @@ interface TeamMember {
 export default function RoleCard({ member, featured = false }: { member: TeamMember; featured?: boolean }) {
   const Icon = member.icon;
   return (
-    <div className={`relative rounded-xl border p-6 transition-all duration-300 hover:-translate-y-1 group overflow-hidden ${
+    <div className={`relative rounded-xl border p-6 transition-all duration-500 hover:-translate-y-1 group overflow-hidden ${
       featured
-        ? "bg-gradient-to-br from-[#12121a] to-[#0f0f16] border-emerald-500/30 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10"
-        : "bg-[#12121a] border-[#2a2a3a] hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5"
+        ? "bg-gradient-to-br from-[#12121a] to-[#0f0f16] border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]"
+        : "bg-[#12121a] border-[#2a2a3a] hover:border-emerald-500/40 hover:shadow-[0_0_25px_rgba(16,185,129,0.1)]"
     }`}>
-      {/* Efeito de brilho no hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
+      {/* Efeito Shine */}
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent skew-x-12 z-0 pointer-events-none" />
 
       <div className="relative z-10">
         <div className="flex items-center gap-4 mb-4">
@@ -37,34 +37,16 @@ export default function RoleCard({ member, featured = false }: { member: TeamMem
 
         <div className="mt-4 flex flex-wrap gap-2">
           {member.nick && (
-            <span className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#8a8a9e]">
-              🎮 {member.nick}
-            </span>
+            <span className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#8a8a9e]">🎮 {member.nick}</span>
           )}
           {member.clan && (
-            <span className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#8a8a9e]">
-              🏴 {member.clan}
-            </span>
+            <span className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#8a8a9e]">🏴 {member.clan}</span>
           )}
           {member.tiktok && (
-            <a
-              href={`https://tiktok.com/${member.tiktok}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
-            >
-              🎵 TT: {member.tiktok}
-            </a>
+            <a href={`https://tiktok.com/${member.tiktok}`} target="_blank" rel="noopener noreferrer" className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors">🎵 TT: {member.tiktok}</a>
           )}
           {member.youtube && (
-            <a
-              href={`https://youtube.com/${member.youtube}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors"
-            >
-              🎬 YT: {member.youtube}
-            </a>
+            <a href={`https://youtube.com/${member.youtube}`} target="_blank" rel="noopener noreferrer" className="text-xs px-2.5 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors">🎬 YT: {member.youtube}</a>
           )}
         </div>
       </div>

@@ -3,13 +3,17 @@ import { Zap, Users, Gamepad2 } from "lucide-react";
 
 export default function CallToAction() {
   return (
-    <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-      <div className="bg-gradient-to-r from-emerald-900/20 via-[#12121a] to-emerald-900/20 rounded-2xl border border-emerald-500/20 p-8 md:p-14 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.1)_0%,_transparent_70%)]" />
+    <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16 animate-fade-up">
+      <div className="relative bg-[#12121a] rounded-2xl border border-[#2a2a3a] overflow-hidden hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+        
+        {/* Chromatic Aberration Top */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-[chromatic-move_3s_linear_infinite] z-20" />
+
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.08)_0%,_transparent_70%)]" />
         <div className="absolute top-0 right-1/3 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/4 w-36 h-36 bg-emerald-500/5 rounded-full blur-3xl" />
 
-        <div className="relative z-10">
+        <div className="relative z-10 p-8 md:p-14 text-center">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6 animate-float-slow">
             <Zap className="w-8 h-8 text-emerald-400" />
           </div>
@@ -37,14 +41,6 @@ export default function CallToAction() {
             </Link>
           </div>
         </div>
-
-        <style>{`
-          @keyframes float-slow {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(2deg); }
-          }
-          .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
-        `}</style>
       </div>
     </section>
   );
