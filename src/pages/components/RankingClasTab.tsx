@@ -11,7 +11,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
-import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
+import { useXtreinoCalculations, calcKillPoints } from "@/hooks/useXtreinoCalculations";
 
 import {
   SummaryCards,
@@ -26,7 +26,6 @@ import {
   type MergedPlayer,
   type SortField,
   getMonthName,
-  buildTeamRanking,
   mergePlayersById,
   usePlayersByName,
   useSortState,
@@ -62,11 +61,8 @@ function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
     trend: "same" as const,
     sparkline: clanSum.xtreinosPlayed > 0 ? [clanSum.totalPoints] : [],
     xtreinos: [], 
-    
-    // PROPRIEDADES QUE ESTAVAM FALTANDO:
     bestPerformance: clanSum.totalPoints || 0,
     worstPerformance: clanSum.totalPoints || 0,
-    
     pointsVsPrevMonth: null,
   };
 }
@@ -97,6 +93,12 @@ export default function RankingClasTab() {
   const isLoading = !allResults || !allPlayerStats || !clansList;
   const playersByName = usePlayersByName(playersList);
 
+  // Pega o agrupamento de jogadores padrão
+  const { teamPlayersGrouped } = useXtreinoCalculations({
+    results: allResults ?? [],
+    playerStats: allPlayerStats ?? [],
+  });
+
   const lineToClanMap = useMemo(() => {
     const map = new Map<string, string>();
     if (!clansList) return map;
@@ -107,11 +109,6 @@ export default function RankingClasTab() {
     });
     return map;
   }, [clansList]);
-
-  const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
-    results: allResults ?? [],
-    playerStats: allPlayerStats ?? [],
-  });
 
   const availableMonths = useMemo(() => {
     if (!allResults) return [];
@@ -126,66 +123,73 @@ export default function RankingClasTab() {
     }
   }, [availableMonths, selectedMonth]);
 
+  // Filtros de dados brutos por mês
   const filteredResults = useMemo(() => {
-    if (!selectedMonth || !allResults) return [];
+    if (!selectedMonth || !allResults) return allResults ?? [];
     return allResults.filter((r) => r.date?.startsWith(selectedMonth));
   }, [allResults, selectedMonth]);
 
   const filteredPlayerStats = useMemo(() => {
-    if (!selectedMonth || !allPlayerStats) return [];
+    if (!selectedMonth || !allPlayerStats) return allPlayerStats ?? [];
     return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth));
   }, [allPlayerStats, selectedMonth]);
 
+  // ============================================================
+  // NOVA LÓGICA DE AGRUPAMENTO: Calcula tudo a partir dos resultados brutos
+  // Isso resolve o bug do Acumulado Geral que não tinha as propriedades de Top 1/2/3
+  // ============================================================
   const clanRankingRaw = useMemo(() => {
-    const sourceRanking = selectedMonth 
-      ? buildTeamRanking(filteredResults, filteredPlayerStats as any)
-      : teamRanking;
-
+    const resultsToUse = filteredResults;
     const clanMap = new Map<string, any>();
 
-    sourceRanking.forEach((teamStat: any) => {
-      const teamKey = teamStat.teamName.trim().toLowerCase();
+    resultsToUse.forEach((result) => {
+      const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
 
-      if (clanMap.has(clanName)) {
-        const existing = clanMap.get(clanName);
-        existing.totalPoints += teamStat.totalPoints;
-        existing.totalPosPoints += teamStat.totalPosPoints;
-        existing.totalKillPoints += teamStat.totalKillPoints;
-        existing.totalKills += teamStat.totalKills;
-        existing.xtreinosPlayed += teamStat.xtreinosPlayed;
-        existing.xtreinos = [...existing.xtreinos, ...teamStat.xtreinos];
-        existing.lines.push(teamStat.teamName);
-        
-        existing.top1Count += teamStat.top1Count || 0;
-        existing.top2Count += teamStat.top2Count || 0;
-        existing.top3Count += teamStat.top3Count || 0;
-        
-        if (teamStat.bestPosition !== null && teamStat.bestPosition !== undefined) {
-           if (existing.bestPosition === null || teamStat.bestPosition < existing.bestPosition) {
-             existing.bestPosition = teamStat.bestPosition;
-           }
-        }
-      } else {
+      if (!clanMap.has(clanName)) {
         clanMap.set(clanName, {
           teamName: clanName,
-          totalPoints: teamStat.totalPoints,
-          totalPosPoints: teamStat.totalPosPoints,
-          totalKillPoints: teamStat.totalKillPoints,
-          totalKills: teamStat.totalKills,
-          xtreinosPlayed: teamStat.xtreinosPlayed,
-          xtreinos: teamStat.xtreinos || [],
-          lines: [teamStat.teamName],
-          top1Count: teamStat.top1Count || 0,
-          top2Count: teamStat.top2Count || 0,
-          top3Count: teamStat.top3Count || 0,
-          bestPosition: teamStat.bestPosition !== null && teamStat.bestPosition !== undefined ? teamStat.bestPosition : null,
+          totalPoints: 0,
+          totalPosPoints: 0,
+          totalKillPoints: 0,
+          totalKills: 0,
+          xtreinosPlayed: 0,
+          lines: new Set<string>(),
+          top1Count: 0,
+          top2Count: 0,
+          top3Count: 0,
+          bestPosition: null,
         });
       }
+
+      const clan = clanMap.get(clanName);
+      clan.totalPoints += result.totalPoints;
+      clan.totalPosPoints += result.totalPosPoints;
+      clan.totalKillPoints += result.totalKillPoints;
+      clan.totalKills += result.totalKills;
+      clan.xtreinosPlayed += 1; // Cada resultado é 1 XT
+      clan.lines.add(result.teamName);
+
+      // Calcula Top 1, 2 e 3 baseado nas posições de quarto (Q1, Q2, Q3)
+      const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter(p => p !== null && p !== undefined) as number[];
+      
+      positions.forEach(pos => {
+        if (pos === 1) clan.top1Count++;
+        if (pos === 2) clan.top2Count++;
+        if (pos === 3) clan.top3Count++;
+        
+        if (clan.bestPosition === null || pos < clan.bestPosition) {
+          clan.bestPosition = pos;
+        }
+      });
     });
 
-    return Array.from(clanMap.values());
-  }, [teamRanking, filteredResults, filteredPlayerStats, selectedMonth, lineToClanMap]);
+    // Converte o Set de lines de volta para Array
+    const finalArray = Array.from(clanMap.values());
+    finalArray.forEach(c => c.lines = Array.from(c.lines));
+    
+    return finalArray;
+  }, [filteredResults, lineToClanMap]);
 
   const enrichedRanking: EnrichedTeam[] = useMemo(() => {
     return clanRankingRaw.map(adaptClanToEnrichedTeam);
@@ -225,10 +229,9 @@ export default function RankingClasTab() {
 
   const totalXtreinosUnicos = useMemo(() => {
     const ids = new Set<number>();
-    const dataSource = selectedMonth ? filteredResults : (allResults ?? []);
-    dataSource.forEach((r) => ids.add(r.xtreinoId));
+    filteredResults.forEach((r) => ids.add(r.xtreinoId));
     return ids.size;
-  }, [allResults, filteredResults, selectedMonth]);
+  }, [filteredResults]);
 
   const clearFilters = () => {
     setSearch("");
