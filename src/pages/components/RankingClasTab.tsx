@@ -2,7 +2,7 @@
 // RankingClasTab.tsx
 // ============================================================
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Shield,
   TrendingUp,
@@ -73,7 +73,7 @@ function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
 export default function RankingClasTab() {
   const { sortBy, sortDir, handleSort } = useSortState();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState<string>(""); // MUDANÇA CHAVE: Começa vazio (Acumulado Geral)
   const {
     compareMode,
     setCompareMode,
@@ -93,7 +93,6 @@ export default function RankingClasTab() {
   const isLoading = !allResults || !allPlayerStats || !clansList;
   const playersByName = usePlayersByName(playersList);
 
-  // Pega o agrupamento de jogadores padrão
   const { teamPlayersGrouped } = useXtreinoCalculations({
     results: allResults ?? [],
     playerStats: allPlayerStats ?? [],
@@ -117,32 +116,26 @@ export default function RankingClasTab() {
     return Array.from(months).sort().reverse();
   }, [allResults]);
 
-  useEffect(() => {
-    if (availableMonths.length > 0 && !selectedMonth) {
-      setSelectedMonth(availableMonths[0]);
-    }
-  }, [availableMonths, selectedMonth]);
+  // REMOVIDO O useEffect que forçava o mês mais recente! 
+  // Agora ele começa no Acumulado Geral de verdade.
 
-  // Filtros de dados brutos por mês
   const filteredResults = useMemo(() => {
+    // Se selectedMonth for vazio, retorna TODOS os resultados (Acumulado Geral)
     if (!selectedMonth || !allResults) return allResults ?? [];
     return allResults.filter((r) => r.date?.startsWith(selectedMonth));
   }, [allResults, selectedMonth]);
 
   const filteredPlayerStats = useMemo(() => {
+    // Se selectedMonth for vazio, retorna TODOS os stats (Acumulado Geral)
     if (!selectedMonth || !allPlayerStats) return allPlayerStats ?? [];
     return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth));
   }, [allPlayerStats, selectedMonth]);
 
-  // ============================================================
-  // LÓGICA DE AGRUPAMENTO: Calcula tudo a partir dos resultados (Positions) + PlayerStats (Kills)
-  // ============================================================
   const clanRankingRaw = useMemo(() => {
     const resultsToUse = filteredResults;
     const statsToUse = filteredPlayerStats;
     const clanMap = new Map<string, any>();
 
-    // 1. Soma Pontos de Posição e conta Top 1/2/3 usando a tabela de Resultados
     resultsToUse.forEach((result) => {
       const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
@@ -165,7 +158,7 @@ export default function RankingClasTab() {
 
       const clan = clanMap.get(clanName);
       clan.totalPoints += result.totalPoints || 0;
-      clan.totalPosPoints += result.totalPoints || 0; // Na sua tabela, o totalPoints É os pontos de posição
+      clan.totalPosPoints += result.totalPoints || 0;
       clan.xtreinosPlayed += 1; 
       clan.lines.add(result.teamName);
 
@@ -182,7 +175,6 @@ export default function RankingClasTab() {
       });
     });
 
-    // 2. Soma as Kills usando a tabela de PlayerStats (e calcula os Pontos de Kill)
     statsToUse.forEach((stat) => {
       const teamKey = stat.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey);
@@ -193,12 +185,10 @@ export default function RankingClasTab() {
       }
     });
 
-    // Finaliza a transformação
     const finalArray = Array.from(clanMap.values());
     finalArray.forEach(c => {
       c.lines = Array.from(c.lines);
-      c.totalKillPoints = calcKillPoints(c.totalKills); // Usa a função oficial do seu sistema
-      // Recalcula o Total Geral somando Posição + Kill (caso o totalPoints antigo não tenha kills)
+      c.totalKillPoints = calcKillPoints(c.totalKills);
       c.totalPoints = c.totalPosPoints + c.totalKillPoints; 
     });
     
@@ -249,7 +239,7 @@ export default function RankingClasTab() {
 
   const clearFilters = () => {
     setSearch("");
-    setSelectedMonth("");
+    setSelectedMonth(""); // Volta exato para o Acumulado Geral
     clearCompare();
   };
 
