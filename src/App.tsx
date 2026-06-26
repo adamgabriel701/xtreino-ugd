@@ -11,6 +11,9 @@ import Jogadores from "./pages/Jogadores/page";
 import Inscricoes from "./pages/Inscricoes";
 import Salinhas from "./pages/Salinhas";
 import Sobre from "./pages/Sobre/page";
+
+import ExperiencePage from "./pages/Experience/page";
+
 import SalinhaPerlotti from "./pages/salinhas/SalinhaPerlotti";
 
 export default function App() {
@@ -30,6 +33,8 @@ export default function App() {
         <Route path="/inscricoes" element={<Inscricoes />} />
         <Route path="/salinhas" element={<Salinhas />} />
         <Route path="/sobre" element={<Sobre />} />
+
+        <Route path="/experience" element={<ExperiencePage />} />
 
         {/* Salinha Routes */}
         <Route path="/salinhas/perlotti" element={<SalinhaPerlotti />} />
