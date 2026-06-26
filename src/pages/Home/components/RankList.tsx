@@ -24,21 +24,35 @@ export default function RankList({
     </div>
   );
 
+  // MELHORIA 3: Calcula a pontuação máxima para a barra de poder
+  const maxPoints = Math.max(...rankings.map(r => r.points), 1);
+
   return (
-    <div className="divide-y divide-[#2a2a3a] max-h-[380px] overflow-y-auto custom-scrollbar">
-      {rankings.map((r, i) => (
-        <div key={r.id} className="flex items-center gap-4 px-6 py-3 hover:bg-[#1a1a24]/80 transition-colors group">
-          <span className={`w-8 text-center font-bold flex items-center justify-center ${
-            i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-amber-600" : "text-[#5a5a6e]"
-          }`}>
-            {i < 3 ? <Crown className="w-4 h-4" /> : <span className="text-sm">{i + 1}</span>}
-          </span>
-          <span className="flex-1 text-[#f0f0f5] font-medium text-sm group-hover:text-emerald-400 transition-colors truncate">{r.entityName}</span>
-          <span className="text-emerald-400 text-sm font-semibold tabular-nums">{r.points} pts</span>
-          {type === "team" && <span className="text-[#5a5a6e] text-xs tabular-nums">{r.wins ?? 0}V</span>}
-          {type === "player" && <span className="text-[#5a5a6e] text-xs tabular-nums">{r.kills ?? 0}K</span>}
-        </div>
-      ))}
+    <div className="divide-y divide-white/5 max-h-[380px] overflow-y-auto custom-scrollbar">
+      {rankings.map((r, i) => {
+        const widthPercentage = (r.points / maxPoints) * 100;
+        
+        return (
+          <div key={r.id} className="relative flex items-center gap-4 px-6 py-3 hover:bg-[#1a1a24]/80 transition-colors group overflow-hidden">
+            
+            {/* MELHORIA 3: BARRA DE PODER NO FUNDO */}
+            <div 
+              className="absolute left-0 top-0 bottom-0 bg-emerald-500/5 transition-all duration-700 group-hover:bg-emerald-500/10" 
+              style={{ width: `${widthPercentage}%` }} 
+            />
+
+            <span className={`relative z-10 w-8 text-center font-bold flex items-center justify-center ${
+              i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-amber-600" : "text-[#5a5a6e]"
+            }`}>
+              {i < 3 ? <Crown className="w-4 h-4" /> : <span className="text-sm">{i + 1}</span>}
+            </span>
+            <span className="relative z-10 flex-1 text-[#f0f0f5] font-medium text-sm group-hover:text-emerald-400 transition-colors truncate">{r.entityName}</span>
+            <span className="relative z-10 text-emerald-400 text-sm font-semibold tabular-nums">{r.points} pts</span>
+            {type === "team" && <span className="relative z-10 text-[#5a5a6e] text-xs tabular-nums">{r.wins ?? 0}V</span>}
+            {type === "player" && <span className="relative z-10 text-[#5a5a6e] text-xs tabular-nums">{r.kills ?? 0}K</span>}
+          </div>
+        );
+      })}
     </div>
   );
 }
