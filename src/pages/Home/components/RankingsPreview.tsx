@@ -9,39 +9,50 @@ import type { LucideIcon, RankCategory } from "../types";
 interface RankingsPreviewProps {
   onRecalculate: () => void;
   isRecalculating: boolean;
+  xtreinoFallback?: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }>;
   scrimFallback?: Array<{ id: number; entityName: string; points: number; kills?: number; wins?: number }>;
 }
 
 export default function RankingsPreview({
   onRecalculate,
   isRecalculating,
+  xtreinoFallback = [],
   scrimFallback = [],
 }: RankingsPreviewProps) {
   const [teamRankType, setTeamRankType] = useState<RankCategory>("xtreino");
   const [playerRankType, setPlayerRankType] = useState<RankCategory>("xtreino");
 
-  const { data: allTeamRankings, isLoading: isLoadingTeamRankings } = trpc.rankings.teams.useQuery({ 
+  // Busca os dados oficiais do backend (que podem estar vazios para Scrim/Camp)
+  const { data: officialTeamRankings, isLoading: isLoadingTeams } = trpc.rankings.teams.useQuery({ 
     limit: 50, 
     rankType: teamRankType 
   });
   
-  const { data: allPlayerRankings, isLoading: isLoadingPlayerRankings } = trpc.rankings.players.useQuery({ 
+  const { data: officialPlayerRankings, isLoading: isLoadingPlayers } = trpc.rankings.players.useQuery({ 
     limit: 50, 
     rankType: playerRankType 
   });
 
-  // LÓGICA FALLBACK: Se a query do backend voltar vazia para Scrim, usa o scrimFallback calculado na página
+  // LÓGICA DE FALLBACK: Se o backend retornar vazio, usa os dados reais calculados na página
   const finalTeamRankings = useMemo(() => {
-    if (teamRankType === "scrim" && (!allTeamRankings || allTeamRankings.length === 0) && scrimFallback.length > 0) {
-      return scrimFallback;
-    }
-    return allTeamRankings;
-  }, [allTeamRankings, teamRankType, scrimFallback]);
+    if (officialTeamRankings && officialTeamRankings.length > 0) return officialTeamRankings;
+    
+    if (teamRankType === "xtreino" && xtreinoFallback.length > 0) return xtreinoFallback;
+    if (teamRankType === "scrim" && scrimFallback.length > 0) return scrimFallback;
+    
+    return officialTeamRankings; // Retorna vazio se não tiver nada mesmo
+  }, [officialTeamRankings, teamRankType, xtreinoFallback, scrimFallback]);
 
   const finalPlayerRankings = useMemo(() => {
-    // Para jogadores de scrim, por enquanto deixamos vazio ou você pode adicionar lógica similar no futuro
-    return allPlayerRankings;
-  }, [allPlayerRankings]);
+    if (officialPlayerRankings && officialPlayerRankings.length > 0) return officialPlayerRankings;
+    
+    if (playerRankType === "xtreino" && xtreinoFallback.length > 0) {
+       // Para jogadores, usamos o mesmo fallback mas renomeamos matando kills para pontos
+       return xtreinoFallback.map(p => ({ ...p, points: p.kills ?? 0, kills: p.kills ?? 0 }));
+    }
+    
+    return officialPlayerRankings;
+  }, [officialPlayerRankings, playerRankType, xtreinoFallback]);
 
   const rankTabs: { key: RankCategory; label: string; icon: LucideIcon }[] = [
     { key: "xtreino", label: "XTreinos", icon: Dumbbell },
@@ -70,6 +81,8 @@ export default function RankingsPreview({
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Equipes */}
         <div className="animate-fade-up delay-100 group relative bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-emerald-500/20 transition-all duration-500">
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 z-10 pointer-events-none" />
+          
           <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-3 relative z-20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><TrendingUp className="w-4 h-4 text-emerald-400" /></div>
@@ -79,11 +92,13 @@ export default function RankingsPreview({
               {rankTabs.map((tab) => <RankTab key={tab.key} active={teamRankType === tab.key} onClick={() => setTeamRankType(tab.key)} label={tab.label} icon={tab.icon} />)}
             </div>
           </div>
-          <RankList rankings={finalTeamRankings} type="team" isLoading={isLoadingTeamRankings} isError={false} />
+          <RankList rankings={finalTeamRankings} type="team" isLoading={isLoadingTeams} isError={false} />
         </div>
 
         {/* Top Jogadores */}
         <div className="animate-fade-up delay-200 group relative bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-emerald-500/20 transition-all duration-500">
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 z-10 pointer-events-none" />
+          
           <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-3 relative z-20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><UserCircle className="w-4 h-4 text-emerald-400" /></div>
@@ -93,7 +108,7 @@ export default function RankingsPreview({
               {rankTabs.map((tab) => <RankTab key={tab.key} active={playerRankType === tab.key} onClick={() => setPlayerRankType(tab.key)} label={tab.label} icon={tab.icon} />)}
             </div>
           </div>
-          <RankList rankings={finalPlayerRankings} type="player" isLoading={isLoadingPlayerRankings} isError={false} />
+          <RankList rankings={finalPlayerRankings} type="player" isLoading={isLoadingPlayers} isError={false} />
         </div>
       </div>
     </section>

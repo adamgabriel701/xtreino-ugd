@@ -146,7 +146,18 @@ export default function Home() {
       .map((p) => ({ name: p.playerName, entityName: p.playerName, points: p.totalKills, kills: p.totalKills, wins: p.participations }));
   }, [teamPlayersGrouped]);
 
-  // NOVO: Fallbacks para preencher o Ranking quando o backend não tem dados oficiais de Scrim/Camp
+  // Dados formatados para passar como Fallback pro Ranking
+  const xtreinoRankingFallback = useMemo(() => {
+    if (!teamRanking || teamRanking.length === 0) return [];
+    return teamRanking.map((t, i) => ({
+      id: i + 1,
+      entityName: t.teamName,
+      points: t.totalPoints,
+      kills: t.totalKills,
+      wins: t.top1Count,
+    })).sort((a, b) => b.points - a.points);
+  }, [teamRanking]);
+
   const scrimRankingFallback = useMemo(() => {
     if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) return [];
     return scrimTeamAllTime.map((t, i) => ({
@@ -154,7 +165,7 @@ export default function Home() {
       entityName: t.teamName,
       points: t.totalPoints || 0,
       kills: t.totalKills || 0,
-      wins: t.matches || 0,
+      wins: t.wins || 0,
     })).sort((a, b) => b.points - a.points);
   }, [scrimTeamAllTime]);
 
@@ -171,15 +182,11 @@ export default function Home() {
         }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         
-        /* NOVO: Animação de entrada suave */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-up {
-          opacity: 0;
-          animation: fadeUp 0.6s ease-out forwards;
-        }
+        .animate-fade-up { opacity: 0; animation: fadeUp 0.6s ease-out forwards; }
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
         .delay-300 { animation-delay: 0.3s; }
@@ -211,10 +218,10 @@ export default function Home() {
         recentActivities={recentActivities} 
       />
       
-      {/* NOVO: Passando o fallback do Scrim para o RankingsPreview */}
       <RankingsPreview 
         onRecalculate={() => recalculateMutation.mutate()} 
         isRecalculating={recalculateMutation.isPending}
+        xtreinoFallback={xtreinoRankingFallback}
         scrimFallback={scrimRankingFallback}
       />
       
