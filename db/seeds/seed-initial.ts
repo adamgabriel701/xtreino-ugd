@@ -313,8 +313,8 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   // UGD Light
   ["DEATH", "UGD Light", "off"],
   ["I miss her", "UGD Light", "off"],
-  ["UGD Kyz", "UGD Light", "cap"],
-  ["UGD Psycho", "UGD Light", "off"],
+  ["UGD Kyz", "UGD Light", "off"],
+  ["UGD Psycho", "UGD Light", "cap"],
   ["Kyz", "UGD Light", "off"],
   ["Zann", "UGD Light", "off"],
   ["Psycho", "UGD Light", "off"],
@@ -344,6 +344,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["Sant", "UGD LEGENDS", "off"],
   ["Gabriel qgc", "UGD LEGENDS", "off"],
   ["Blaze", "UGD LEGENDS", "off"],
+  ["UGD Sant", "UGD Threat", "off"],
 
   // UGD OLYMPIQUE
   ["Weenot", "UGD OLYMPIQUE", "cap"],
@@ -351,6 +352,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["Striker", "UGD OLYMPIQUE", "off"],
   ["Lorex", "UGD OLYMPIQUE", "off"],
   ["CANTS", "UGD OLYMPIQUE", "res"],
+  ["UGD Sant", "UGD Threat", "res"],
 
   // UGD Threat
   ["Lorex", "UGD Threat", "off"],
@@ -361,10 +363,13 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["UGD Neo", "UGD Threat", "off"],
   ["UGD Treon", "UGD Threat", "off"],
   ["UGD cool7", "UGD Threat", "off"],
+  ["cool", "UGD Threat", "off"],
   ["Cool", "UGD Threat", "off"],
   ["Treon", "UGD Threat", "off"],
   ["Kaze", "UGD Threat", "off"],
   ["Arise", "UGD Threat", "off"],
+  ["UGD cool⁷", "UGD Threat", "off"],
+  ["UGD Sant", "UGD Threat", "res"],
   ["Santz", "UGD Threat", "res"],
 
   // Λつつ
@@ -455,10 +460,10 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["VAL Yzzi⁷", "Randolinhas", "off"],
   ["7xis ╲ Tilapia", "Randolinhas", "off"],
   // randolinhas
-  ["elbra", "randolinhas", "off"],
-  ["Felipe", "randolinhas", "off"],
-  ["frajola", "randolinhas", "off"],
-  ["rayzer_bot", "randolinhas", "off"],
+  ["elbra", "Randolinhas", "off"],
+  ["Felipe", "Randolinhas", "off"],
+  ["frajola", "Randolinhas", "off"],
+  ["rayzer_bot", "Randolinhas", "off"],
 
   // vengeance
   ["VNG NEAR★", "vengeance", "cap"],
@@ -479,8 +484,8 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["LMF_Boss", "UGD Threat", "off"],
 
   // UGD LIGHT
-  ["UGD Psycho", "UGD LIGHT", "off"],
-  ["Dopped", "UGD LIGHT", "off"],
+  ["UGD Psycho", "UGD Light", "off"],
+  ["Dopped", "UGD Light", "off"],
 ];
 
 // --- XTREINOS (lista base, sem dados de jogadores) ---
