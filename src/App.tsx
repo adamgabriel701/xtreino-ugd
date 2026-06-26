@@ -1,16 +1,16 @@
 import { Routes, Route } from "react-router";
 import { Toaster } from "sonner";
-import Home from "./pages/Home";
+import Home from "./pages/Home/page";
 import Campeonatos from "./pages/Campeonatos";
 import XTreinos from "./pages/XTreinos";
 import Scrims from "./pages/Scrims/page";
 import MatchResult from "./pages/Scrims/match/[id]/page"; // <-- NOVO IMPORT
 import Rankings from "./pages/Rankings";
 import Clans from "./pages/Clans";
-import Jogadores from "./pages/Jogadores";
+import Jogadores from "./pages/Jogadores/page";
 import Inscricoes from "./pages/Inscricoes";
 import Salinhas from "./pages/Salinhas";
-import Sobre from "./pages/Sobre";
+import Sobre from "./pages/Sobre/page";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminClans from "./pages/admin/Clans";
