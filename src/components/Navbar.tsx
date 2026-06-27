@@ -12,8 +12,11 @@ import {
   ChevronDown,
   Gamepad2,
   Crown,
+  Menu, // Adicionado ícone do hamburger
+  X,     // Adicionado ícone de fechar
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useIsMobile } from "../hooks/use-mobile"; // Ajuste o caminho se necessário
 
 interface NavItem {
   label: string;
@@ -29,6 +32,7 @@ interface NavGroup {
 
 export default function Navbar() {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -98,7 +102,7 @@ export default function Navbar() {
           }`}
         >
           <GroupIcon className="w-4 h-4" />
-          <span className="hidden lg:inline">{group.label}</span>
+          <span>{group.label}</span>
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
@@ -118,8 +122,8 @@ export default function Navbar() {
               const active = isActive(item.to);
               return (
                 <Link
-                  key={item.to as string}
-                  to={item.to as string}
+                  key={item.to}
+                  to={item.to}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
                     active
                       ? "bg-emerald-500/10 text-emerald-400 font-semibold"
@@ -150,130 +154,144 @@ export default function Navbar() {
               draggable={false}
               loading="eager"
             />
-            <span className="font-bold text-lg text-[#f0f0f5] hidden sm:block tracking-tight">
+            <span className="font-bold text-lg text-[#f0f0f5] tracking-tight">
               Underground
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          {!isMobile && (
+            <div className="flex items-center gap-1">
+              {mainLinks.map((link) => {
+                const LinkIcon = link.icon;
+                const active = isActive(link.to);
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      active
+                        ? "text-emerald-400 bg-emerald-500/10"
+                        : "text-[#8a8a9e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
+                    }`}
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+
+              <div className="w-px h-6 bg-[#2a2a3a] mx-1" />
+
+              <DropdownMenu group={eventosGroup} />
+              <DropdownMenu group={comunidadeGroup} />
+            </div>
+          )}
+
+          {/* Botão Hamburger Mobile */}
+          {isMobile && (
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 text-[#8a8a9e] hover:text-[#f0f0f5] transition-colors"
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu - AQUI ESTÁ A CORREÇÃO DO ESPAÇO LATERAL (overflow-hidden) */}
+      {isMobile && (
+        <div
+          className={`overflow-hidden border-t border-[#2a2a3a] bg-[#0a0a0f]/95 backdrop-blur-xl transition-all duration-300 ${
+            mobileOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="px-4 py-4 space-y-1">
+            {/* Main Links */}
             {mainLinks.map((link) => {
               const LinkIcon = link.icon;
               const active = isActive(link.to);
               return (
                 <Link
-                  key={link.to as string}
-                  to={link.to as string}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  key={link.to}
+                  to={link.to}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                     active
-                      ? "text-emerald-400 bg-emerald-500/10"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                       : "text-[#8a8a9e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
                   }`}
                 >
-                  <LinkIcon className="w-4 h-4" />
-                  <span className="hidden lg:inline">{link.label}</span>
+                  <LinkIcon className="w-5 h-5" />
+                  {link.label}
                 </Link>
               );
             })}
 
-            <div className="w-px h-6 bg-[#2a2a3a] mx-1" />
+            <div className="my-2 border-t border-[#2a2a3a]" />
 
-            <DropdownMenu group={eventosGroup} />
-            <DropdownMenu group={comunidadeGroup} />
+            {/* Eventos Group */}
+            <div className="px-4 py-2">
+              <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                <Trophy className="w-3.5 h-3.5" />
+                Eventos
+              </p>
+              <div className="space-y-1 pl-2">
+                {eventosGroup.items.map((item) => {
+                  const ItemIcon = item.icon;
+                  const active = isActive(item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                        active
+                          ? "text-emerald-400 bg-emerald-500/5 font-semibold"
+                          : "text-[#8a8a9e] hover:text-[#f0f0f5]"
+                      }`}
+                    >
+                      <ItemIcon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="my-2 border-t border-[#2a2a3a]" />
+
+            {/* Comunidade Group */}
+            <div className="px-4 py-2">
+              <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                <Users className="w-3.5 h-3.5" />
+                Comunidade
+              </p>
+              <div className="space-y-1 pl-2">
+                {comunidadeGroup.items.map((item) => {
+                  const ItemIcon = item.icon;
+                  const active = isActive(item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                        active
+                          ? "text-emerald-400 bg-emerald-500/5 font-semibold"
+                          : "text-[#8a8a9e] hover:text-[#f0f0f5]"
+                      }`}
+                    >
+                      <ItemIcon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="my-2 border-t border-[#2a2a3a]" />
           </div>
         </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`md:hidden border-t border-[#2a2a3a] bg-[#0a0a0f]/95 backdrop-blur-xl transition-all duration-300 overflow-hidden ${
-          mobileOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="px-4 py-4 space-y-1">
-          {/* Main Links */}
-          {mainLinks.map((link) => {
-            const LinkIcon = link.icon;
-            const active = isActive(link.to);
-            return (
-              <Link
-                key={link.to as string}
-                to={link.to as string}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  active
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    : "text-[#8a8a9e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-                }`}
-              >
-                <LinkIcon className="w-5 h-5" />
-                {link.label}
-              </Link>
-            );
-          })}
-
-          <div className="my-2 border-t border-[#2a2a3a]" />
-
-          {/* Eventos Group */}
-          <div className="px-4 py-2">
-            <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
-              <Trophy className="w-3.5 h-3.5" />
-              Eventos
-            </p>
-            <div className="space-y-1 pl-2">
-              {eventosGroup.items.map((item) => {
-                const ItemIcon = item.icon;
-                const active = isActive(item.to);
-                return (
-                  <Link
-                    key={item.to as string}
-                    to={item.to as string}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                      active
-                        ? "text-emerald-400 bg-emerald-500/5 font-semibold"
-                        : "text-[#8a8a9e] hover:text-[#f0f0f5]"
-                    }`}
-                  >
-                    <ItemIcon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="my-2 border-t border-[#2a2a3a]" />
-
-          {/* Comunidade Group */}
-          <div className="px-4 py-2">
-            <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
-              <Users className="w-3.5 h-3.5" />
-              Comunidade
-            </p>
-            <div className="space-y-1 pl-2">
-              {comunidadeGroup.items.map((item) => {
-                const ItemIcon = item.icon;
-                const active = isActive(item.to);
-                return (
-                  <Link
-                    key={item.to as string}
-                    to={item.to as string}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                      active
-                        ? "text-emerald-400 bg-emerald-500/5 font-semibold"
-                        : "text-[#8a8a9e] hover:text-[#f0f0f5]"
-                    }`}
-                  >
-                    <ItemIcon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="my-2 border-t border-[#2a2a3a]" />
-        </div>
-      </div>
+      )}
     </nav>
   );
 }
