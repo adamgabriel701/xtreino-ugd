@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router";
 import {
+  type LucideIcon,
   Home,
   Trophy,
   Dumbbell,
@@ -17,12 +18,12 @@ import { useState, useRef, useEffect } from "react";
 interface NavItem {
   label: string;
   to: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
 }
 
 interface NavGroup {
   label: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   items: NavItem[];
 }
 
@@ -117,8 +118,8 @@ export default function Navbar() {
               const active = isActive(item.to);
               return (
                 <Link
-                  key={item.to}
-                  to={item.to}
+                  key={item.to as string}
+                  to={item.to as string}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
                     active
                       ? "bg-emerald-500/10 text-emerald-400 font-semibold"
@@ -161,8 +162,8 @@ export default function Navbar() {
               const active = isActive(link.to);
               return (
                 <Link
-                  key={link.to}
-                  to={link.to}
+                  key={link.to as string}
+                  to={link.to as string}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active
                       ? "text-emerald-400 bg-emerald-500/10"
@@ -196,8 +197,8 @@ export default function Navbar() {
             const active = isActive(link.to);
             return (
               <Link
-                key={link.to}
-                to={link.to}
+                key={link.to as string}
+                to={link.to as string}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   active
                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
@@ -224,8 +225,8 @@ export default function Navbar() {
                 const active = isActive(item.to);
                 return (
                   <Link
-                    key={item.to}
-                    to={item.to}
+                    key={item.to as string}
+                    to={item.to as string}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                       active
                         ? "text-emerald-400 bg-emerald-500/5 font-semibold"
@@ -254,8 +255,8 @@ export default function Navbar() {
                 const active = isActive(item.to);
                 return (
                   <Link
-                    key={item.to}
-                    to={item.to}
+                    key={item.to as string}
+                    to={item.to as string}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                       active
                         ? "text-emerald-400 bg-emerald-500/5 font-semibold"
