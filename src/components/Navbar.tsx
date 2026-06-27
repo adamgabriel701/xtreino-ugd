@@ -12,10 +12,8 @@ import {
   ChevronDown,
   Gamepad2,
   Crown,
-  Menu, // Adicionado ícone do hamburger
-  X,     // Adicionado ícone de fechar
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react"; // Importação do useState corrigida aqui
 import { useIsMobile } from "../hooks/use-mobile"; // Ajuste o caminho se necessário
 
 interface NavItem {
@@ -33,7 +31,6 @@ interface NavGroup {
 export default function Navbar() {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -47,12 +44,6 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Fecha mobile menu ao mudar de rota
-  useEffect(() => {
-    setMobileOpen(false);
-    setOpenDropdown(null);
-  }, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -85,6 +76,10 @@ export default function Navbar() {
   const toggleDropdown = (key: string) => {
     setOpenDropdown((prev) => (prev === key ? null : key));
   };
+
+  // Lógica para saber qual seção do mobile está ativa baseada na URL
+  const isEventosActive = eventosGroup.items.some((item) => isActive(item.to));
+  const isComunidadeActive = comunidadeGroup.items.some((item) => isActive(item.to));
 
   const DropdownMenu = ({ group }: { group: NavGroup }) => {
     const isOpen = openDropdown === group.label;
@@ -187,28 +182,18 @@ export default function Navbar() {
               <DropdownMenu group={comunidadeGroup} />
             </div>
           )}
-
-          {/* Botão Hamburger Mobile */}
-          {isMobile && (
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 text-[#8a8a9e] hover:text-[#f0f0f5] transition-colors"
-            >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Mobile Menu - AQUI ESTÁ A CORREÇÃO DO ESPAÇO LATERAL (overflow-hidden) */}
+      {/* 
+        Mobile Navigation: Sem botão hamburguer.
+        As abas são mostradas baseadas na rota atual. 
+        Usamos renderização condicional para evitar QUALQUER espaço lateral (overflow).
+      */}
       {isMobile && (
-        <div
-          className={`overflow-hidden border-t border-[#2a2a3a] bg-[#0a0a0f]/95 backdrop-blur-xl transition-all duration-300 ${
-            mobileOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div className="px-4 py-4 space-y-1">
-            {/* Main Links */}
+        <div className="border-t border-[#2a2a3a] bg-[#0a0a0f]/95 backdrop-blur-xl">
+          <div className="px-4 py-3 space-y-1">
+            {/* Links Principais sempre visíveis no mobile */}
             {mainLinks.map((link) => {
               const LinkIcon = link.icon;
               const active = isActive(link.to);
@@ -228,67 +213,71 @@ export default function Navbar() {
               );
             })}
 
-            <div className="my-2 border-t border-[#2a2a3a]" />
+            {/* Grupo Eventos - Abre automaticamente se a rota atual for de Eventos */}
+            {isEventosActive && (
+              <>
+                <div className="my-2 border-t border-[#2a2a3a]" />
+                <div className="px-4 py-2">
+                  <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5" />
+                    Eventos
+                  </p>
+                  <div className="space-y-1 pl-2">
+                    {eventosGroup.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const active = isActive(item.to);
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                            active
+                              ? "text-emerald-400 bg-emerald-500/5 font-semibold"
+                              : "text-[#8a8a9e] hover:text-[#f0f0f5]"
+                          }`}
+                        >
+                          <ItemIcon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
 
-            {/* Eventos Group */}
-            <div className="px-4 py-2">
-              <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Trophy className="w-3.5 h-3.5" />
-                Eventos
-              </p>
-              <div className="space-y-1 pl-2">
-                {eventosGroup.items.map((item) => {
-                  const ItemIcon = item.icon;
-                  const active = isActive(item.to);
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                        active
-                          ? "text-emerald-400 bg-emerald-500/5 font-semibold"
-                          : "text-[#8a8a9e] hover:text-[#f0f0f5]"
-                      }`}
-                    >
-                      <ItemIcon className="w-4 h-4" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="my-2 border-t border-[#2a2a3a]" />
-
-            {/* Comunidade Group */}
-            <div className="px-4 py-2">
-              <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Users className="w-3.5 h-3.5" />
-                Comunidade
-              </p>
-              <div className="space-y-1 pl-2">
-                {comunidadeGroup.items.map((item) => {
-                  const ItemIcon = item.icon;
-                  const active = isActive(item.to);
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                        active
-                          ? "text-emerald-400 bg-emerald-500/5 font-semibold"
-                          : "text-[#8a8a9e] hover:text-[#f0f0f5]"
-                      }`}
-                    >
-                      <ItemIcon className="w-4 h-4" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="my-2 border-t border-[#2a2a3a]" />
+            {/* Grupo Comunidade - Abre automaticamente se a rota atual for de Comunidade */}
+            {isComunidadeActive && (
+              <>
+                <div className="my-2 border-t border-[#2a2a3a]" />
+                <div className="px-4 py-2">
+                  <p className="text-[#5a5a6e] text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <Users className="w-3.5 h-3.5" />
+                    Comunidade
+                  </p>
+                  <div className="space-y-1 pl-2">
+                    {comunidadeGroup.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const active = isActive(item.to);
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                            active
+                              ? "text-emerald-400 bg-emerald-500/5 font-semibold"
+                              : "text-[#8a8a9e] hover:text-[#f0f0f5]"
+                          }`}
+                        >
+                          <ItemIcon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
