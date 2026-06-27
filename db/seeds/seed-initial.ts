@@ -125,6 +125,8 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["Time E", "TE", null, "active", "Time independente E."],
   ["Randolinhas", "RND", null, "active", "Time avulso Randolinhas."],
   ["vengeance", "VNG", null, "active", "Time vengeance."],
+  ["Equipe H", "TH", null, "active", "Time independente H."],
+  ["Equipe K", "TK", null, "active", "Time independente K."],
 ];
 
 // --- PLAYERS ---
@@ -201,6 +203,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["NOKI", "FURY ROYAL", "res"],
   ["NGLIFE FURY", "FURY ROYAL", "off"],
   ["Egoist FURY", "FURY ROYAL", "off"],
+  ["Noteskz", "FURY ROYAL", "off"],
 
   // FURY CASUAL
   ["AM Akyra🥷", "FURY CASUAL", "off"],
@@ -493,6 +496,23 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   // UGD LIGHT
   ["UGD Psycho", "UGD Light", "off"],
   ["Dopped", "UGD Light", "off"],
+
+  // Equipe H
+  ["A", "Equipe H", "off"],
+  ["elxt", "Equipe H", "off"],
+  ["wasse lindu", "Equipe H", "off"],
+  ["Snzyx zp", "Equipe H", "off"],
+
+  // RED INSS
+  ["valha", "RED INSS", "off"],
+  ["trenzinxrc", "RED INSS", "off"],
+  ["RED iVERONz", "RED INSS", "off"],
+
+  // Equipe H
+  ["A", "Equipe H", "off"],
+  ["elxt", "Equipe H", "off"],
+  ["wasse lindu", "Equipe H", "off"],
+  ["Snzyx zp", "Equipe H", "off"],
 ];
 
 // --- XTREINOS (lista base, sem dados de jogadores) ---
@@ -514,6 +534,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 22/06", "2026-06-22", "finalizado"],
   ["XTreino Underground - 23/06", "2026-06-23", "finalizado"],
   ["XTreino Underground - 25/06", "2026-06-25", "finalizado"],
+  ["XTreino Underground - 26/06", "2026-06-26", "finalizado"],
 ];
 
 // ============================================================
