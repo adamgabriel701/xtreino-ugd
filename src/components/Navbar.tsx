@@ -9,11 +9,9 @@ import {
   UserCircle,
   BarChart3,
   Shield,
-  ChevronDown,
   Gamepad2,
   Crown,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react"; // Importação do useState corrigida aqui
 import { useIsMobile } from "../hooks/use-mobile"; // Ajuste o caminho se necessário
 
 interface NavItem {
@@ -31,19 +29,6 @@ interface NavGroup {
 export default function Navbar() {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fecha dropdown ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -73,44 +58,23 @@ export default function Navbar() {
     ],
   };
 
-  const toggleDropdown = (key: string) => {
-    setOpenDropdown((prev) => (prev === key ? null : key));
-  };
-
   // Lógica para saber qual seção do mobile está ativa baseada na URL
   const isEventosActive = eventosGroup.items.some((item) => isActive(item.to));
   const isComunidadeActive = comunidadeGroup.items.some((item) => isActive(item.to));
 
   const DropdownMenu = ({ group }: { group: NavGroup }) => {
-    const isOpen = openDropdown === group.label;
-    const hasActiveChild = group.items.some((item) => isActive(item.to));
-    const GroupIcon = group.icon;
-
+    // Como não temos mais estado global, usamos o Details/Summary nativo do HTML 
+    // para fazer o dropdown no Desktop sem precisar de useState/useRef/useEffect
     return (
-      <div className="relative" ref={isOpen ? dropdownRef : undefined}>
-        <button
-          onClick={() => toggleDropdown(group.label)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            hasActiveChild
-              ? "text-emerald-400 bg-emerald-500/10"
-              : "text-[#8a8a9e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-          }`}
-        >
-          <GroupIcon className="w-4 h-4" />
+      <details className="relative group">
+        <summary className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer text-[#8a8a9e] hover:text-[#f0f0f5] hover:bg-[#1a1a24] list-none">
+          <group.icon className="w-4 h-4" />
           <span>{group.label}</span>
-          <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-          />
-        </button>
+          <svg className="w-3.5 h-3.5 transition-transform duration-200 group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
 
         {/* Desktop Dropdown */}
-        <div
-          className={`absolute top-full left-0 mt-2 w-56 bg-[#12121a] border border-[#2a2a3a] rounded-xl shadow-2xl shadow-black/50 overflow-hidden transition-all duration-200 z-50 ${
-            isOpen
-              ? "opacity-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 -translate-y-2 pointer-events-none"
-          }`}
-        >
+        <div className="absolute top-full left-0 mt-2 w-56 bg-[#12121a] border border-[#2a2a3a] rounded-xl shadow-2xl shadow-black/50 overflow-hidden transition-all duration-200 z-50 opacity-0 group-open:opacity-100 -translate-y-2 group-open:translate-y-0 pointer-events-none group-open:pointer-events-auto">
           <div className="p-1.5">
             {group.items.map((item) => {
               const ItemIcon = item.icon;
@@ -119,6 +83,12 @@ export default function Navbar() {
                 <Link
                   key={item.to}
                   to={item.to}
+                  onClick={() => {
+                    // Fecha o details nativo ao clicar no link no Desktop
+                    if (!isMobile) {
+                      document.activeElement instanceof HTMLElement && document.activeElement.blur();
+                    }
+                  }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
                     active
                       ? "bg-emerald-500/10 text-emerald-400 font-semibold"
@@ -132,7 +102,7 @@ export default function Navbar() {
             })}
           </div>
         </div>
-      </div>
+      </details>
     );
   };
 
@@ -185,11 +155,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 
-        Mobile Navigation: Sem botão hamburguer.
-        As abas são mostradas baseadas na rota atual. 
-        Usamos renderização condicional para evitar QUALQUER espaço lateral (overflow).
-      */}
+      {/* Mobile Navigation */}
       {isMobile && (
         <div className="border-t border-[#2a2a3a] bg-[#0a0a0f]/95 backdrop-blur-xl">
           <div className="px-4 py-3 space-y-1">
