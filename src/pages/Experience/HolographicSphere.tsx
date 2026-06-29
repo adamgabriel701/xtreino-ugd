@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -20,6 +20,8 @@ export default function HolographicSphere() {
 
 function SceneContent() {
   const groupRef = useRef<THREE.Group>(null!);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const { viewport } = useThree();
 
   const count = 1500;
   const positions = useMemo(() => {
@@ -32,17 +34,72 @@ function SceneContent() {
     return pos;
   }, []);
 
+  // Cria textura procedural redonda para as partículas não serem "quadradas"
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32; canvas.height = 32;
+    const ctx = canvas.getContext('2d')!;
+    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.4, 'rgba(255,255,255,0.8)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 32, 32);
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+  }, []);
+
   useFrame((state) => {
     if (groupRef.current) {
       groupRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+      
+      // Interação com o mouse
+      mouseRef.current.x = (state.pointer.x * viewport.width) / 2;
+      mouseRef.current.y = (state.pointer.y * viewport.height) / 2;
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        mouseRef.current.y * 0.1,
+        0.05
+      );
     }
   });
 
   return (
     <group ref={groupRef}>
       <CoreSphere />
-      <ParticleField positions={positions} />
+      <OrbitalRings />
+      <ParticleField positions={positions} texture={particleTexture} />
     </group>
+  );
+}
+
+function OrbitalRings() {
+  const ring1Ref = useRef<THREE.Mesh>(null!);
+  const ring2Ref = useRef<THREE.Mesh>(null!);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (ring1Ref.current) {
+      ring1Ref.current.rotation.x = Math.PI / 2.5;
+      ring1Ref.current.rotation.z = t * 0.3;
+    }
+    if (ring2Ref.current) {
+      ring2Ref.current.rotation.x = Math.PI / 1.5;
+      ring2Ref.current.rotation.z = -t * 0.2;
+    }
+  });
+
+  return (
+    <>
+      <mesh ref={ring1Ref}>
+        <torusGeometry args={[2.8, 0.005, 16, 100]} />
+        <meshBasicMaterial color="#10b981" transparent opacity={0.4} />
+      </mesh>
+      <mesh ref={ring2Ref}>
+        <torusGeometry args={[3.2, 0.005, 16, 100]} />
+        <meshBasicMaterial color="#8b5cf6" transparent opacity={0.3} />
+      </mesh>
+    </>
   );
 }
 
@@ -102,7 +159,7 @@ function CoreSphere() {
   );
 }
 
-function ParticleField({ positions }: { positions: Float32Array }) {
+function ParticleField({ positions, texture }: { positions: Float32Array; texture: THREE.Texture }) {
   const ref = useRef<THREE.Points>(null!);
 
   useFrame((state) => {
@@ -117,7 +174,16 @@ function ParticleField({ positions }: { positions: Float32Array }) {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.03} color="#10b981" sizeAttenuation transparent opacity={0.5} depthWrite={false} />
+      <pointsMaterial 
+        size={0.06} 
+        color="#10b981" 
+        sizeAttenuation 
+        transparent 
+        opacity={0.6} 
+        depthWrite={false}
+        map={texture}
+        blending={THREE.AdditiveBlending}
+      />
     </points>
   );
 }

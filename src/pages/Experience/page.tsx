@@ -8,6 +8,7 @@ import { trpc } from "@/providers/trpc";
 import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
 import MainLayout from "@/layout/MainLayout";
 import { MouseTrailGlow, ScrambleText, MorphingNumber } from './Effects';
+import ActivitiesTimeline from './ActivitiesTimeline';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
@@ -56,7 +57,7 @@ interface RecentActivity {
 }
 
 // ============================================================================
-// FUNÇÕES DE CÁLCULO (baseadas nas tabs existentes)
+// FUNÇÕES DE CÁLCULO
 // ============================================================================
 
 function calcPlayerSparkline(rawStats: Array<{ playerName: string; date: string; totalKills: number }>, playerName: string): number[] {
@@ -121,11 +122,10 @@ function calcTeamBadges(team: { totalKills: number; totalPoints: number; xtreino
 }
 
 // ============================================================================
-// HOOK: useExperienceData
+// HOOK INTERNO (useExperienceData local)
 // ============================================================================
 
 function useExperienceData() {
-  // Dados das tabs existentes
   const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);
   const { data: allChampionships } = trpc.championships.list.useQuery(undefined);
   const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
@@ -136,22 +136,21 @@ function useExperienceData() {
   const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
   const { data: settings } = trpc.settings.get.useQuery();
 
-  const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
+  const { teamRanking } = useXtreinoCalculations({
     results: allResults ?? [],
     playerStats: allPlayerStats ?? [],
   });
 
   const isLoading = !allResults || !allPlayerStats || !rawPlayerRanking;
 
-  // Stats gerais
   const stats = useMemo(() => {
     const totalXtreinos = allXtreinos?.length ?? 0;
     const totalChampionships = allChampionships?.length ?? 0;
     const totalScrims = allScrims?.length ?? 0;
     const totalTeams = teamsList?.length ?? 0;
     const totalPlayers = playersList?.length ?? 0;
-    const totalKills = teamRanking?.reduce((acc, t) => acc + t.totalKills, 0) ?? 0;
-    const totalPoints = teamRanking?.reduce((acc, t) => acc + t.totalPoints, 0) ?? 0;
+    const totalKills = teamRanking?.reduce((acc: number, t: any) => acc + t.totalKills, 0) ?? 0;
+    const totalPoints = teamRanking?.reduce((acc: number, t: any) => acc + t.totalPoints, 0) ?? 0;
     const totalMatches = totalXtreinos + totalScrims + totalChampionships;
     const avgKillsPerMatch = totalMatches > 0 ? Math.round((totalKills / totalMatches) * 10) / 10 : 0;
     const avgPointsPerTeam = totalTeams > 0 ? Math.round((totalPoints / totalTeams) * 10) / 10 : 0;
@@ -163,11 +162,9 @@ function useExperienceData() {
     };
   }, [allXtreinos, allChampionships, allScrims, teamsList, playersList, teamRanking]);
 
-  // Top Players (baseado na JogadoresTab)
   const topPlayers = useMemo<TopPlayer[]>(() => {
     if (!rawPlayerRanking || rawPlayerRanking.length === 0) return [];
 
-    // Agrupa por jogador (mesma lógica da JogadoresTab)
     const playerMap = new Map<string, {
       playerName: string;
       teamName: string | null;
@@ -211,7 +208,7 @@ function useExperienceData() {
         kills: p.totalKills,
         participations: p.participations,
         avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
-        bestPerformance: 0, // Calculado abaixo
+        bestPerformance: 0,
         streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
         badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
         rank: 0,
@@ -223,14 +220,13 @@ function useExperienceData() {
       .map((p, i) => ({ ...p, rank: i + 1 }));
   }, [rawPlayerRanking]);
 
-  // Top Teams (baseado no RankingGeralTab)
   const topTeams = useMemo<TopTeam[]>(() => {
     if (!teamRanking || teamRanking.length === 0) return [];
 
     return teamRanking
-      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
       .slice(0, 8)
-      .map((team, i) => {
+      .map((team: any, i: number) => {
         const sparkline = calcTeamSparkline(team.xtreinos);
         return {
           id: `team-${team.teamName}`,
@@ -252,21 +248,20 @@ function useExperienceData() {
       });
   }, [teamRanking]);
 
-  // Atividades recentes
   const recentActivities = useMemo<RecentActivity[]>(() => {
     const activities: RecentActivity[] = [];
     let idCounter = 1;
 
     if (allXtreinos && allXtreinos.length > 0) {
       const recent = allXtreinos
-        .filter((x) => x.status === "fechado")
-        .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+        .filter((x: any) => x.status === "fechado")
+        .sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
         .slice(0, 3);
 
       for (const xt of recent) {
         const winner = teamRanking
-          ?.filter((t) => t.xtreinos.some((x) => x.xtreinoId === xt.id))
-          .sort((a, b) => b.totalPoints - a.totalPoints)[0];
+          ?.filter((t: any) => t.xtreinos.some((x: any) => x.xtreinoId === xt.id))
+          .sort((a: any, b: any) => b.totalPoints - a.totalPoints)[0];
 
         activities.push({
           id: idCounter++,
@@ -282,7 +277,7 @@ function useExperienceData() {
     }
 
     if (allChampionships && allChampionships.length > 0) {
-      allChampionships.slice(-2).reverse().forEach((champ) => {
+      allChampionships.slice(-2).reverse().forEach((champ: any) => {
         activities.push({
           id: idCounter++,
           type: "championship",
@@ -321,7 +316,6 @@ function useExperienceData() {
 // ============================================================================
 // FEATURES
 // ============================================================================
-
 const features = [
   { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador e equipe no cenário competitivo." },
   { icon: Shield, title: "Infraestrutura Sólida", desc: "Tecnologia de ponta garantindo estabilidade, velocidade e segurança absoluta dos dados." },
@@ -340,40 +334,26 @@ const itemVariants: Variants = {
 };
 
 // ============================================================================
-// COMPONENTE: Sparkline SVG
+// COMPONENTES AUXILIARES (Sparkline, Trends, etc)
 // ============================================================================
 
 function SparklineSVG({ data, width = 120, height = 30, color = "#10b981" }: { data: number[]; width?: number; height?: number; color?: string }) {
   if (data.length < 2) return <div className="text-xs text-[#5a5a6e]">—</div>;
-
   const max = Math.max(...data, 1);
   const min = Math.min(...data);
   const range = max - min || 1;
-
   const points = data.map((val, i) => {
     const x = (i / (data.length - 1)) * width;
     const y = height - ((val - min) / range) * height;
     return `${x},${y}`;
   }).join(" ");
-
   return (
     <svg width={width} height={height} className="opacity-60">
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={points}
-      />
+      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
       <circle cx={width} cy={height - ((data[data.length - 1] - min) / range) * height} r="3" fill={color} />
     </svg>
   );
 }
-
-// ============================================================================
-// COMPONENTE: TrendIcon
-// ============================================================================
 
 function TrendIcon({ trend }: { trend: "up" | "down" | "same" }) {
   if (trend === "up") return <TrendingUp className="w-4 h-4 text-green-400" />;
@@ -382,102 +362,39 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "same" }) {
 }
 
 // ============================================================================
-// COMPONENTE: RankBadge
-// ============================================================================
-
-function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />;
-  if (rank === 2) return <div className="w-5 h-5 rounded-full bg-gray-400/20 flex items-center justify-center text-xs font-bold text-gray-300">2</div>;
-  if (rank === 3) return <div className="w-5 h-5 rounded-full bg-amber-600/20 flex items-center justify-center text-xs font-bold text-amber-500">3</div>;
-  return <div className="w-5 h-5 rounded-full bg-[#1a1a2e] flex items-center justify-center text-xs font-bold text-[#5a5a6e]">{rank}</div>;
-}
-
-// ============================================================================
-// COMPONENTE: TopPlayersSection
+// COMPONENTES DE SEÇÃO (Players e Teams)
 // ============================================================================
 
 function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName: string }) {
   if (players.length === 0) return null;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
-    >
+    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-            {orgName} Elite
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Top <span className="text-emerald-400">Players</span>
-          </h2>
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">{orgName} Elite</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Top <span className="text-emerald-400">Players</span></h2>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {players.map((player, i) => (
-            <motion.div
-              key={player.id}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group relative bg-[#12121a]/80 backdrop-blur-sm border border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden"
-            >
-              <div className={`absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm ${
-                player.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                player.rank === 2 ? 'bg-gray-400/20 text-gray-300' :
-                player.rank === 3 ? 'bg-amber-600/20 text-amber-500' :
-                'bg-[#1a1a2e] text-[#5a5a6e]'
-              }`}>
-                {player.rank}
-              </div>
-
+            <motion.div key={player.id} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ y: -4, transition: { duration: 0.2 } }} className="group relative bg-[#12121a]/80 backdrop-blur-sm border border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
+              <div className={`absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm ${player.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' : player.rank === 2 ? 'bg-gray-400/20 text-gray-300' : player.rank === 3 ? 'bg-amber-600/20 text-amber-500' : 'bg-[#1a1a2e] text-[#5a5a6e]'}`}>{player.rank}</div>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <Target className="w-5 h-5 text-emerald-400" />
-                </div>
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center"><Target className="w-5 h-5 text-emerald-400" /></div>
                 <div className="min-w-0">
-                  <h3 className="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors">
-                    {player.name}
-                  </h3>
+                  <h3 className="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors">{player.name}</h3>
                   <p className="text-[#5a5a6e] text-xs">{player.teamName || "Sem time"}</p>
                 </div>
               </div>
-
               <div className="flex items-end gap-2 mb-2">
                 <span className="text-2xl font-black text-emerald-400">{player.kills}</span>
                 <span className="text-[#5a5a6e] text-xs mb-1">kills</span>
               </div>
-
               <div className="flex gap-3 text-xs text-[#5a5a6e] mb-3">
-                <span className="flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-cyan-400" /> {player.avgKills} avg
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-violet-400" /> {player.participations} xtrs
-                </span>
-                {player.streak >= 3 && (
-                  <span className="flex items-center gap-1 text-orange-400">
-                    <Flame className="w-3 h-3" /> {player.streak}
-                  </span>
-                )}
+                <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-cyan-400" /> {player.avgKills} avg</span>
+                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-violet-400" /> {player.participations} xtrs</span>
+                {player.streak >= 3 && (<span className="flex items-center gap-1 text-orange-400"><Flame className="w-3 h-3" /> {player.streak}</span>)}
               </div>
-
-              {player.badges.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {player.badges.slice(0, 3).map((badge) => (
-                    <span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">
-                      {badge}
-                    </span>
-                  ))}
-                </div>
-              )}
-
+              {player.badges.length > 0 && (<div className="flex flex-wrap gap-1 mb-3">{player.badges.slice(0, 3).map((badge) => (<span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{badge}</span>))}</div>)}
               <div className="flex items-center justify-between">
                 <SparklineSVG data={player.sparkline} width={100} height={24} />
                 <TrendIcon trend={player.trend} />
@@ -490,70 +407,27 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
   );
 }
 
-// ============================================================================
-// COMPONENTE: TopTeamsSection
-// ============================================================================
-
 function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string }) {
   if (teams.length === 0) return null;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
-    >
+    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-            {orgName} Rankings
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Top <span className="text-emerald-400">Equipes</span>
-          </h2>
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">{orgName} Rankings</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Top <span className="text-emerald-400">Equipes</span></h2>
         </div>
-
         <div className="space-y-3">
           {teams.map((team, i) => (
-            <motion.div
-              key={team.id}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              whileHover={{ x: 4, transition: { duration: 0.2 } }}
-              className="group flex items-center gap-4 bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${
-                team.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                team.rank === 2 ? 'bg-gray-400/20 text-gray-300' :
-                team.rank === 3 ? 'bg-amber-600/20 text-amber-500' :
-                'bg-[#1a1a2e] text-[#5a5a6e]'
-              }`}>
-                {team.rank}
-              </div>
-
+            <motion.div key={team.id} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ x: 4, transition: { duration: 0.2 } }} className="group flex items-center gap-4 bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${team.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' : team.rank === 2 ? 'bg-gray-400/20 text-gray-300' : team.rank === 3 ? 'bg-amber-600/20 text-amber-500' : 'bg-[#1a1a2e] text-[#5a5a6e]'}`}>{team.rank}</div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors">
-                  {team.name}
-                </h3>
+                <h3 className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors">{team.name}</h3>
                 <div className="flex gap-3 text-xs text-[#5a5a6e] mt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Flame className="w-3 h-3 text-orange-400" /> {team.wins} wins
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Crown className="w-3 h-3 text-violet-400" /> {team.top3Count} podiums
-                  </span>
-                  {team.badges.slice(0, 2).map((badge) => (
-                    <span key={badge} className="px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px]">
-                      {badge}
-                    </span>
-                  ))}
+                  <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-400" /> {team.wins} wins</span>
+                  <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-violet-400" /> {team.top3Count} podiums</span>
+                  {team.badges.slice(0, 2).map((badge) => (<span key={badge} className="px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px]">{badge}</span>))}
                 </div>
               </div>
-
               <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
                 <div className="text-center hidden sm:block">
                   <div className="text-emerald-400 font-black text-lg">{team.kills}</div>
@@ -574,68 +448,6 @@ function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string
               </div>
             </motion.div>
           ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ============================================================================
-// COMPONENTE: RecentActivities
-// ============================================================================
-
-function RecentActivitiesSection({ activities }: { activities: RecentActivity[] }) {
-  if (activities.length === 0) return null;
-
-  const typeConfig: Record<string, { bg: string; text: string; icon: typeof Calendar }> = {
-    xtreino: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', icon: Swords },
-    championship: { bg: 'bg-violet-500/10', text: 'text-violet-400', icon: Trophy },
-    scrim: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', icon: Target },
-    ranking: { bg: 'bg-amber-500/10', text: 'text-amber-400', icon: Crown },
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
-    >
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-            Em tempo real
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Atividades <span className="text-emerald-400">Recentes</span>
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {activities.map((activity, i) => {
-            const config = typeConfig[activity.type] || typeConfig.xtreino;
-            const Icon = config.icon;
-            return (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex items-start gap-4 bg-[#12121a]/40 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all duration-300"
-              >
-                <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                  <Icon className={`w-5 h-5 ${config.text}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-white font-bold text-sm">{activity.title}</h4>
-                  <p className="text-[#5a5a6e] text-xs mt-0.5">{activity.description}</p>
-                </div>
-                <span className="text-[#3a3a4e] text-xs shrink-0">{activity.date}</span>
-              </motion.div>
-            );
-          })}
         </div>
       </div>
     </motion.div>
@@ -679,7 +491,6 @@ export default function ExperiencePage() {
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
         <MouseTrailGlow />
 
-        {/* HERO */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           <motion.div className="absolute inset-0 z-0" style={{ scale: sphereScale, opacity: sphereOpacity }}>
             <Suspense fallback={<div className="w-full h-full bg-[#0a0a0f]" />}>
@@ -700,7 +511,8 @@ export default function ExperiencePage() {
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" as const }} className="text-base sm:text-lg md:text-xl text-[#6a6a7e] max-w-2xl mx-auto leading-relaxed px-2">
               Uma experiência imersiva onde dados, competição e tecnologia se encontram para redefinir o cenário competitivo.
             </motion.p>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }} className="absolute bottom-[-60px] sm:bottom-[-80px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }} className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
               <span className="text-[#3a3a4e] text-[10px] tracking-[0.3em] uppercase">Explore</span>
               <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }} className="w-5 h-8 border-2 border-[#3a3a4e] rounded-full flex justify-center pt-1.5">
                 <div className="w-1 h-2 bg-emerald-500 rounded-full" />
@@ -709,22 +521,18 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
-        {/* FEATURES */}
         <section className="relative z-20 bg-[#0a0a0f] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-                Construída para dominar
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-                Tecnologia de <span className="text-emerald-400">ponta</span>
-              </h2>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">Construída para dominar</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Tecnologia de <span className="text-emerald-400">ponta</span></h2>
             </motion.div>
+            
             <motion.div variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} onViewportEnter={() => features.forEach((_, i) => setTimeout(() => setScrambleTriggers(prev => { const n = [...prev]; n[i] = true; return n; }), i * 150))} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {features.map((f, i) => (
-                <motion.div key={f.title} variants={itemVariants} whileHover={{ y: -5 }} className="group relative bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-2xl p-5 sm:p-6 hover:border-emerald-500/40 transition-all duration-500 hover:shadow-[#0_0_40px_rgba(16,185,129,0.1)] overflow-hidden h-full">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-transparent group-hover:from-emerald-500/5 transition-all duration-500" />
-                  <div className="relative z-10">
+                <motion.div key={f.title} variants={itemVariants} whileHover={{ y: -5 }} className="group relative rounded-2xl p-[1px] overflow-hidden h-full">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-spin-slow bg-conic-gradient from-emerald-500 via-transparent to-transparent" />
+                  <div className="relative z-10 bg-[#12121a]/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 h-full">
                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
                       <f.icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
                     </div>
@@ -739,16 +547,11 @@ export default function ExperiencePage() {
           </div>
         </section>
 
-        {/* STATS */}
         <section className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 border-t border-white/5">
           <motion.div className="max-w-7xl mx-auto py-16 sm:py-24" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} onViewportEnter={() => setStatsTrigger(true)}>
             <div className="text-center mb-12">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-                Números que falam
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-                Resultados <span className="text-emerald-400">reais</span>
-              </h2>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">Números que falam</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Resultados <span className="text-emerald-400">reais</span></h2>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
               {displayStats.map((stat, i) => (
@@ -756,7 +559,7 @@ export default function ExperiencePage() {
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 mb-4 group-hover:bg-emerald-500/20 group-hover:scale-110 transition-all duration-300">
                     <stat.icon className="w-7 h-7 text-emerald-400" />
                   </div>
-                  <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-2">
+                  <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-2" style={{ textShadow: "0 0 30px rgba(16, 185, 129, 0.3)" }}>
                     <MorphingNumber value={stat.value} trigger={statsTrigger} suffix={stat.suffix} />
                   </div>
                   <div className="text-sm sm:text-base text-[#5a5a6e] font-medium uppercase tracking-wider">{stat.label}</div>
@@ -766,16 +569,10 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
-        {/* TOP PLAYERS */}
         <TopPlayersSection players={topPlayers} orgName={orgName} />
-
-        {/* TOP TEAMS */}
         <TopTeamsSection teams={topTeams} orgName={orgName} />
+        <ActivitiesTimeline activities={recentActivities} />
 
-        {/* ATIVIDADES RECENTES */}
-        <RecentActivitiesSection activities={recentActivities} />
-
-        {/* MANTRA */}
         <section className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto py-16 sm:py-24 relative overflow-hidden text-center">
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
