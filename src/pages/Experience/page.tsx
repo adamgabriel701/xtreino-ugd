@@ -1,23 +1,123 @@
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform, type Variants } from 'framer-motion';
-import { Shield, Crosshair, Globe, Cpu, Trophy, Users, Swords } from 'lucide-react';
+import { Shield, Crosshair, Globe, Cpu, Trophy, Users, Swords, Zap, Target } from 'lucide-react';
+import { trpc } from "@/providers/trpc";
+import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
 import MainLayout from "@/layout/MainLayout";
 import { MouseTrailGlow, ScrambleText, MorphingNumber } from './Effects';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
-const features = [
-  { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador." },
-  { icon: Shield, title: "Infraestrutura Sólida", desc: "Tecnologia de ponta garantindo estabilidade e segurança absoluta." },
-  { icon: Globe, title: "Cenário Conectado", desc: "Uma rede unindo jogadores, times e organizações." },
-  { icon: Cpu, title: "Inteligência Aplicada", desc: "Algoritmos próprios para análise de desempenho evolutiva." },
-];
+// ============================================================================
+// DADOS REAIS VIA TRPC
+// ============================================================================
 
-const stats = [
-  { value: 152, label: "XTreinos", icon: Swords, suffix: "" },
-  { value: 40000, label: "Kills", icon: Crosshair, suffix: "+" },
-  { value: 20, label: "Clãs", icon: Users, suffix: "" },
-  { value: 98, label: "Win Rate", icon: Trophy, suffix: "%" },
+function useExperienceData() {
+  const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);
+  const { data: allChampionships } = trpc.championships.list.useQuery(undefined);
+  const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
+  const { data: allResults } = trpc.xtreinos.listResults.useQuery();
+  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
+  const { data: teamsList } = trpc.teams.list.useQuery();
+  const { data: playersList } = trpc.players.list.useQuery();
+  const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
+  const { data: settings } = trpc.settings.get.useQuery();
+
+  const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
+    results: allResults ?? [],
+    playerStats: allPlayerStats ?? [],
+  });
+
+  const xtreinoRealStats = useMemo(() => {
+    if (!teamRanking || teamRanking.length === 0) {
+      return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalXtreinos: 0 };
+    }
+    return {
+      totalTeams: teamRanking.length,
+      totalKills: teamRanking.reduce((acc, t) => acc + t.totalKills, 0),
+      totalPoints: teamRanking.reduce((acc, t) => acc + t.totalPoints, 0),
+      totalXtreinos: teamRanking.reduce((acc, t) => acc + t.xtreinosPlayed, 0),
+    };
+  }, [teamRanking]);
+
+  const scrimRealStats = useMemo(() => {
+    if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) {
+      return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalScrims: 0 };
+    }
+    return {
+      totalTeams: scrimTeamAllTime.length,
+      totalKills: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalKills || 0), 0),
+      totalPoints: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalPoints || 0), 0),
+      totalScrims: scrimTeamAllTime.reduce((acc, t) => acc + (t.matches || 0), 0),
+    };
+  }, [scrimTeamAllTime]);
+
+  const topPlayers = useMemo(() => {
+    if (!teamPlayersGrouped || teamPlayersGrouped.size === 0) return [];
+    const allPlayers: Array<{ playerName: string; totalKills: number; participations: number; avgKills: number; teamName: string }> = [];
+    for (const [teamName, players] of teamPlayersGrouped.entries()) {
+      for (const player of players) allPlayers.push({ ...player, teamName });
+    }
+    const playerMap = new Map<string, typeof allPlayers[0]>();
+    for (const p of allPlayers) {
+      const key = p.playerName.trim().toLowerCase();
+      if (playerMap.has(key)) {
+        const existing = playerMap.get(key)!;
+        existing.totalKills += p.totalKills;
+        existing.participations += p.participations;
+        existing.avgKills = Number((existing.totalKills / existing.participations).toFixed(1));
+      } else {
+        playerMap.set(key, { ...p });
+      }
+    }
+    return Array.from(playerMap.values())
+      .sort((a, b) => b.totalKills - a.totalKills)
+      .slice(0, 5)
+      .map((p) => ({
+        name: p.playerName,
+        team: p.teamName,
+        kills: p.totalKills,
+        participations: p.participations,
+        avgKills: p.avgKills,
+      }));
+  }, [teamPlayersGrouped]);
+
+  const topTeams = useMemo(() => {
+    if (!teamRanking || teamRanking.length === 0) return [];
+    return teamRanking
+      .slice(0, 5)
+      .map((t) => ({
+        name: t.teamName,
+        points: t.totalPoints,
+        kills: t.totalKills,
+        wins: t.top1Count,
+        xtreinos: t.xtreinosPlayed,
+      }));
+  }, [teamRanking]);
+
+  return {
+    orgName: settings?.orgName ?? "Underground",
+    totalTeams: teamsList?.length ?? 0,
+    totalPlayers: playersList?.length ?? 0,
+    xtreinoStats: xtreinoRealStats,
+    scrimStats: scrimRealStats,
+    topPlayers,
+    topTeams,
+    totalXtreinos: allXtreinos?.length ?? 0,
+    totalChampionships: allChampionships?.length ?? 0,
+    totalScrims: allScrims?.length ?? 0,
+  };
+}
+
+// ============================================================================
+// FEATURES E STATS
+// ============================================================================
+
+const features = [
+  { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador e equipe no cenário competitivo." },
+  { icon: Shield, title: "Infraestrutura Sólida", desc: "Tecnologia de ponta garantindo estabilidade, velocidade e segurança absoluta dos dados." },
+  { icon: Globe, title: "Cenário Conectado", desc: "Uma rede unindo jogadores, times e organizações em um ecossistema vivo e integrado." },
+  { icon: Cpu, title: "Inteligência Aplicada", desc: "Algoritmos próprios para pontuação, ranking e análise de desempenho evolutiva." },
 ];
 
 const containerVariants: Variants = {
@@ -30,8 +130,156 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
+// ============================================================================
+// COMPONENTE: Top Players List
+// ============================================================================
+
+function TopPlayersSection({ players }: { players: Array<{ name: string; team: string; kills: number; participations: number; avgKills: number }> }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
+            Destaques
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+            Top <span className="text-emerald-400">Players</span>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {players.map((player, i) => (
+            <motion.div
+              key={player.name}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="group relative bg-[#12121a]/80 backdrop-blur-sm border border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-500"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${
+                  i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                  i === 1 ? 'bg-gray-400/20 text-gray-300' :
+                  i === 2 ? 'bg-amber-600/20 text-amber-500' :
+                  'bg-emerald-500/10 text-emerald-400'
+                }`}>
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-bold text-base truncate group-hover:text-emerald-400 transition-colors">
+                    {player.name}
+                  </h3>
+                  <p className="text-[#5a5a6e] text-xs">{player.team}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-emerald-400 font-black text-lg">{player.kills}</div>
+                  <div className="text-[#5a5a6e] text-[10px] uppercase tracking-wider">kills</div>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-4 text-xs text-[#5a5a6e]">
+                <span className="flex items-center gap-1">
+                  <Target className="w-3 h-3" /> {player.avgKills} avg
+                </span>
+                <span className="flex items-center gap-1">
+                  <Zap className="w-3 h-3" /> {player.participations} xtrs
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// COMPONENTE: Top Teams List
+// ============================================================================
+
+function TopTeamsSection({ teams }: { teams: Array<{ name: string; points: number; kills: number; wins: number; xtreinos: number }> }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
+            Rankings
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+            Top <span className="text-emerald-400">Equipes</span>
+          </h2>
+        </div>
+
+        <div className="space-y-3">
+          {teams.map((team, i) => (
+            <motion.div
+              key={team.name}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              whileHover={{ x: 4, transition: { duration: 0.2 } }}
+              className="group flex items-center gap-4 bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300"
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm ${
+                i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                i === 1 ? 'bg-gray-400/20 text-gray-300' :
+                i === 2 ? 'bg-amber-600/20 text-amber-500' :
+                'bg-[#1a1a2e] text-[#5a5a6e]'
+              }`}>
+                {i + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors">
+                  {team.name}
+                </h3>
+              </div>
+              <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
+                <div className="text-center">
+                  <div className="text-white font-black">{team.points.toLocaleString('pt-BR')}</div>
+                  <div className="text-[#5a5a6e] text-[10px] uppercase">pts</div>
+                </div>
+                <div className="text-center hidden sm:block">
+                  <div className="text-emerald-400 font-bold">{team.kills}</div>
+                  <div className="text-[#5a5a6e] text-[10px] uppercase">kills</div>
+                </div>
+                <div className="text-center hidden sm:block">
+                  <div className="text-cyan-400 font-bold">{team.wins}</div>
+                  <div className="text-[#5a5a6e] text-[10px] uppercase">wins</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[#5a5a6e] font-bold">{team.xtreinos}</div>
+                  <div className="text-[#5a5a6e] text-[10px] uppercase">xtrs</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
 export default function ExperiencePage() {
   const { scrollYProgress } = useScroll();
+  const data = useExperienceData();
 
   // EFEITO CINEMA: A esfera diminui e fica transparente conforme rola
   const sphereScale = useTransform(scrollYProgress, [0, 0.25], [1, 0.4]);
@@ -41,6 +289,13 @@ export default function ExperiencePage() {
   const [scrambleTriggers, setScrambleTriggers] = useState<boolean[]>(new Array(features.length).fill(false));
   const [statsTrigger, setStatsTrigger] = useState(false);
 
+  const stats = [
+    { value: data.xtreinoStats.totalXtreinos, label: "XTreinos", icon: Swords, suffix: "" },
+    { value: data.xtreinoStats.totalKills, label: "Kills Totais", icon: Crosshair, suffix: "" },
+    { value: data.totalTeams, label: "Equipes", icon: Users, suffix: "" },
+    { value: data.totalPlayers, label: "Players", icon: Trophy, suffix: "" },
+  ];
+
   return (
     <MainLayout>
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
@@ -48,7 +303,6 @@ export default function ExperiencePage() {
 
         {/* HERO COM CINEMA SCROLL */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
-          {/* 3D Canvas com Efeito de Afastamento (Zoom Out) */}
           <motion.div
             className="absolute inset-0 z-0"
             style={{ scale: sphereScale, opacity: sphereOpacity }}
@@ -60,11 +314,10 @@ export default function ExperiencePage() {
 
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#0a0a0f_80%)] z-[1] pointer-events-none" />
 
-          {/* Texto some para cima ao rolar */}
           <motion.div style={{ y: heroY }} className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" as const }} className="mb-6 sm:mb-8">
               <span className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                A Nova Era do E-sports Mobile
+                {data.orgName} — A Nova Era do E-sports Mobile
               </span>
             </motion.div>
             <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2, ease: "easeOut" as const }} className="text-[15vw] sm:text-[12vw] md:text-[8vw] lg:text-8xl font-black text-white leading-[0.85] sm:leading-[0.9] tracking-tighter mb-6 sm:mb-8" style={{ textShadow: "0 0 80px rgba(16, 185, 129, 0.5)" }}>
@@ -74,7 +327,6 @@ export default function ExperiencePage() {
               Uma experiência imersiva onde dados, competição e tecnologia se encontram para redefinir o cenário competitivo.
             </motion.p>
 
-            {/* Scroll Indicator */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -192,6 +444,12 @@ export default function ExperiencePage() {
             </div>
           </motion.div>
         </section>
+
+        {/* TOP PLAYERS */}
+        {data.topPlayers.length > 0 && <TopPlayersSection players={data.topPlayers} />}
+
+        {/* TOP TEAMS */}
+        {data.topTeams.length > 0 && <TopTeamsSection teams={data.topTeams} />}
 
         {/* MANTRA */}
         <section className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8">

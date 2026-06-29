@@ -47,7 +47,7 @@ export function MouseTrailGlow() {
             p.vx += (dx / dist) * 0.6;
             p.vy += (dy / dist) * 0.6;
           } else {
-            p.vy += 0.12; // gravity
+            p.vy += 0.12;
           }
 
           p.x += p.vx;
