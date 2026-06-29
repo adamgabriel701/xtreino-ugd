@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, type Variants, useMotionValue, useSpring, type MotionStyle } from 'framer-motion';
 import { Shield, Crosshair, Globe, Cpu } from 'lucide-react';
+import { ScrambleText } from './Effects';
 
 const features = [
   { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador e equipe no cenário competitivo." },
@@ -19,7 +20,9 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
-// Hook para efeito Parallax 3D no Mouse (Desktop) e Giroscópio (Mobile)
+// ============================================================================
+// HOOK: Parallax 3D no Mouse (Desktop) e Giroscópio (Mobile)
+// ============================================================================
 function useTilt(factor = 20): { ref: React.RefObject<HTMLDivElement | null>; style: MotionStyle } {
   const ref = useRef<HTMLDivElement | null>(null);
   const x = useMotionValue(0);
@@ -53,10 +56,12 @@ function useTilt(factor = 20): { ref: React.RefObject<HTMLDivElement | null>; st
     };
   }, [x, y, factor]);
 
-  // RETORNA COMO 'MotionStyle' PARA SATISFAZER O TYPESCRIPT
   return { ref, style: { x: springX, y: springY } };
 }
 
+// ============================================================================
+// COMPONENTE: HeroText com Tilt 3D
+// ============================================================================
 export function HeroText() {
   const { ref, style } = useTilt(15);
   const [showScroll, setShowScroll] = useState(true);
@@ -68,10 +73,9 @@ export function HeroText() {
   }, []);
 
   return (
-    // CORREÇÃO: Usado motion.div para aceitar o estilo animado corretamente
-    <motion.div 
-      ref={ref} 
-      style={style} 
+    <motion.div
+      ref={ref}
+      style={style}
       className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto will-change-transform"
     >
       <motion.div
@@ -124,16 +128,32 @@ export function HeroText() {
   );
 }
 
+// ============================================================================
+// COMPONENTE: FeaturesGrid com Scramble Effect
+// ============================================================================
 export function FeaturesGrid() {
+  const [scrambleTriggers, setScrambleTriggers] = useState<boolean[]>(new Array(features.length).fill(false));
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
+      onViewportEnter={() => {
+        features.forEach((_, i) => {
+          setTimeout(() => {
+            setScrambleTriggers(prev => {
+              const next = [...prev];
+              next[i] = true;
+              return next;
+            });
+          }, i * 150);
+        });
+      }}
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
     >
-      {features.map((feature) => {
+      {features.map((feature, index) => {
         const Icon = feature.icon;
         return (
           <motion.div
@@ -147,7 +167,9 @@ export function FeaturesGrid() {
               <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
                 <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
               </div>
-              <h3 className="text-[#f0f0f5] font-bold text-base sm:text-lg mb-2 group-hover:text-emerald-400 transition-colors">{feature.title}</h3>
+              <h3 className="text-[#f0f0f5] font-bold text-base sm:text-lg mb-2 group-hover:text-emerald-400 transition-colors font-mono">
+                <ScrambleText text={feature.title} trigger={scrambleTriggers[index]} />
+              </h3>
               <p className="text-[#5a5a6e] text-xs sm:text-sm leading-relaxed">{feature.desc}</p>
             </div>
           </motion.div>
@@ -157,6 +179,9 @@ export function FeaturesGrid() {
   );
 }
 
+// ============================================================================
+// COMPONENTE: MantraSection
+// ============================================================================
 export function MantraSection() {
   return (
     <motion.div
@@ -167,7 +192,10 @@ export function MantraSection() {
       className="text-center py-16 sm:py-24 relative overflow-hidden"
     >
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-        <h2 className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}>
+        <h2
+          className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]"
+          style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}
+        >
           EVOLUÇÃO
         </h2>
       </div>
@@ -175,7 +203,7 @@ export function MantraSection() {
         <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-[#f0f0f5] leading-tight max-w-4xl mx-auto tracking-tight">
           Não acompanhamos tendências. <br className="hidden sm:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">
-          Nós criamos o futuro.
+            Nós criamos o futuro.
           </span>
         </p>
       </div>
