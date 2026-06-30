@@ -20,9 +20,9 @@ export interface ExperienceStats {
 }
 
 export interface TopPlayer {
-  id: number;         // ID do Jogador
-  clanId?: number;    // ID do Clã ao qual ele pertence (adicione isso)
-  teamId?: number;    // ID da Line/Time ao qual ele pertence (adicione isso)
+  id: number;         // ID REAL do Jogador no banco
+  clanId?: number;    // ID REAL do Clã
+  teamId?: number;    // ID REAL da Line/Time
   name: string;
   teamName: string | null;
   kills: number;
@@ -35,10 +35,9 @@ export interface TopPlayer {
   trend: "up" | "down" | "same";
 }
 
-
 export interface TopTeam {
-  id: number;         // ID do Time (Line)
-  clanId?: number;    // ID do Clã (adicione isso)
+  id: number;         // ID REAL do Time (Line) no banco
+  clanId?: number;    // ID REAL do Clã
   name: string;
   wins: number;
   top3Count: number;
@@ -151,6 +150,7 @@ export function useExperienceData(): ExperienceData {
   const { data: playersList } = trpc.players.list.useQuery();
   const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
   const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
+  const { data: clansList } = trpc.clans.list.useQuery(); // ADICIONADO PARA PEGAR OS CLÃS
   const { data: settings } = trpc.settings.get.useQuery();
 
   const calculations = useXtreinoCalculations({
@@ -161,6 +161,30 @@ export function useExperienceData(): ExperienceData {
   const { teamRanking, teamPlayersGrouped, playerAccumulated, periodSummary } = calculations;
 
   const isLoading = !allResults || !allPlayerStats || !rawPlayerRanking;
+
+  // ========================================================================
+  // MAPAS DE RESOLUÇÃO DE IDs (A SOLUÇÃO DEFINITIVA)
+  // ========================================================================
+  
+  // Mapa: Nome do Time (toLowerCase) -> { id, clanId }
+  const teamMap = useMemo(() => {
+    const map = new Map<string, { id: number; clanId: number | null }>();
+    if (!teamsList) return map;
+    for (const team of teamsList) {
+      map.set(team.name.trim().toLowerCase(), { id: team.id, clanId: team.clanId ?? null });
+    }
+    return map;
+  }, [teamsList]);
+
+  // Mapa: Nick do Jogador (toLowerCase) -> { id, teamId }
+  const playerMap = useMemo(() => {
+    const map = new Map<string, { id: number; teamId: number | null }>();
+    if (!playersList) return map;
+    for (const player of playersList) {
+      map.set(player.nickname.trim().toLowerCase(), { id: player.id, teamId: player.teamId ?? null });
+    }
+    return map;
+  }, [playersList]);
 
   const stats = useMemo<ExperienceStats>(() => {
     const totalXtreinos = allXtreinos?.length ?? 0;
@@ -177,51 +201,82 @@ export function useExperienceData(): ExperienceData {
     return { totalXtreinos, totalChampionships, totalScrims, totalTeams, totalPlayers, totalKills, totalPoints, totalMatches, avgKillsPerMatch, avgPointsPerTeam };
   }, [allXtreinos, allChampionships, allScrims, teamsList, playersList, teamRanking]);
 
+  // ========================================================================
+  // TOP PLAYERS (CORRIGIDO PARA USAR IDs REAIS)
+  // ========================================================================
   const topPlayers = useMemo<TopPlayer[]>(() => {
     if (!rawPlayerRanking || rawPlayerRanking.length === 0) return [];
-    const playerMap = new Map<string, any>();
+    const playerStatsMap = new Map<string, any>();
 
     for (const stat of rawPlayerRanking) {
       const key = stat.playerName.trim().toLowerCase();
-      const existing = playerMap.get(key);
+      const existing = playerStatsMap.get(key);
       if (existing) {
         existing.totalKills += stat.totalKills || 0;
         existing.participations += 1;
         if (!existing.dates.includes(stat.date)) existing.dates.push(stat.date);
       } else {
-        playerMap.set(key, { playerName: stat.playerName, teamName: stat.teamName, totalKills: stat.totalKills || 0, participations: 1, dates: [stat.date] });
+        playerStatsMap.set(key, { playerName: stat.playerName, teamName: stat.teamName, totalKills: stat.totalKills || 0, participations: 1, dates: [stat.date] });
       }
     }
 
-    return Array.from(playerMap.values())
-      .map((p, index) => ({
-        id: index, name: p.playerName, teamName: p.teamName, kills: p.totalKills,
-        participations: p.participations, avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
-        streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
-        badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
-        rank: 0, trend: "same" as const, sparkline: calcPlayerSparkline(rawPlayerRanking, p.playerName),
-      }))
+    return Array.from(playerStatsMap.values())
+      .map((p) => {
+        const dbPlayer = playerMap.get(p.playerName.trim().toLowerCase()); // Resolve o ID real
+        return {
+          id: dbPlayer?.id ?? 0, // ID REAL DO BANCO
+          clanId: undefined, // O player não tem clanId direto, a rota /clans/x/line/y cuida disso
+          teamId: dbPlayer?.teamId ?? undefined, // ID REAL DO TIME
+          name: p.playerName, 
+          teamName: p.teamName, 
+          kills: p.totalKills,
+          participations: p.participations, 
+          avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
+          streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
+          badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
+          rank: 0, 
+          trend: "same" as const, 
+          sparkline: calcPlayerSparkline(rawPlayerRanking, p.playerName),
+        };
+      })
       .sort((a, b) => b.kills - a.kills)
       .slice(0, 8)
       .map((p, i) => ({ ...p, rank: i + 1 }));
-  }, [rawPlayerRanking]);
+  }, [rawPlayerRanking, playerMap]); // Adicionado playerMap na dependência
 
+  // ========================================================================
+  // TOP TEAMS (CORRIGIDO PARA USAR IDs REAIS E CLAN ID)
+  // ========================================================================
   const topTeams = useMemo<TopTeam[]>(() => {
     if (!teamRanking || teamRanking.length === 0) return [];
     return teamRanking
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .slice(0, 8)
-      .map((team, i) => {
+      .map((team) => {
         const sparkline = calcTeamSparkline(team.xtreinos);
+        const dbTeam = teamMap.get(team.teamName.trim().toLowerCase()); // Resolve o ID real e o clanId
+        
         return {
-          id: i + 1, name: team.teamName, points: team.totalPoints, kills: team.totalKills,
-          wins: team.top1Count, top3Count: team.top3Count, xtreinosPlayed: team.xtreinosPlayed, bestPosition: team.bestPosition,
+          id: dbTeam?.id ?? 0, // ID REAL DO BANCO (Antes era i + 1)
+          clanId: dbTeam?.clanId ?? undefined, // ID REAL DO CLÃ (Antes era undefined/0)
+          name: team.teamName, 
+          points: team.totalPoints, 
+          kills: team.totalKills,
+          wins: team.top1Count, 
+          top3Count: team.top3Count, 
           avgPoints: team.xtreinosPlayed > 0 ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10 : 0,
-          rank: i + 1, sparkline, trend: calcTeamTrend(sparkline), badges: calcTeamBadges(team),
+          rank: 0, // O rank será atribuído abaixo
+          sparkline, 
+          trend: calcTeamTrend(sparkline), 
+          badges: calcTeamBadges(team),
         };
-      });
-  }, [teamRanking]);
+      })
+      .map((p, i) => ({ ...p, rank: i + 1 })); // Atribui o rank corretamente
+  }, [teamRanking, teamMap]); // Adicionado teamMap na dependência
 
+  // ========================================================================
+  // RECENT ACTIVITIES
+  // ========================================================================
   const recentActivities = useMemo<RecentActivity[]>(() => {
     const activities: RecentActivity[] = [];
     let idCounter = 1;

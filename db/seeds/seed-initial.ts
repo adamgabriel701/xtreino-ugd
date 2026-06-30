@@ -118,6 +118,9 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["♱VØID×STRIKE♱", "VOID", "VOID STRIKE", "active", "Line principal da VOID STRIKE."],
   ["CPF CANCELADO", "CPF", "CPF", "active", "Line principal da CPF."],
   ["CPF VILTRUMITE", "CPF", "CPF", "active", "Line Viltrumite da CPF."],
+  ["Λ Ξ T H E R   F P S", "AET", null, "active", "Time avulso Aether FPS."],
+  ["Λ Ξ T H E R   F P S", "AET", null, "active", "Time avulso Aether FPS."],
+  ["EXE", "EXE", null, "active", "Time avulso EXE."],
 
   // Times avulsos (sem clã)
   ["Misturado", "MIX", null, "active", "Time misto de jogadores de diferentes clãs."],
@@ -127,6 +130,7 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["vengeance", "VNG", null, "active", "Time vengeance."],
   ["Equipe H", "TH", null, "active", "Time independente H."],
   ["Equipe K", "TK", null, "active", "Time independente K."],
+  ["Equipe D", "TD", null, "active", "Time independente D."],
 ];
 
 // --- PLAYERS ---
@@ -156,6 +160,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["CMF KIRA", "CMF ATLANTIC", "off"],
   ["CMF Sant", "CMF ATLANTIC", "off"],
   ["CMF HISOKA", "CMF ATLANTIC", "off"],
+  ["CMF KIRAΛ新神", "CMF ATLANTIC", "off"],
 
   // CMF ASSALT
   ["CMF Dnvy", "CMF ASSALT", "cap"],
@@ -193,6 +198,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["DEX", "FURY ELITE", "off"],
   ["Dexz7RYL", "FURY ELITE", "off"],
   ["try FURY", "FURY ELITE", "off"],
+  ["TENEBR FURY", "FURY ELITE", "res"],
 
   // FURY ROYAL
   ["VN", "FURY ROYAL", "cap"],
@@ -204,6 +210,7 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["NGLIFE FURY", "FURY ROYAL", "off"],
   ["Egoist FURY", "FURY ROYAL", "off"],
   ["Noteskz", "FURY ROYAL", "off"],
+  ["two'sguxta⁷", "FURY ROYAL", "res"],
 
   // FURY CASUAL
   ["AM Akyra🥷", "FURY CASUAL", "off"],
@@ -513,6 +520,19 @@ const PLAYERS_DATA: [string, string, "cap" | "off" | "res"][] = [
   ["elxt", "Equipe H", "off"],
   ["wasse lindu", "Equipe H", "off"],
   ["Snzyx zp", "Equipe H", "off"],
+
+  // Λ Ξ T H E R   F P S
+  ["AET THEKIL", "Λ Ξ T H E R   F P S", "off"],
+  ["Dacena", "Λ Ξ T H E R   F P S", "off"],
+  ["MacroSync", "Λ Ξ T H E R   F P S", "off"],
+  ["AET HIZZEN", "Λ Ξ T H E R   F P S", "off"],
+
+  // EXE
+  ["BG mt7", "EXE", "off"],
+  ["BG chico", "EXE", "off"],
+  ["BG XavierAim", "EXE", "off"],
+  ["BG TK T1", "EXE", "off"],
+  ["BG 00 07 000", "EXE", "off"],
 ];
 
 // --- XTREINOS (lista base, sem dados de jogadores) ---
@@ -535,6 +555,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 23/06", "2026-06-23", "finalizado"],
   ["XTreino Underground - 25/06", "2026-06-25", "finalizado"],
   ["XTreino Underground - 26/06", "2026-06-26", "finalizado"],
+  ["XTreino Underground - 29/06", "2026-06-29", "finalizado"],
 ];
 
 // ============================================================
