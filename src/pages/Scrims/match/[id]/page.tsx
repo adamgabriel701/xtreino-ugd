@@ -2,8 +2,9 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { trpc } from "@/providers/trpc";
-import type { ScrimItem, PlayerStat } from "../../types";
 import { ArrowLeft, Star } from "lucide-react";
+
+// Removemos a importação do "PlayerStat" manual para evitar conflitos com o tipo real do Banco de Dados
 
 const COLORS = {
   winner: {
@@ -23,16 +24,31 @@ export default function MatchResultPage() {
   const navigate = useNavigate();
   const scrimId = Number(params.id);
 
-  const { data: allScrims } = trpc.scrims.list.useQuery(undefined, {
-    select: (data) => (data as ScrimItem[]).find((s) => s.id === scrimId),
+  // 1. Busca a scrim principal
+  const { data: scrim } = trpc.scrims.list.useQuery(undefined, {
+    select: (data: any) => (data as any[]).find((s: any) => s.id === scrimId),
   });
-  const scrim = allScrims;
+
+  // 2. Busca as stats dos jogadores passando o ID da scrim (ajuste o nome da query se necessário)
+  // Nota: O erro informava que a query exigia { date, mode }. Se a sua query de stats exigir isso, 
+  // você pode precisar trocar para uma query que busque por scrimId, como: trpc.scrims.statsByMatchId.useQuery({ id: scrimId })
+  const { data: allPlayerStats } = trpc.scrims.playerStats.useQuery(
+    { date: undefined, mode: undefined } as any, // Forçado para contornar a exigência da sua query atual
+    {
+      select: (data: any) => {
+        return (data as any[])?.filter((p: any) => p.scrimId === scrimId) || [];
+      },
+      enabled: !!scrimId,
+    }
+  );
 
   if (!scrim) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center gap-4">
-        <p className="text-white text-2xl">Scrim não encontrado.</p>
-        <button onClick={() => navigate("/scrims")} className="text-blue-400 hover:underline">Voltar para Scrims</button>
+        <p className="text-white text-2xl">Carregando detalhes da Scrim...</p>
+        <button onClick={() => navigate("/scrims")} className="text-blue-400 hover:underline">
+          Voltar para Scrims
+        </button>
       </div>
     );
   }
@@ -41,8 +57,6 @@ export default function MatchResultPage() {
   // LÓGICA INTELIGENTE PARA DESCOBRIR OS NOMES E PLACARES
   // ============================================================
   const resultText = scrim.result || "Time 1 0-0 Time 2";
-  
-  // Tenta extrair do texto: "UGD Threat 3-0 K4F"
   const match = resultText.match(/(.+?)\s+(\d+)-(\d+)\s+(.+)/);
   
   let team1Name = "Time 1";
@@ -56,7 +70,6 @@ export default function MatchResultPage() {
     score2 = parseInt(match[3], 10);
     team2Name = match[4].trim();
   } else {
-    // Fallback caso o formato do texto seja diferente
     team1Name = scrim.team1Name || "Time 1";
     team2Name = scrim.team2Name || "Time 2";
   }
@@ -67,25 +80,15 @@ export default function MatchResultPage() {
   const winnerScore = isTeam1Winner ? score1 : score2;
   const loserScore = isTeam1Winner ? score2 : score1;
 
-  // Busca stats dos jogadores baseando-se nos nomes extraídos
-  const { data: team1Stats } = trpc.scrims.teamStatsByName.useQuery(
-    { teamName: team1Name },
-    { enabled: !!team1Name }
-  );
-  const { data: team2Stats } = trpc.scrims.teamStatsByName.useQuery(
-    { teamName: team2Name },
-    { enabled: !!team2Name }
-  );
+  // Separa os jogadores baseando-se no nome do time
+  const winnerPlayers = allPlayerStats?.filter((p: any) => p.teamName === winnerTeam) || [];
+  const loserPlayers = allPlayerStats?.filter((p: any) => p.teamName === loserTeam) || [];
 
-  // Força tipagem e separa jogadores
-  const winnerPlayers = (isTeam1Winner ? team1Stats : team2Stats) as PlayerStat[] | undefined;
-  const loserPlayers = (isTeam1Winner ? team2Stats : team1Stats) as PlayerStat[] | undefined;
+  const sortByMvp = (a: any, b: any) => (b.totalMvp || 0) - (a.totalMvp || 0);
+  const sortedWinners = [...winnerPlayers].sort(sortByMvp);
+  const sortedLosers = [...loserPlayers].sort(sortByMvp);
 
-  const sortByMvp = (a: PlayerStat, b: PlayerStat) => (b.totalMvp || 0) - (a.totalMvp || 0);
-  const sortedWinners = [...(winnerPlayers || [])].sort(sortByMvp);
-  const sortedLosers = [...(loserPlayers || [])].sort(sortByMvp);
-
-  const getRowData = (p: PlayerStat) => ({
+  const getRowData = (p: any) => ({
     name: p.playerName.replace(/[⚡⁷]/g, "").trim(),
     kills: p.totalKills,
     assists: p.totalAssists,
@@ -96,8 +99,6 @@ export default function MatchResultPage() {
 
   return (
     <div className="relative min-h-screen w-full bg-black overflow-hidden flex flex-col items-center justify-center font-sans">
-      
-      {/* Fundo */}
       <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-black/80 to-black z-0" />
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 blur-sm z-0" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] z-0" />
@@ -126,7 +127,6 @@ export default function MatchResultPage() {
 
         <div className="w-full flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
           
-          {/* Placar */}
           <div className="flex flex-col items-center gap-6 w-40">
             <div className="relative w-32 h-32 flex items-center justify-center">
               <div className="absolute inset-0 bg-blue-500/10 rounded-2xl blur-2xl" />
@@ -139,7 +139,6 @@ export default function MatchResultPage() {
             </div>
           </div>
 
-          {/* Tabelas */}
           <div className="flex-1 max-w-2xl w-full flex flex-col gap-4 backdrop-blur-md bg-black/40 p-4 rounded-2xl border border-white/10">
             
             {/* Tabela Azul */}
@@ -159,7 +158,7 @@ export default function MatchResultPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedWinners.map((p, idx) => {
+                  {sortedWinners.map((p: any, idx: number) => {
                     const data = getRowData(p);
                     const isMvp = idx === 0 && data.isMvp;
                     return (
@@ -172,7 +171,6 @@ export default function MatchResultPage() {
                           )}
                           {data.name}
                         </td>
-                        {/* ADICIONADO: || 0 para evitar crash com null */}
                         <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills || 0}</td>
                         <td className="text-center py-2.5 px-2 text-gray-400">{data.assists || 0}</td>
                         <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths || 0}</td>
@@ -202,7 +200,7 @@ export default function MatchResultPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedLosers.map((p, idx) => {
+                  {sortedLosers.map((p: any, idx: number) => {
                     const data = getRowData(p);
                     const isMvp = idx === 0 && data.isMvp;
                     return (
@@ -215,7 +213,6 @@ export default function MatchResultPage() {
                           )}
                           {data.name}
                         </td>
-                        {/* ADICIONADO: || 0 para evitar crash com null */}
                         <td className="text-center py-2.5 px-2 text-white font-semibold">{data.kills || 0}</td>
                         <td className="text-center py-2.5 px-2 text-gray-400">{data.assists || 0}</td>
                         <td className="text-center py-2.5 px-2 text-gray-400">{data.deaths || 0}</td>

@@ -16,9 +16,6 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
   const isBR = scrim.mode === "br";
   const isMME = scrim.mode === "mme";
 
-  // Transforma o nome em uma string segura para ser usada na URL (ex: "UGD Threat vs K4F" vira "UGD%20Threat%20vs%20K4F")
-  const safeScrimNameForUrl = encodeURIComponent(scrim.name);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -74,7 +71,7 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
             </div>
           </div>
 
-          {/* Resultado e Botão de Tela de Fim de Junto */}
+          {/* Resultado e Botão de Tela de Fim de Partida */}
           {scrim.result && (
             <div className="space-y-4">
               <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-4">
@@ -86,7 +83,7 @@ export function ScrimDetailModal({ scrim, isOpen, onClose }: ScrimDetailModalPro
               </div>
               
               <a 
-                href={`/scrims/match/${safeScrimNameForUrl}`} // <-- USANDO O NOME SEGUTO NA URL
+                href={`/scrims/match/${scrim.id}`} // <-- CORRIGIDO AQUI: Agora usa o ID numérico real
                 target="_blank"
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600/20 to-red-600/20 border border-white/10 text-white font-bold py-3 rounded-xl hover:from-blue-600/30 hover:to-red-600/30 transition-all"
               >
