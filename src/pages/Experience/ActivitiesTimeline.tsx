@@ -49,12 +49,12 @@ export default function ActivitiesTimeline({ activities }: { activities: RecentA
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   className="relative pl-16 group"
                 >
-                  // Dot pulsante na linha do tempo
+                  {/* Dot pulsante na linha do tempo */}
                   <div className={`absolute left-[18px] top-2 w-[18px] h-[18px] rounded-full ${config.bg} flex items-center justify-center z-10 ring-4 ring-[#0a0a0f] group-hover:scale-125 transition-transform`}>
                     <div className="w-2 h-2 bg-white rounded-full" />
                   </div>
 
-                  // Card de conteúdo
+                  {/* Card de conteúdo */}
                   <div className="bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-5 group-hover:border-white/10 transition-all duration-300">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-4 min-w-0">

@@ -26,7 +26,12 @@ export interface TopPlayer {
   kills: number;
   participations: number;
   avgKills: number;
+  bestPerformance: number;
+  streak: number;
+  badges: string[];
   rank: number;
+  trend: "up" | "down" | "same";
+  sparkline: number[];
 }
 
 export interface TopTeam {
@@ -40,6 +45,9 @@ export interface TopTeam {
   bestPosition: number | null;
   avgPoints: number;
   rank: number;
+  sparkline: number[];
+  trend: "up" | "down" | "same";
+  badges: string[];
 }
 
 export interface RecentActivity {
@@ -70,11 +78,69 @@ export interface ExperienceData {
 }
 
 // ============================================================================
+// FUNÇÕES DE CÁLCULO AUXILIARES
+// ============================================================================
+
+function calcPlayerSparkline(rawStats: Array<{ playerName: string; date: string; totalKills: number }>, playerName: string): number[] {
+  const playerStats = rawStats.filter((s) => s.playerName === playerName).sort((a, b) => a.date.localeCompare(b.date));
+  const dateMap = new Map<string, number>();
+  playerStats.forEach((s) => { dateMap.set(s.date, (dateMap.get(s.date) || 0) + s.totalKills); });
+  return Array.from(dateMap.keys()).sort().map((d) => dateMap.get(d) || 0);
+}
+
+function calcPlayerStreak(rawStats: Array<{ playerName: string; date: string }>, playerName: string): number {
+  const allDates = [...new Set(rawStats.map((s) => s.date))].sort();
+  const playerDates = new Set(rawStats.filter((s) => s.playerName === playerName).map((s) => s.date));
+  let streak = 0;
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    if (playerDates.has(allDates[i])) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function calcPlayerBadges(totalKills: number, participations: number, avgKills: number): string[] {
+  const badges: string[] = [];
+  if (totalKills >= 100) badges.push("100 Kills");
+  if (totalKills >= 300) badges.push("300 Kills");
+  if (totalKills >= 500) badges.push("500 Kills");
+  if (participations >= 5) badges.push("5 XTs");
+  if (participations >= 10) badges.push("10 XTs");
+  if (participations >= 20) badges.push("20 XTs");
+  if (avgKills >= 8) badges.push("Sniper");
+  if (avgKills >= 12) badges.push("Elite");
+  return badges;
+}
+
+function calcTeamSparkline(teamXtreinos: Array<{ date: string; totalPoints: number }>): number[] {
+  return [...teamXtreinos].sort((a, b) => a.date.localeCompare(b.date)).map((x) => x.totalPoints);
+}
+
+function calcTeamTrend(sparkline: number[]): "up" | "down" | "same" {
+  if (sparkline.length < 2) return "same";
+  const last = sparkline[sparkline.length - 1];
+  const prev = sparkline[sparkline.length - 2];
+  if (last > prev) return "up";
+  if (last < prev) return "down";
+  return "same";
+}
+
+function calcTeamBadges(team: { totalKills: number; totalPoints: number; xtreinosPlayed: number; top1Count: number; top3Count: number }): string[] {
+  const badges: string[] = [];
+  if (team.top1Count >= 1) badges.push("Campeão");
+  if (team.top1Count >= 5) badges.push("Dinastia");
+  if (team.top3Count >= 10) badges.push("Consistente");
+  if (team.totalKills >= 500) badges.push("500+ Kills");
+  if (team.xtreinosPlayed >= 20) badges.push("Veterano");
+  if (team.totalPoints >= 500) badges.push("500+ Pts");
+  return badges;
+}
+
+// ============================================================================
 // HOOK PRINCIPAL
 // ============================================================================
 
 export function useExperienceData(): ExperienceData {
-  // Dados brutos via tRPC (mesmos endpoints da Home)
   const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);
   const { data: allChampionships } = trpc.championships.list.useQuery(undefined);
   const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
@@ -82,25 +148,18 @@ export function useExperienceData(): ExperienceData {
   const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
   const { data: teamsList } = trpc.teams.list.useQuery();
   const { data: playersList } = trpc.players.list.useQuery();
+  const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
   const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
   const { data: settings } = trpc.settings.get.useQuery();
 
-  // Hook de cálculos existente
   const calculations = useXtreinoCalculations({
     results: allResults ?? [],
     playerStats: allPlayerStats ?? [],
   });
 
-  const {
-    teamRanking,
-    teamPlayersGrouped,
-    playerAccumulated,
-    periodSummary,
-  } = calculations;
+  const { teamRanking, teamPlayersGrouped, playerAccumulated, periodSummary } = calculations;
 
-  // ============================================================================
-  // STATS GERAIS
-  // ============================================================================
+  const isLoading = !allResults || !allPlayerStats || !rawPlayerRanking;
 
   const stats = useMemo<ExperienceStats>(() => {
     const totalXtreinos = allXtreinos?.length ?? 0;
@@ -108,183 +167,99 @@ export function useExperienceData(): ExperienceData {
     const totalScrims = allScrims?.length ?? 0;
     const totalTeams = teamsList?.length ?? 0;
     const totalPlayers = playersList?.length ?? 0;
-
-    // Soma de kills e pontos do ranking de times
     const totalKills = teamRanking?.reduce((acc, t) => acc + t.totalKills, 0) ?? 0;
     const totalPoints = teamRanking?.reduce((acc, t) => acc + t.totalPoints, 0) ?? 0;
-
-    // Total de "partidas" = xtreinos + scrims + campeonatos
     const totalMatches = totalXtreinos + totalScrims + totalChampionships;
-
-    // Médias
     const avgKillsPerMatch = totalMatches > 0 ? Math.round((totalKills / totalMatches) * 10) / 10 : 0;
     const avgPointsPerTeam = totalTeams > 0 ? Math.round((totalPoints / totalTeams) * 10) / 10 : 0;
 
-    return {
-      totalXtreinos,
-      totalChampionships,
-      totalScrims,
-      totalTeams,
-      totalPlayers,
-      totalKills,
-      totalPoints,
-      totalMatches,
-      avgKillsPerMatch,
-      avgPointsPerTeam,
-    };
+    return { totalXtreinos, totalChampionships, totalScrims, totalTeams, totalPlayers, totalKills, totalPoints, totalMatches, avgKillsPerMatch, avgPointsPerTeam };
   }, [allXtreinos, allChampionships, allScrims, teamsList, playersList, teamRanking]);
 
-  // ============================================================================
-  // TOP PLAYERS (Top 8)
-  // ============================================================================
-
   const topPlayers = useMemo<TopPlayer[]>(() => {
-    if (!playerAccumulated || playerAccumulated.length === 0) return [];
+    if (!rawPlayerRanking || rawPlayerRanking.length === 0) return [];
+    const playerMap = new Map<string, any>();
 
-    return playerAccumulated
-      .sort((a, b) => b.totalKills - a.totalKills)
+    for (const stat of rawPlayerRanking) {
+      const key = stat.playerName.trim().toLowerCase();
+      const existing = playerMap.get(key);
+      if (existing) {
+        existing.totalKills += stat.totalKills || 0;
+        existing.participations += 1;
+        if (!existing.dates.includes(stat.date)) existing.dates.push(stat.date);
+      } else {
+        playerMap.set(key, { playerName: stat.playerName, teamName: stat.teamName, totalKills: stat.totalKills || 0, participations: 1, dates: [stat.date] });
+      }
+    }
+
+    return Array.from(playerMap.values())
+      .map((p) => ({
+        id: `player-${p.playerName}`, name: p.playerName, teamName: p.teamName, kills: p.totalKills,
+        participations: p.participations, avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
+        bestPerformance: 0, streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
+        badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
+        rank: 0, trend: "same" as const, sparkline: calcPlayerSparkline(rawPlayerRanking, p.playerName),
+      }))
+      .sort((a, b) => b.kills - a.kills)
       .slice(0, 8)
-      .map((player, index) => ({
-        id: `player-${player.playerName}`,
-        name: player.playerName,
-        teamName: player.teamName,
-        kills: player.totalKills,
-        participations: player.participations,
-        avgKills: player.avgKills,
-        rank: index + 1,
-      }));
-  }, [playerAccumulated]);
-
-  // ============================================================================
-  // TOP TEAMS (Top 8)
-  // ============================================================================
+      .map((p, i) => ({ ...p, rank: i + 1 }));
+  }, [rawPlayerRanking]);
 
   const topTeams = useMemo<TopTeam[]>(() => {
     if (!teamRanking || teamRanking.length === 0) return [];
-
     return teamRanking
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .slice(0, 8)
-      .map((team, index) => ({
-        id: `team-${team.teamName}`,
-        name: team.teamName,
-        points: team.totalPoints,
-        kills: team.totalKills,
-        wins: team.top1Count,
-        top3Count: team.top3Count,
-        xtreinosPlayed: team.xtreinosPlayed,
-        bestPosition: team.bestPosition,
-        avgPoints: team.xtreinosPlayed > 0
-          ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10
-          : 0,
-        rank: index + 1,
-      }));
+      .map((team, i) => {
+        const sparkline = calcTeamSparkline(team.xtreinos);
+        return {
+          id: `team-${team.teamName}`, name: team.teamName, points: team.totalPoints, kills: team.totalKills,
+          wins: team.top1Count, top3Count: team.top3Count, xtreinosPlayed: team.xtreinosPlayed, bestPosition: team.bestPosition,
+          avgPoints: team.xtreinosPlayed > 0 ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10 : 0,
+          rank: i + 1, sparkline, trend: calcTeamTrend(sparkline), badges: calcTeamBadges(team),
+        };
+      });
   }, [teamRanking]);
-
-  // ============================================================================
-  // ATIVIDADES RECENTES
-  // ============================================================================
 
   const recentActivities = useMemo<RecentActivity[]>(() => {
     const activities: RecentActivity[] = [];
     let idCounter = 1;
 
-    // Últimos XTreinos finalizados
     if (allXtreinos && allXtreinos.length > 0) {
-      const recentXtreinos = allXtreinos
-        .filter((x) => x.status === "fechado")
-        .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-        .slice(0, 3);
-
+      const recentXtreinos = allXtreinos.filter((x) => x.status === "fechado").sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()).slice(0, 3);
       for (const xt of recentXtreinos) {
-        // Busca o vencedor desse xtreino no teamRanking
-        const winner = teamRanking
-          ?.filter((t) => t.xtreinos.some((x) => x.xtreinoId === xt.id))
-          .sort((a, b) => b.totalPoints - a.totalPoints)[0];
-
+        const winner = teamRanking?.filter((t) => t.xtreinos.some((x) => x.xtreinoId === xt.id)).sort((a, b) => b.totalPoints - a.totalPoints)[0];
         activities.push({
-          id: idCounter++,
-          type: "xtreino",
-          title: `XTreino #${xt.id} — ${xt.name}`,
-          description: winner
-            ? `Vitória de "${winner.teamName}" com ${winner.totalPoints} pts`
-            : "Resultado computado",
-          date: xt.date || "Data não definida",
-          highlight: winner?.teamName,
+          id: idCounter++, type: "xtreino", title: `XTreino #${xt.id} — ${xt.name}`,
+          description: winner ? `Vitória de "${winner.teamName}" com ${winner.totalPoints} pts` : "Resultado computado",
+          date: xt.date || "Data não definida", highlight: winner?.teamName,
         });
       }
     }
 
-    // Campeonatos recentes
     if (allChampionships && allChampionships.length > 0) {
-      const recentChamps = allChampionships
-        .slice(-2)
-        .reverse();
-
-      for (const champ of recentChamps) {
+      allChampionships.slice(-2).reverse().forEach((champ) => {
         activities.push({
-          id: idCounter++,
-          type: "championship",
-          title: `Campeonato "${champ.name}"`,
-          description: champ.status === "ativo"
-            ? "Em andamento"
-            : champ.status === "inscricoes"
-            ? "Inscrições abertas"
-            : "Encerrado",
+          id: idCounter++, type: "championship", title: `Campeonato "${champ.name}"`,
+          description: champ.status === "ativo" ? "Em andamento" : champ.status === "inscricoes" ? "Inscrições abertas" : "Encerrado",
           date: champ.startDate || "Data não definida",
         });
-      }
-    }
-
-    // Scrims recentes
-    if (allScrims && allScrims.length > 0) {
-      const recentScrims = allScrims
-        .filter((s) => s.status === "finalizado")
-        .slice(-2)
-        .reverse();
-
-      for (const scrim of recentScrims) {
-        activities.push({
-          id: idCounter++,
-          type: "scrim",
-          title: `Scrim "${scrim.name}"`,
-          description: "Scrim finalizado",
-          date: scrim.date || "Data não definida",
-        });
-      }
-    }
-
-    // Atualizações de ranking (se houver recálculo recente)
-    if (teamRanking && teamRanking.length > 0) {
-      const topTeam = teamRanking[0];
-      activities.push({
-        id: idCounter++,
-        type: "ranking",
-        title: "Ranking Atualizado",
-        description: `"${topTeam.teamName}" lidera com ${topTeam.totalPoints} pts`,
-        date: new Date().toISOString().split("T")[0],
-        highlight: topTeam.teamName,
       });
     }
 
-    return activities
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 6);
+    if (allScrims && allScrims.length > 0) {
+      allScrims.filter((s) => s.status === "finalizado").slice(-2).reverse().forEach((scrim) => {
+        activities.push({ id: idCounter++, type: "scrim", title: `Scrim "${scrim.name}"`, description: "Scrim finalizado", date: scrim.date || "Data não definida" });
+      });
+    }
+
+    if (teamRanking && teamRanking.length > 0) {
+      const topTeam = teamRanking[0];
+      activities.push({ id: idCounter++, type: "ranking", title: "Ranking Atualizado", description: `"${topTeam.teamName}" lidera com ${topTeam.totalPoints} pts`, date: new Date().toISOString().split("T")[0], highlight: topTeam.teamName });
+    }
+
+    return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
   }, [allXtreinos, allChampionships, allScrims, teamRanking]);
 
-  // ============================================================================
-  // LOADING STATE
-  // ============================================================================
-
-  const isLoading = !allXtreinos && !allChampionships && !allScrims;
-
-  return {
-    orgName: settings?.orgName ?? "Underground",
-    isLoading,
-    stats,
-    topPlayers,
-    topTeams,
-    recentActivities,
-    periodSummary,
-  };
+  return { orgName: settings?.orgName ?? "Underground", isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary };
 }

@@ -1,317 +1,15 @@
-import { Suspense, lazy, useState, useMemo } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { motion, useScroll, useTransform, type Variants } from 'framer-motion';
 import {
   Shield, Crosshair, Globe, Cpu, Trophy, Users, Swords, Zap,
   Target, Crown, Calendar, Flame, TrendingUp
 } from 'lucide-react';
-import { trpc } from "@/providers/trpc";
-import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
 import MainLayout from "@/layout/MainLayout";
 import { MouseTrailGlow, ScrambleText, MorphingNumber } from './Effects';
 import ActivitiesTimeline from './ActivitiesTimeline';
+import { useExperienceData, type TopPlayer, type TopTeam } from './useExperienceData';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
-
-// ============================================================================
-// TIPOS
-// ============================================================================
-
-interface TopPlayer {
-  id: string;
-  name: string;
-  teamName: string | null;
-  kills: number;
-  participations: number;
-  avgKills: number;
-  bestPerformance: number;
-  streak: number;
-  badges: string[];
-  rank: number;
-  trend: "up" | "down" | "same";
-  sparkline: number[];
-}
-
-interface TopTeam {
-  id: string;
-  name: string;
-  points: number;
-  kills: number;
-  wins: number;
-  top3Count: number;
-  xtreinosPlayed: number;
-  bestPosition: number | null;
-  avgPoints: number;
-  rank: number;
-  sparkline: number[];
-  trend: "up" | "down" | "same";
-  badges: string[];
-}
-
-interface RecentActivity {
-  id: number;
-  type: "xtreino" | "championship" | "scrim" | "ranking";
-  title: string;
-  description: string;
-  date: string;
-  highlight?: string;
-}
-
-// ============================================================================
-// FUNÇÕES DE CÁLCULO
-// ============================================================================
-
-function calcPlayerSparkline(rawStats: Array<{ playerName: string; date: string; totalKills: number }>, playerName: string): number[] {
-  const playerStats = rawStats
-    .filter((s) => s.playerName === playerName)
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const dateMap = new Map<string, number>();
-  playerStats.forEach((s) => {
-    dateMap.set(s.date, (dateMap.get(s.date) || 0) + s.totalKills);
-  });
-  const dates = Array.from(dateMap.keys()).sort();
-  return dates.map((d) => dateMap.get(d) || 0);
-}
-
-function calcPlayerStreak(rawStats: Array<{ playerName: string; date: string }>, playerName: string): number {
-  const allDates = [...new Set(rawStats.map((s) => s.date))].sort();
-  const playerDates = new Set(rawStats.filter((s) => s.playerName === playerName).map((s) => s.date));
-  let streak = 0;
-  for (let i = allDates.length - 1; i >= 0; i--) {
-    if (playerDates.has(allDates[i])) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function calcPlayerBadges(totalKills: number, participations: number, avgKills: number): string[] {
-  const badges: string[] = [];
-  if (totalKills >= 100) badges.push("100 Kills");
-  if (totalKills >= 300) badges.push("300 Kills");
-  if (totalKills >= 500) badges.push("500 Kills");
-  if (participations >= 5) badges.push("5 XTs");
-  if (participations >= 10) badges.push("10 XTs");
-  if (participations >= 20) badges.push("20 XTs");
-  if (avgKills >= 8) badges.push("Sniper");
-  if (avgKills >= 12) badges.push("Elite");
-  return badges;
-}
-
-function calcTeamSparkline(teamXtreinos: Array<{ date: string; totalPoints: number }>): number[] {
-  const sorted = [...teamXtreinos].sort((a, b) => a.date.localeCompare(b.date));
-  return sorted.map((x) => x.totalPoints);
-}
-
-function calcTeamTrend(sparkline: number[]): "up" | "down" | "same" {
-  if (sparkline.length < 2) return "same";
-  const last = sparkline[sparkline.length - 1];
-  const prev = sparkline[sparkline.length - 2];
-  if (last > prev) return "up";
-  if (last < prev) return "down";
-  return "same";
-}
-
-function calcTeamBadges(team: { totalKills: number; totalPoints: number; xtreinosPlayed: number; top1Count: number; top3Count: number }): string[] {
-  const badges: string[] = [];
-  if (team.top1Count >= 1) badges.push("Campeão");
-  if (team.top1Count >= 5) badges.push("Dinastia");
-  if (team.top3Count >= 10) badges.push("Consistente");
-  if (team.totalKills >= 500) badges.push("500+ Kills");
-  if (team.xtreinosPlayed >= 20) badges.push("Veterano");
-  if (team.totalPoints >= 500) badges.push("500+ Pts");
-  return badges;
-}
-
-// ============================================================================
-// HOOK INTERNO (useExperienceData local)
-// ============================================================================
-
-function useExperienceData() {
-  const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);
-  const { data: allChampionships } = trpc.championships.list.useQuery(undefined);
-  const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
-  const { data: allResults } = trpc.xtreinos.listResults.useQuery();
-  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
-  const { data: teamsList } = trpc.teams.list.useQuery();
-  const { data: playersList } = trpc.players.list.useQuery();
-  const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
-  const { data: settings } = trpc.settings.get.useQuery();
-
-  const { teamRanking } = useXtreinoCalculations({
-    results: allResults ?? [],
-    playerStats: allPlayerStats ?? [],
-  });
-
-  const isLoading = !allResults || !allPlayerStats || !rawPlayerRanking;
-
-  const stats = useMemo(() => {
-    const totalXtreinos = allXtreinos?.length ?? 0;
-    const totalChampionships = allChampionships?.length ?? 0;
-    const totalScrims = allScrims?.length ?? 0;
-    const totalTeams = teamsList?.length ?? 0;
-    const totalPlayers = playersList?.length ?? 0;
-    const totalKills = teamRanking?.reduce((acc: number, t: any) => acc + t.totalKills, 0) ?? 0;
-    const totalPoints = teamRanking?.reduce((acc: number, t: any) => acc + t.totalPoints, 0) ?? 0;
-    const totalMatches = totalXtreinos + totalScrims + totalChampionships;
-    const avgKillsPerMatch = totalMatches > 0 ? Math.round((totalKills / totalMatches) * 10) / 10 : 0;
-    const avgPointsPerTeam = totalTeams > 0 ? Math.round((totalPoints / totalTeams) * 10) / 10 : 0;
-
-    return {
-      totalXtreinos, totalChampionships, totalScrims,
-      totalTeams, totalPlayers, totalKills, totalPoints,
-      totalMatches, avgKillsPerMatch, avgPointsPerTeam,
-    };
-  }, [allXtreinos, allChampionships, allScrims, teamsList, playersList, teamRanking]);
-
-  const topPlayers = useMemo<TopPlayer[]>(() => {
-    if (!rawPlayerRanking || rawPlayerRanking.length === 0) return [];
-
-    const playerMap = new Map<string, {
-      playerName: string;
-      teamName: string | null;
-      totalKills: number;
-      totalQ1Kills: number;
-      totalQ2Kills: number;
-      totalQ3Kills: number;
-      participations: number;
-      dates: string[];
-    }>();
-
-    for (const stat of rawPlayerRanking) {
-      const key = stat.playerName.trim().toLowerCase();
-      const existing = playerMap.get(key);
-      if (existing) {
-        existing.totalKills += stat.totalKills || 0;
-        existing.totalQ1Kills += stat.q1Kills || 0;
-        existing.totalQ2Kills += stat.q2Kills || 0;
-        existing.totalQ3Kills += stat.q3Kills || 0;
-        existing.participations += 1;
-        if (!existing.dates.includes(stat.date)) existing.dates.push(stat.date);
-      } else {
-        playerMap.set(key, {
-          playerName: stat.playerName,
-          teamName: stat.teamName,
-          totalKills: stat.totalKills || 0,
-          totalQ1Kills: stat.q1Kills || 0,
-          totalQ2Kills: stat.q2Kills || 0,
-          totalQ3Kills: stat.q3Kills || 0,
-          participations: 1,
-          dates: [stat.date],
-        });
-      }
-    }
-
-    return Array.from(playerMap.values())
-      .map((p) => ({
-        id: `player-${p.playerName}`,
-        name: p.playerName,
-        teamName: p.teamName,
-        kills: p.totalKills,
-        participations: p.participations,
-        avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
-        bestPerformance: 0,
-        streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
-        badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
-        rank: 0,
-        trend: "same" as const,
-        sparkline: calcPlayerSparkline(rawPlayerRanking, p.playerName),
-      }))
-      .sort((a, b) => b.kills - a.kills)
-      .slice(0, 8)
-      .map((p, i) => ({ ...p, rank: i + 1 }));
-  }, [rawPlayerRanking]);
-
-  const topTeams = useMemo<TopTeam[]>(() => {
-    if (!teamRanking || teamRanking.length === 0) return [];
-
-    return teamRanking
-      .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
-      .slice(0, 8)
-      .map((team: any, i: number) => {
-        const sparkline = calcTeamSparkline(team.xtreinos);
-        return {
-          id: `team-${team.teamName}`,
-          name: team.teamName,
-          points: team.totalPoints,
-          kills: team.totalKills,
-          wins: team.top1Count,
-          top3Count: team.top3Count,
-          xtreinosPlayed: team.xtreinosPlayed,
-          bestPosition: team.bestPosition,
-          avgPoints: team.xtreinosPlayed > 0
-            ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10
-            : 0,
-          rank: i + 1,
-          sparkline,
-          trend: calcTeamTrend(sparkline),
-          badges: calcTeamBadges(team),
-        };
-      });
-  }, [teamRanking]);
-
-  const recentActivities = useMemo<RecentActivity[]>(() => {
-    const activities: RecentActivity[] = [];
-    let idCounter = 1;
-
-    if (allXtreinos && allXtreinos.length > 0) {
-      const recent = allXtreinos
-        .filter((x: any) => x.status === "fechado")
-        .sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-        .slice(0, 3);
-
-      for (const xt of recent) {
-        const winner = teamRanking
-          ?.filter((t: any) => t.xtreinos.some((x: any) => x.xtreinoId === xt.id))
-          .sort((a: any, b: any) => b.totalPoints - a.totalPoints)[0];
-
-        activities.push({
-          id: idCounter++,
-          type: "xtreino",
-          title: `XTreino #${xt.id} — ${xt.name}`,
-          description: winner
-            ? `Vitória de "${winner.teamName}" com ${winner.totalPoints} pts`
-            : "Resultado computado",
-          date: xt.date || "Data não definida",
-          highlight: winner?.teamName,
-        });
-      }
-    }
-
-    if (allChampionships && allChampionships.length > 0) {
-      allChampionships.slice(-2).reverse().forEach((champ: any) => {
-        activities.push({
-          id: idCounter++,
-          type: "championship",
-          title: `Campeonato "${champ.name}"`,
-          description: champ.status === "ativo" ? "Em andamento" : champ.status === "inscricoes" ? "Inscrições abertas" : "Encerrado",
-          date: champ.startDate || "Data não definida",
-        });
-      });
-    }
-
-    if (teamRanking && teamRanking.length > 0) {
-      const topTeam = teamRanking[0];
-      activities.push({
-        id: idCounter++,
-        type: "ranking",
-        title: "Ranking Atualizado",
-        description: `"${topTeam.teamName}" lidera com ${topTeam.totalPoints} pts`,
-        date: new Date().toISOString().split("T")[0],
-        highlight: topTeam.teamName,
-      });
-    }
-
-    return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
-  }, [allXtreinos, allChampionships, teamRanking]);
-
-  return {
-    orgName: settings?.orgName ?? "Underground",
-    isLoading,
-    stats,
-    topPlayers,
-    topTeams,
-    recentActivities,
-  };
-}
 
 // ============================================================================
 // FEATURES
@@ -334,7 +32,7 @@ const itemVariants: Variants = {
 };
 
 // ============================================================================
-// COMPONENTES AUXILIARES (Sparkline, Trends, etc)
+// COMPONENTES AUXILIARES
 // ============================================================================
 
 function SparklineSVG({ data, width = 120, height = 30, color = "#10b981" }: { data: number[]; width?: number; height?: number; color?: string }) {
@@ -362,7 +60,7 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "same" }) {
 }
 
 // ============================================================================
-// COMPONENTES DE SEÇÃO (Players e Teams)
+// COMPONENTES DE SEÇÃO
 // ============================================================================
 
 function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName: string }) {
@@ -394,8 +92,18 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
                 <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-violet-400" /> {player.participations} xtrs</span>
                 {player.streak >= 3 && (<span className="flex items-center gap-1 text-orange-400"><Flame className="w-3 h-3" /> {player.streak}</span>)}
               </div>
-              {player.badges.length > 0 && (<div className="flex flex-wrap gap-1 mb-3">{player.badges.slice(0, 3).map((badge) => (<span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{badge}</span>))}</div>)}
-              <div className="flex items-center justify-between">
+              
+              {/* MELHORIA MOBILE: Limitado a 2 badges em telas pequenas */}
+              {player.badges.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {player.badges.slice(0, 2).map((badge) => (<span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{badge}</span>))}
+                  {/* Mostra terceiro badge somente no SM+ */}
+                  {player.badges.length > 2 && <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{player.badges[2]}</span>}
+                </div>
+              )}
+
+              {/* MELHORIA MOBILE: Esconde Sparkline no mobile */}
+              <div className="hidden sm:flex items-center justify-between">
                 <SparklineSVG data={player.sparkline} width={100} height={24} />
                 <TrendIcon trend={player.trend} />
               </div>
@@ -491,6 +199,13 @@ export default function ExperiencePage() {
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
         <MouseTrailGlow />
 
+        {/* MELHORIA VISUAL: Aurora Boreal Sutil */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] rounded-full bg-emerald-600/10 blur-[150px] animate-pulse-slow" />
+          <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-violet-600/10 blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-cyan-500/5 blur-[100px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
+        </div>
+
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           <motion.div className="absolute inset-0 z-0" style={{ scale: sphereScale, opacity: sphereOpacity }}>
             <Suspense fallback={<div className="w-full h-full bg-[#0a0a0f]" />}>
@@ -505,7 +220,12 @@ export default function ExperiencePage() {
                 {orgName} — A Nova Era do E-sports Mobile
               </span>
             </motion.div>
-            <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2, ease: "easeOut" as const }} className="text-[15vw] sm:text-[12vw] md:text-[8vw] lg:text-8xl font-black text-white leading-[0.85] sm:leading-[0.9] tracking-tighter mb-6 sm:mb-8" style={{ textShadow: "0 0 80px rgba(16, 185, 129, 0.5)" }}>
+            <motion.h1 
+              initial={{ opacity: 0, y: 40 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ duration: 1, delay: 0.2, ease: "easeOut" as const }} 
+              className="text-[15vw] sm:text-[12vw] md:text-[8vw] lg:text-8xl font-black text-white leading-[0.85] sm:leading-[0.9] tracking-tighter mb-6 sm:mb-8 drop-shadow-[0_0_60px_rgba(16,185,129,0.4)]"
+            >
               MAIS QUE <br className="sm:hidden" />UM <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-green-300 to-cyan-400">JOGO.</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" as const }} className="text-base sm:text-lg md:text-xl text-[#6a6a7e] max-w-2xl mx-auto leading-relaxed px-2">
@@ -559,7 +279,7 @@ export default function ExperiencePage() {
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 mb-4 group-hover:bg-emerald-500/20 group-hover:scale-110 transition-all duration-300">
                     <stat.icon className="w-7 h-7 text-emerald-400" />
                   </div>
-                  <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-2" style={{ textShadow: "0 0 30px rgba(16, 185, 129, 0.3)" }}>
+                  <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-2 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
                     <MorphingNumber value={stat.value} trigger={statsTrigger} suffix={stat.suffix} />
                   </div>
                   <div className="text-sm sm:text-base text-[#5a5a6e] font-medium uppercase tracking-wider">{stat.label}</div>

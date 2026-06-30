@@ -1,24 +1,44 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function HolographicSphere() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Só continua animando se estiver visível E mais de 10% na tela
+        setIsVisible(entry.isIntersecting && entry.intersectionRatio > 0.1);
+      },
+      { threshold: [0, 0.1, 1] }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="absolute inset-0 z-0">
+    <div ref={containerRef} className="absolute inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 6], fov: 45 }}
         dpr={[1, 1.5]}
         gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
+        frameloop={isVisible ? 'always' : 'never'}
       >
-        <SceneContent />
+        <SceneContent isActive={isVisible} />
         <color attach="background" args={['#0a0a0f']} />
       </Canvas>
     </div>
   );
 }
 
-function SceneContent() {
+function SceneContent({ isActive }: { isActive: boolean }) {
   const groupRef = useRef<THREE.Group>(null!);
   const mouseRef = useRef({ x: 0, y: 0 });
   const { viewport } = useThree();
@@ -34,7 +54,6 @@ function SceneContent() {
     return pos;
   }, []);
 
-  // Cria textura procedural redonda para as partículas não serem "quadradas"
   const particleTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 32; canvas.height = 32;
@@ -50,34 +69,33 @@ function SceneContent() {
   }, []);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-      
-      // Interação com o mouse
-      mouseRef.current.x = (state.pointer.x * viewport.width) / 2;
-      mouseRef.current.y = (state.pointer.y * viewport.height) / 2;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
-        mouseRef.current.y * 0.1,
-        0.05
-      );
-    }
+    if (!isActive || !groupRef.current) return;
+    
+    groupRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+    mouseRef.current.x = (state.pointer.x * viewport.width) / 2;
+    mouseRef.current.y = (state.pointer.y * viewport.height) / 2;
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(
+      groupRef.current.rotation.x,
+      mouseRef.current.y * 0.1,
+      0.05
+    );
   });
 
   return (
     <group ref={groupRef}>
-      <CoreSphere />
-      <OrbitalRings />
-      <ParticleField positions={positions} texture={particleTexture} />
+      <CoreSphere isActive={isActive} />
+      <OrbitalRings isActive={isActive} />
+      <ParticleField positions={positions} texture={particleTexture} isActive={isActive} />
     </group>
   );
 }
 
-function OrbitalRings() {
+function OrbitalRings({ isActive }: { isActive: boolean }) {
   const ring1Ref = useRef<THREE.Mesh>(null!);
   const ring2Ref = useRef<THREE.Mesh>(null!);
 
   useFrame((state) => {
+    if (!isActive) return;
     const t = state.clock.elapsedTime;
     if (ring1Ref.current) {
       ring1Ref.current.rotation.x = Math.PI / 2.5;
@@ -103,7 +121,7 @@ function OrbitalRings() {
   );
 }
 
-function CoreSphere() {
+function CoreSphere({ isActive }: { isActive: boolean }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
 
   const shaderData = useMemo(() => ({
@@ -145,6 +163,7 @@ function CoreSphere() {
   }), []);
 
   useFrame((state) => {
+    if (!isActive) return;
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
     }
@@ -159,14 +178,13 @@ function CoreSphere() {
   );
 }
 
-function ParticleField({ positions, texture }: { positions: Float32Array; texture: THREE.Texture }) {
+function ParticleField({ positions, texture, isActive }: { positions: Float32Array; texture: THREE.Texture; isActive: boolean }) {
   const ref = useRef<THREE.Points>(null!);
 
   useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.2;
-      ref.current.rotation.y = state.clock.elapsedTime * 0.05;
-    }
+    if (!isActive || !ref.current) return;
+    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.2;
+    ref.current.rotation.y = state.clock.elapsedTime * 0.05;
   });
 
   return (
