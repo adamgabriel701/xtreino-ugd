@@ -402,7 +402,7 @@ export function useExperienceData(): ExperienceData {
       total: allXtreinos?.length ?? 0,
       abertos: allXtreinos?.filter((x) => x.status === "aberto" || !x.status).length ?? 0,
       emAndamento: allXtreinos?.filter((x) => x.status === "em_andamento").length ?? 0,
-      fechados: allXtreinos?.filter((x) => x.status === "fechado").length ?? 0,
+      fechados: allXtreinos?.filter((x) => x.status === "finalizado").length ?? 0,
     };
 
     const championshipStats = {
@@ -416,7 +416,7 @@ export function useExperienceData(): ExperienceData {
       total: allScrims?.length ?? 0,
       agendados: allScrims?.filter((s) => s.status === "agendado" || !s.status).length ?? 0,
       emAndamento: allScrims?.filter((s) => s.status === "em_andamento").length ?? 0,
-      finalizados: allScrims?.filter((s) => s.status === "finalizado").length ?? 0,
+      finalizados: allScrims?.filter((s) => s.status === "concluido").length ?? 0,
     };
 
     const salinhaStats = {
