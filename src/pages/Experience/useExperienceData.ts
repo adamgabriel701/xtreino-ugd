@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
+import type { UpcomingEvent } from "./components/UpcomingEvents"; // Importando a tipagem nova
 
 // ============================================================================
 // TIPOS EXPORTADOS
@@ -66,6 +67,7 @@ export interface ExperienceData {
   topPlayers: TopPlayer[];
   topTeams: TopTeam[];
   recentActivities: RecentActivity[];
+  upcomingEvents: UpcomingEvent[]; // NOVO CAMPO
   periodSummary: {
     totalKills: number;
     totalPosPoints: number;
@@ -137,6 +139,28 @@ function calcTeamBadges(team: { totalKills: number; totalPoints: number; xtreino
 }
 
 // ============================================================================
+// FUNÇÃO AUXILIAR PARA TRATAR DATAS NO FORMATO TEXT DO SQLITE
+// ============================================================================
+function parseDateString(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  
+  // Tenta YYYY-MM-DD
+  let d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d;
+  
+  // Tenta DD/MM/YYYY
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  
+  return null;
+}
+
+// ============================================================================
 // HOOK PRINCIPAL
 // ============================================================================
 
@@ -150,7 +174,13 @@ export function useExperienceData(): ExperienceData {
   const { data: playersList } = trpc.players.list.useQuery();
   const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
   const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
-  const { data: clansList } = trpc.clans.list.useQuery(); // ADICIONADO PARA PEGAR OS CLÃS
+  const { data: clansList } = trpc.clans.list.useQuery();
+  
+  // NOVAS QUERIES PARA OS PRÓXIMOS EVENTOS
+  const { data: openXtreinos } = trpc.xtreinos.list.useQuery(undefined);
+  const { data: upcomingChamps } = trpc.championships.list.useQuery({ status: "em_breve" });
+  const { data: openSalinhas } = trpc.salinhas.list.useQuery({ status: "aberta" });
+  
   const { data: settings } = trpc.settings.get.useQuery();
 
   const calculations = useXtreinoCalculations({
@@ -163,10 +193,9 @@ export function useExperienceData(): ExperienceData {
   const isLoading = !allResults || !allPlayerStats || !rawPlayerRanking;
 
   // ========================================================================
-  // MAPAS DE RESOLUÇÃO DE IDs (A SOLUÇÃO DEFINITIVA)
+  // MAPAS DE RESOLUÇÃO DE IDs
   // ========================================================================
   
-  // Mapa: Nome do Time (toLowerCase) -> { id, clanId }
   const teamMap = useMemo(() => {
     const map = new Map<string, { id: number; clanId: number | null }>();
     if (!teamsList) return map;
@@ -176,7 +205,6 @@ export function useExperienceData(): ExperienceData {
     return map;
   }, [teamsList]);
 
-  // Mapa: Nick do Jogador (toLowerCase) -> { id, teamId }
   const playerMap = useMemo(() => {
     const map = new Map<string, { id: number; teamId: number | null }>();
     if (!playersList) return map;
@@ -202,7 +230,7 @@ export function useExperienceData(): ExperienceData {
   }, [allXtreinos, allChampionships, allScrims, teamsList, playersList, teamRanking]);
 
   // ========================================================================
-  // TOP PLAYERS (CORRIGIDO PARA USAR IDs REAIS)
+  // TOP PLAYERS
   // ========================================================================
   const topPlayers = useMemo<TopPlayer[]>(() => {
     if (!rawPlayerRanking || rawPlayerRanking.length === 0) return [];
@@ -222,11 +250,11 @@ export function useExperienceData(): ExperienceData {
 
     return Array.from(playerStatsMap.values())
       .map((p) => {
-        const dbPlayer = playerMap.get(p.playerName.trim().toLowerCase()); // Resolve o ID real
+        const dbPlayer = playerMap.get(p.playerName.trim().toLowerCase());
         return {
-          id: dbPlayer?.id ?? 0, // ID REAL DO BANCO
-          clanId: undefined, // O player não tem clanId direto, a rota /clans/x/line/y cuida disso
-          teamId: dbPlayer?.teamId ?? undefined, // ID REAL DO TIME
+          id: dbPlayer?.id ?? 0,
+          clanId: undefined,
+          teamId: dbPlayer?.teamId ?? undefined,
           name: p.playerName, 
           teamName: p.teamName, 
           kills: p.totalKills,
@@ -242,10 +270,10 @@ export function useExperienceData(): ExperienceData {
       .sort((a, b) => b.kills - a.kills)
       .slice(0, 8)
       .map((p, i) => ({ ...p, rank: i + 1 }));
-  }, [rawPlayerRanking, playerMap]); // Adicionado playerMap na dependência
+  }, [rawPlayerRanking, playerMap]);
 
   // ========================================================================
-  // TOP TEAMS (CORRIGIDO PARA USAR IDs REAIS E CLAN ID)
+  // TOP TEAMS
   // ========================================================================
   const topTeams = useMemo<TopTeam[]>(() => {
     if (!teamRanking || teamRanking.length === 0) return [];
@@ -254,25 +282,25 @@ export function useExperienceData(): ExperienceData {
       .slice(0, 8)
       .map((team) => {
         const sparkline = calcTeamSparkline(team.xtreinos);
-        const dbTeam = teamMap.get(team.teamName.trim().toLowerCase()); // Resolve o ID real e o clanId
+        const dbTeam = teamMap.get(team.teamName.trim().toLowerCase());
         
         return {
-          id: dbTeam?.id ?? 0, // ID REAL DO BANCO (Antes era i + 1)
-          clanId: dbTeam?.clanId ?? undefined, // ID REAL DO CLÃ (Antes era undefined/0)
+          id: dbTeam?.id ?? 0,
+          clanId: dbTeam?.clanId ?? undefined,
           name: team.teamName, 
           points: team.totalPoints, 
           kills: team.totalKills,
           wins: team.top1Count, 
           top3Count: team.top3Count, 
           avgPoints: team.xtreinosPlayed > 0 ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10 : 0,
-          rank: 0, // O rank será atribuído abaixo
+          rank: 0,
           sparkline, 
           trend: calcTeamTrend(sparkline), 
           badges: calcTeamBadges(team),
         };
       })
-      .map((p, i) => ({ ...p, rank: i + 1 })); // Atribui o rank corretamente
-  }, [teamRanking, teamMap]); // Adicionado teamMap na dependência
+      .map((p, i) => ({ ...p, rank: i + 1 }));
+  }, [teamRanking, teamMap]);
 
   // ========================================================================
   // RECENT ACTIVITIES
@@ -317,5 +345,84 @@ export function useExperienceData(): ExperienceData {
     return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
   }, [allXtreinos, allChampionships, allScrims, teamRanking]);
 
-  return { orgName: settings?.orgName ?? "Underground", isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary };
+  // ========================================================================
+  // UPCOMING EVENTS (PRÓXIMOS EVENTOS)
+  // ========================================================================
+  const upcomingEvents = useMemo<UpcomingEvent[]>(() => {
+    const events: UpcomingEvent[] = [];
+
+    // 1. XTreinos Abertos
+    if (openXtreinos && openXtreinos.length > 0) {
+      const filtered = openXtreinos.filter(x => x.status === "aberto");
+      for (const xt of filtered) {
+        events.push({
+          id: xt.id,
+          type: 'xtreino',
+          title: xt.name,
+          date: xt.date,
+          timeBr: xt.timeBr,
+          maxTeams: xt.maxTeams,
+          status: xt.status,
+        });
+      }
+    }
+
+    // 2. Campeonatos em Breve / Inscrições
+    if (upcomingChamps && upcomingChamps.length > 0) {
+      for (const champ of upcomingChamps) {
+        events.push({
+          id: champ.id,
+          type: 'championship',
+          title: champ.name,
+          date: champ.startDate || '',
+          maxTeams: champ.maxTeams,
+          registeredTeams: champ.registeredTeams,
+          status: champ.status,
+          location: champ.modality, // Usando modalidade como local/info extra
+        });
+      }
+    }
+
+    // 3. Salinhas Abertas
+    if (openSalinhas && openSalinhas.length > 0) {
+      for (const salinha of openSalinhas) {
+        events.push({
+          id: salinha.id,
+          type: 'salinha',
+          title: salinha.name,
+          date: salinha.date,
+          timeBr: salinha.timeBr,
+          maxParticipants: salinha.maxParticipants,
+          status: salinha.status,
+          location: salinha.modality, // Ex: "solo", "duo"
+        });
+      }
+    }
+
+    // Ordena os eventos pela data mais próxima (tratando strings de datas variadas)
+    return events
+      .sort((a, b) => {
+        const dateA = parseDateString(a.date);
+        const dateB = parseDateString(b.date);
+        
+        // Se não conseguir parsear, joga pro final da lista
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, 4); // Limita a 4 próximos eventos na tela
+  }, [openXtreinos, upcomingChamps, openSalinhas]);
+
+  return { 
+    orgName: settings?.orgName ?? "Underground", 
+    isLoading, 
+    stats, 
+    topPlayers, 
+    topTeams, 
+    recentActivities, 
+    upcomingEvents, // RETORNANDO AQUI
+    periodSummary 
+  };
 }

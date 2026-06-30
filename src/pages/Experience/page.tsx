@@ -1,25 +1,22 @@
 import { Suspense, lazy, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import MainLayout from "@/layout/MainLayout";
+import ExperienceLayout from './ExperienceLayout';
 import { MouseTrailGlow } from './Effects';
 import { useExperienceData } from './useExperienceData';
 
-// Componentes divididos
 import { PremiumLoader } from './components/PremiumLoader';
 import { StatsSection } from './components/StatsSection';
 import { FeaturesGridAnimated } from './components/FeaturesGrid';
 import { LiveTicker } from './components/LiveTicker';
 import { UpcomingEvents } from './components/UpcomingEvents';
-import { MantraSection } from './components/MantraSection'; // NOVO
-import { VersusSection } from './components/VersusSection'; // NOVO
+import { MantraSection } from './components/MantraSection';
+import { VersusSection } from './components/VersusSection';
 import { TopPlayersSection } from './components/TopPlayersSection';
 import { TopTeamsSection } from './components/TopTeamsSection';
 import { RenderTimeline } from './components/TimelineSection';
-import { MatrixFooter } from './components/MatrixFooter'; // NOVO
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
-// Hook de Tilt
 function useTilt(factor = 15) {
   const [style, setStyle] = useState({ x: 0, y: 0 });
   useEffect(() => {
@@ -37,7 +34,8 @@ function useTilt(factor = 15) {
 
 export default function ExperiencePage() {
   const { scrollYProgress } = useScroll();
-  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities } = useExperienceData();
+  // AQUI PUXAMOS TUDO, INCLUINDO OS NOVOS upcomingEvents
+  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, upcomingEvents } = useExperienceData();
 
   const sphereScale = useTransform(scrollYProgress, [0, 0.25], [1, 0.4]);
   const sphereOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
@@ -52,10 +50,10 @@ export default function ExperiencePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (isLoading) return <PremiumLoader />;
+  if (isLoading) return <ExperienceLayout><PremiumLoader /></ExperienceLayout>;
 
   return (
-    <MainLayout>
+    <ExperienceLayout>
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
         <MouseTrailGlow />
 
@@ -64,7 +62,7 @@ export default function ExperiencePage() {
           <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-violet-600/10 blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
         </div>
 
-        {/* 1. HERO */}
+        {/* HERO */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           <motion.div className="absolute inset-0 z-0" style={{ scale: sphereScale, opacity: sphereOpacity }}>
             <Suspense fallback={<div className="w-full h-full bg-[#0a0a0f]" />}>
@@ -94,10 +92,9 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
-        {/* 2. TICKER */}
-        <LiveTicker />
+        {/* PASSANDO OS DADOS REAIS POR PROPS AQUI */}
+        <LiveTicker activities={recentActivities} />
 
-        {/* 3. STATS & FEATURES */}
         <section className="relative z-20 bg-[#0a0a0f] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16">
@@ -109,25 +106,16 @@ export default function ExperiencePage() {
           </div>
         </section>
 
-        {/* 4. EVENTOS */}
-        <UpcomingEvents />
-
-        {/* 5. MANTRA (COM GLITCH) */}
+        {/* PASSANDO OS DADOS REAIS POR PROPS AQUI */}
+        <UpcomingEvents events={upcomingEvents || []} />
+        
         <MantraSection />
-
-        {/* 6. VERSUS (NOVO) */}
         <VersusSection />
-
-        {/* 7. RANKINGS */}
+        
         <TopPlayersSection players={topPlayers} orgName={orgName} />
         <TopTeamsSection teams={topTeams} orgName={orgName} />
-
-        {/* 8. TIMELINE */}
         <RenderTimeline activities={recentActivities} />
-
-        {/* 9. FOOTER MATRIX (NOVO) */}
-        <MatrixFooter />
       </div>
-    </MainLayout>
+    </ExperienceLayout>
   );
 }
