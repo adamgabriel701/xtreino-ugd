@@ -115,7 +115,7 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
                   </Link>
                   {/* LINK PARA O TIME DO JOGADOR (SE TIVER ID DO TIME) */}
                   {player.teamId ? (
-                    <Link to={`/clas/${player.clanId ?? 0}/line/${player.teamId}`} className="text-[#5a5a6e] text-xs hover:text-emerald-400 transition-colors block truncate">
+                    <Link to={`/clans/${player.clanId ?? 0}/line/${player.teamId}`} className="text-[#5a5a6e] text-xs hover:text-emerald-400 transition-colors block truncate">
                       {player.teamName || "Sem time"}
                     </Link>
                   ) : (
@@ -203,7 +203,7 @@ function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string
               <div className="flex-1 min-w-0">
                 {/* LINK PARA A PÁGINA DA LINE/EQUIPE */}
                 <Link 
-                  to={`/clas/${team.clanId ?? 0}/line/${team.id}`} 
+                  to={`/clans/${team.clanId ?? 0}/line/${team.id}`} 
                   className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors hover:underline block"
                 >
                   {team.name}
