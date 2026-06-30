@@ -61,7 +61,7 @@ export default function ClanDetail() {
         title={clan.name}
         subtitle={clan.description}
         backLabel="Voltar para Clãs"
-        onBack={() => navigate("/clas")}
+        onBack={() => navigate("/clans")}
         icon={clan.logo ? <img src={clan.logo} alt={clan.name} className="w-12 h-12 rounded-lg object-cover" /> : <Shield className="w-8 h-8 text-emerald-400/50" />}
         extraInfo={
           <div className="flex items-center gap-3 flex-wrap">
@@ -101,7 +101,7 @@ export default function ClanDetail() {
                   <div 
                     key={team.id} 
                     // CORREÇÃO: Navega usando o ID do clã e da line
-                    onClick={() => navigate(`/clas/${id}/line/${team.id}`)} 
+                    onClick={() => navigate(`/clans/${id}/line/${team.id}`)} 
                     className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 cursor-pointer hover:border-emerald-500/30 hover:bg-[#1a1a24] transition-all group"
                   >
                     <div className="flex items-start justify-between mb-3">
