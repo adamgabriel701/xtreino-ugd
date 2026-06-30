@@ -1,5 +1,5 @@
-import { Suspense, lazy, useState } from 'react';
-import { motion, useScroll, useTransform, type Variants } from 'framer-motion';
+import { Suspense, lazy, useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useInView, type Variants, AnimatePresence } from 'framer-motion';
 import {
   Shield, Crosshair, Globe, Cpu, Trophy, Users, Swords, Zap,
   Target, Crown, Calendar, Flame, TrendingUp
@@ -7,13 +7,12 @@ import {
 import { Link } from 'react-router-dom';
 import MainLayout from "@/layout/MainLayout";
 import { MouseTrailGlow, ScrambleText, MorphingNumber } from './Effects';
-import ActivitiesTimeline from './ActivitiesTimeline';
-import { useExperienceData, type TopPlayer, type TopTeam } from './useExperienceData';
+import { useExperienceData, type RecentActivity, type TopPlayer, type TopTeam } from './useExperienceData';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
 // ============================================================================
-// FEATURES
+// CONFIGS
 // ============================================================================
 const features = [
   { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador e equipe no cenário competitivo." },
@@ -33,9 +32,27 @@ const itemVariants: Variants = {
 };
 
 // ============================================================================
+// MELHORIA 1: Hook de Tilt 3D (Agora integrado ao Hero do page.tsx)
+// ============================================================================
+function useTilt(factor = 15) {
+  const [style, setStyle] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = ((e.clientX / window.innerWidth) - 0.5) * factor * 2;
+      const y = ((e.clientY / window.innerHeight) - 0.5) * factor * 2;
+      setStyle({ x, y });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [factor]);
+
+  return style;
+}
+
+// ============================================================================
 // COMPONENTES AUXILIARES
 // ============================================================================
-
 function SparklineSVG({ data, width = 120, height = 30, color = "#10b981" }: { data: number[]; width?: number; height?: number; color?: string }) {
   if (data.length < 2) return <div className="text-xs text-[#5a5a6e]">—</div>;
   const max = Math.max(...data, 1);
@@ -61,7 +78,109 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "same" }) {
 }
 
 // ============================================================================
-// COMPONENTES DE SEÇÃO (ATUALIZADOS COM LINKS)
+// MELHORIA 2: Premium Skeleton Loading
+// ============================================================================
+function PremiumLoader() {
+  return (
+    <MainLayout>
+      <div className="min-h-screen bg-[#0a0a0f] overflow-hidden">
+        <div className="h-screen flex items-center justify-center">
+          <div className="text-center space-y-6 animate-pulse">
+            <div className="h-4 w-48 bg-[#12121a] rounded-full mx-auto" />
+            <div className="h-20 w-[80vw] max-w-3xl bg-[#12121a] rounded-xl mx-auto" />
+            <div className="h-4 w-64 bg-[#12121a] rounded-full mx-auto" />
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-[#12121a] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+          ))}
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+// ============================================================================
+// MELHORIA 5: Seção de Estatísticas com Trigger Corrigido
+// ============================================================================
+function StatsSection({ stats }: { stats: { totalXtreinos: number; totalKills: number; totalTeams: number; totalPlayers: number } }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+  
+  const displayStats = [
+    { value: stats.totalXtreinos, label: "XTreinos", icon: Swords },
+    { value: stats.totalKills, label: "Kills Totais", icon: Crosshair },
+    { value: stats.totalTeams, label: "Equipes", icon: Users },
+    { value: stats.totalPlayers, label: "Players", icon: Trophy },
+  ];
+
+  return (
+    <div ref={ref} className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-16 sm:mb-24">
+      {displayStats.map((stat) => {
+        const Icon = stat.icon;
+        return (
+          <motion.div 
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5 }}
+            className="bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-2xl p-4 sm:p-5 text-center group hover:border-emerald-500/30 transition-all duration-300"
+          >
+            <Icon className="w-5 h-5 text-emerald-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+              <MorphingNumber value={stat.value} trigger={isInView} />
+            </div>
+            <div className="text-[#5a5a6e] text-xs uppercase tracking-wider">{stat.label}</div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================================
+// MELHORIA 3 & 6: Features com Borda Gradiente Rotativa
+// ============================================================================
+function FeaturesGridAnimated() {
+  const [scrambleTriggers, setScrambleTriggers] = useState<boolean[]>(new Array(features.length).fill(false));
+
+  return (
+    <motion.div 
+      variants={containerVariants} 
+      initial="hidden" 
+      whileInView="show" 
+      viewport={{ once: true, amount: 0.2 }} 
+      onViewportEnter={() => features.forEach((_, i) => setTimeout(() => setScrambleTriggers(prev => { const n = [...prev]; n[i] = true; return n; }), i * 150))} 
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+    >
+      {features.map((f, i) => {
+        const Icon = f.icon;
+        return (
+          <motion.div key={f.title} variants={itemVariants} whileHover={{ y: -5 }} className="group relative h-full">
+            {/* Borda Gradiente Animada */}
+            <div className="absolute -inset-[1px] rounded-2xl bg-conic-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-spin-slow blur-[1px]" />
+            <div className="relative h-full bg-[#0a0a0f] rounded-2xl p-5 sm:p-6 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-transparent group-hover:from-emerald-500/5 transition-all duration-500" />
+              <div className="relative z-10">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+                </div>
+                <h3 className="text-[#f0f0f5] font-bold text-base sm:text-lg mb-2 group-hover:text-emerald-400 transition-colors font-mono">
+                  <ScrambleText text={f.title} trigger={scrambleTriggers[i]} />
+                </h3>
+                <p className="text-[#5a5a6e] text-xs sm:text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// SEÇÕES DE RANKING (Com Zebra Striping - Melhoria 6)
 // ============================================================================
 
 function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName: string }) {
@@ -72,7 +191,7 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
       whileInView={{ opacity: 1, y: 0 }} 
       viewport={{ once: true }} 
       transition={{ duration: 0.8 }} 
-      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
+      className="relative z-20 bg-[#0d0d14] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
@@ -109,11 +228,9 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
                   <Target className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div className="min-w-0">
-                  {/* LINK PARA A PÁGINA DO JOGADOR */}
                   <Link to={`/jogador/${player.id}`} className="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors hover:underline">
                     {player.name}
                   </Link>
-                  {/* LINK PARA O TIME DO JOGADOR (SE TIVER ID DO TIME) */}
                   {player.teamId ? (
                     <Link to={`/clans/${player.clanId ?? 0}/line/${player.teamId}`} className="text-[#5a5a6e] text-xs hover:text-emerald-400 transition-colors block truncate">
                       {player.teamName || "Sem time"}
@@ -139,12 +256,9 @@ function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName
               
               {player.badges.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {player.badges.slice(0, 2).map((badge) => (
+                  {player.badges.slice(0, 3).map((badge) => (
                     <span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{badge}</span>
                   ))}
-                  {player.badges.length > 2 && (
-                    <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{player.badges[2]}</span>
-                  )}
                 </div>
               )}
 
@@ -201,11 +315,7 @@ function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string
               </div>
               
               <div className="flex-1 min-w-0">
-                {/* LINK PARA A PÁGINA DA LINE/EQUIPE */}
-                <Link 
-                  to={`/clans/${team.clanId ?? 0}/line/${team.id}`} 
-                  className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors hover:underline block"
-                >
+                <Link to={`/clans/${team.clanId ?? 0}/line/${team.id}`} className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors hover:underline block">
                   {team.name}
                 </Link>
                 <div className="flex gap-3 text-xs text-[#5a5a6e] mt-0.5">
@@ -244,6 +354,134 @@ function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string
 }
 
 // ============================================================================
+// MELHORIA 4 & 7: Timeline com Filtros Animados e Badge "AO VIVO"
+// ============================================================================
+
+const filterOptions = [
+  { id: 'all', label: 'Todos' },
+  { id: 'xtreino', label: 'Treinos' },
+  { id: 'championship', label: 'Campeonatos' },
+  { id: 'scrim', label: 'Scrims' },
+  { id: 'ranking', label: 'Rankings' },
+] as const;
+
+const typeConfig: Record<string, { bg: string; text: string; icon: any }> = {
+  xtreino: { bg: 'bg-emerald-500', text: 'text-emerald-400', icon: Swords },
+  championship: { bg: 'bg-violet-500', text: 'text-violet-400', icon: Trophy },
+  scrim: { bg: 'bg-cyan-500', text: 'text-cyan-400', icon: Target },
+  ranking: { bg: 'bg-amber-500', text: 'text-amber-400', icon: Crown },
+};
+
+function TimelineItemWrapper({ activity, index }: { activity: RecentActivity; index: number }) {
+  const config = typeConfig[activity.type] || typeConfig.xtreino;
+  const Icon = config.icon;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: -30 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      className="relative pl-16 group"
+    >
+      <div className={`absolute left-[18px] top-2 w-[18px] h-[18px] rounded-full ${config.bg} flex items-center justify-center z-10 ring-4 ring-[#0d0d14] group-hover:scale-125 transition-transform`}>
+        <div className="w-2 h-2 bg-white rounded-full" />
+      </div>
+      <div className="bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-5 group-hover:border-white/10 transition-all duration-300">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 min-w-0">
+            <div className={`w-10 h-10 rounded-xl ${config.bg}/10 flex items-center justify-center shrink-0 mt-1`}>
+              <Icon className={`w-5 h-5 ${config.text}`} />
+            </div>
+            <div>
+              <h4 className="text-white font-bold text-sm sm:text-base">{activity.title}</h4>
+              <p className="text-[#5a5a6e] text-xs sm:text-sm mt-1">
+                {activity.description.split(activity.highlight || '|||')[0]}
+                {activity.highlight && <span className="text-emerald-400 font-semibold">{activity.highlight}</span>}
+                {activity.description.split(activity.highlight || '|||')[1]}
+              </p>
+            </div>
+          </div>
+          <span className="text-[#3a3a4e] text-xs shrink-0 mt-1 hidden sm:block">{activity.date}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function RenderTimeline({ activities }: { activities: RecentActivity[] }) {
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const filteredActivities = activeFilter === 'all' ? activities : activities.filter(a => a.type === activeFilter);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="relative z-20 bg-[#0d0d14] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
+    >
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+              Em tempo real
+            </span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+            Atividades <span className="text-emerald-400">Recentes</span>
+          </h2>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setActiveFilter(opt.id)}
+              className={`relative px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase transition-colors duration-300 ${
+                activeFilter === opt.id ? 'text-emerald-400' : 'text-[#5a5a6e] hover:text-white'
+              }`}
+            >
+              {activeFilter === opt.id && (
+                <motion.div
+                  layoutId="activeFilterBg"
+                  className="absolute inset-0 bg-emerald-500/10 border border-emerald-500/30 rounded-full"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="relative">
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/50 via-white/10 to-transparent" />
+          <div className="space-y-8">
+            <AnimatePresence mode="popLayout">
+              {filteredActivities.map((activity, i) => (
+                <TimelineItemWrapper key={activity.id} activity={activity} index={i} />
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {filteredActivities.length === 0 && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-[#5a5a6e] py-12">
+            Nenhuma atividade deste tipo no momento.
+          </motion.p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+
+// ============================================================================
 // PÁGINA PRINCIPAL
 // ============================================================================
 
@@ -255,38 +493,31 @@ export default function ExperiencePage() {
   const sphereOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 0.25], [0, -120]);
 
-  const [scrambleTriggers, setScrambleTriggers] = useState<boolean[]>(new Array(features.length).fill(false));
-  const [statsTrigger, setStatsTrigger] = useState(false);
+  // MELHORIA 1: Integrando o Tilt
+  const tilt = useTilt(10);
+  const [showScroll, setShowScroll] = useState(true);
 
-  const displayStats = [
-    { value: stats.totalXtreinos, label: "XTreinos", icon: Swords, suffix: "" },
-    { value: stats.totalKills, label: "Kills Totais", icon: Crosshair, suffix: "" },
-    { value: stats.totalTeams, label: "Equipes", icon: Users, suffix: "" },
-    { value: stats.totalPlayers, label: "Players", icon: Trophy, suffix: "" },
-  ];
+  useEffect(() => {
+    const onScroll = () => window.scrollY > 50 ? setShowScroll(false) : setShowScroll(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </MainLayout>
-    );
-  }
+  if (isLoading) return <PremiumLoader />;
 
   return (
     <MainLayout>
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
         <MouseTrailGlow />
 
-        {/* MELHORIA VISUAL: Aurora Boreal Sutil */}
+        {/* Aurora Boreal Sutil */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] rounded-full bg-emerald-600/10 blur-[150px] animate-pulse-slow" />
           <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-violet-600/10 blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-cyan-500/5 blur-[100px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
         </div>
 
+        {/* HERO COM TILT 3D */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           <motion.div className="absolute inset-0 z-0" style={{ scale: sphereScale, opacity: sphereOpacity }}>
             <Suspense fallback={<div className="w-full h-full bg-[#0a0a0f]" />}>
@@ -295,7 +526,10 @@ export default function ExperiencePage() {
           </motion.div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#0a0a0f_80%)] z-[1] pointer-events-none" />
 
-          <motion.div style={{ y: heroY }} className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto">
+          <motion.div 
+            style={{ y: heroY, x: tilt.x, rotateY: tilt.x * 0.05, rotateX: -tilt.y * 0.05 }} 
+            className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto will-change-transform"
+          >
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" as const }} className="mb-6 sm:mb-8">
               <span className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                 {orgName} — A Nova Era do E-sports Mobile
@@ -313,7 +547,7 @@ export default function ExperiencePage() {
               Uma experiência imersiva onde dados, competição e tecnologia se encontram para redefinir o cenário competitivo.
             </motion.p>
             
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }} className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: showScroll ? 1 : 0 }} transition={{ duration: 0.3 }} className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
               <span className="text-[#3a3a4e] text-[10px] tracking-[0.3em] uppercase">Explore</span>
               <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" as const }} className="w-5 h-8 border-2 border-[#3a3a4e] rounded-full flex justify-center pt-1.5">
                 <div className="w-1 h-2 bg-emerald-500 rounded-full" />
@@ -322,6 +556,7 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
+        {/* STATS COM NÚMEROS MORFANDO */}
         <section className="relative z-20 bg-[#0a0a0f] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16">
@@ -329,64 +564,41 @@ export default function ExperiencePage() {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Tecnologia de <span className="text-emerald-400">ponta</span></h2>
             </motion.div>
             
-            <motion.div variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} onViewportEnter={() => features.forEach((_, i) => setTimeout(() => setScrambleTriggers(prev => { const n = [...prev]; n[i] = true; return n; }), i * 150))} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {features.map((f, i) => (
-                <motion.div key={f.title} variants={itemVariants} whileHover={{ y: -5 }} className="group relative rounded-2xl p-[1px] overflow-hidden h-full">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-spin-slow bg-conic-gradient from-emerald-500 via-transparent to-transparent" />
-                  <div className="relative z-10 bg-[#12121a]/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 h-full">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
-                      <f.icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
-                    </div>
-                    <h3 className="text-[#f0f0f5] font-bold text-base sm:text-lg mb-2 group-hover:text-emerald-400 transition-colors font-mono">
-                      <ScrambleText text={f.title} trigger={scrambleTriggers[i]} />
-                    </h3>
-                    <p className="text-[#5a5a6e] text-xs sm:text-sm leading-relaxed">{f.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+            <StatsSection stats={stats} />
+            <FeaturesGridAnimated />
           </div>
         </section>
 
-        <section className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 border-t border-white/5">
-          <motion.div className="max-w-7xl mx-auto py-16 sm:py-24" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} onViewportEnter={() => setStatsTrigger(true)}>
-            <div className="text-center mb-12">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">Números que falam</span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Resultados <span className="text-emerald-400">reais</span></h2>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
-              {displayStats.map((stat, i) => (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }} className="text-center group">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 mb-4 group-hover:bg-emerald-500/20 group-hover:scale-110 transition-all duration-300">
-                    <stat.icon className="w-7 h-7 text-emerald-400" />
-                  </div>
-                  <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-2 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                    <MorphingNumber value={stat.value} trigger={statsTrigger} suffix={stat.suffix} />
-                  </div>
-                  <div className="text-sm sm:text-base text-[#5a5a6e] font-medium uppercase tracking-wider">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </section>
+        {/* MANTRA */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" as const }}
+          viewport={{ once: true }}
+          className="text-center py-16 sm:py-24 relative overflow-hidden bg-[#0d0d14] border-t border-white/5"
+        >
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+            <h2 className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}>
+              EVOLUÇÃO
+            </h2>
+          </div>
+          <div className="relative z-10 px-4">
+            <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-[#f0f0f5] leading-tight max-w-4xl mx-auto tracking-tight">
+              Não acompanhamos tendências. <br className="hidden sm:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">
+                Nós criamos o futuro.
+              </span>
+            </p>
+          </div>
+        </motion.div>
 
+        {/* RANKINGS */}
         <TopPlayersSection players={topPlayers} orgName={orgName} />
         <TopTeamsSection teams={topTeams} orgName={orgName} />
-        <ActivitiesTimeline activities={recentActivities} />
 
-        <section className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto py-16 sm:py-24 relative overflow-hidden text-center">
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <h2 className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}>EVOLUÇÃO</h2>
-            </div>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: "easeOut" as const }} viewport={{ once: true }} className="relative z-10">
-              <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-[#f0f0f5] leading-tight max-w-4xl mx-auto tracking-tight">
-                Não acompanhamos tendências. <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">Nós criamos o futuro.</span>
-              </p>
-            </motion.div>
-          </div>
-        </section>
+        {/* TIMELINE COM FILTROS */}
+        <RenderTimeline activities={recentActivities} />
+
       </div>
     </MainLayout>
   );

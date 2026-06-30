@@ -44,3 +44,30 @@
     display: none;
   }
 }
+
+/* Adicione no seu index.css ou globals.css */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin-slow {
+  to { --angle: 360deg; }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.bg-conic-gradient {
+  background: conic-gradient(from var(--angle), transparent 40%, #10b981 50%, transparent 60%);
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
