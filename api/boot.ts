@@ -20,7 +20,9 @@ import {
   seedAllXtreinos,  // 🆕 seed genérico de xtreinos
   seedPlayerUnified,
   seedScrimPlayers,
-  seedScrim4v4
+  seedScrim4v4,
+  seedScrim4v4UndergroundVsDinasty,
+  seedScrim4v4UgdThreatVsUgdLight,
 } from "../db/seed.js";
 
 console.log("[BOOT] Starting server...");
@@ -182,7 +184,9 @@ if (env.isProduction) {
 
     runSeedIfNeeded("scrim_players", seedScrimPlayers);
     runSeedIfNeeded("scrim_4v4", seedScrim4v4);
-
+    runSeedIfNeeded("scrim_4v4_underground_vs_dinasty", seedScrim4v4UndergroundVsDinasty);
+    runSeedIfNeeded("scrim_4v4_ugd_threat_vs_ugd_light", seedScrim4v4UgdThreatVsUgdLight);
+    
     console.log("[BOOT] All seeds processed");
 
   } catch (error) {

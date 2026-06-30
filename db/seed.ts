@@ -8,6 +8,8 @@ import { seedAllXtreinos } from "./seeds/seed-xtreinos.js";
 import { seedPlayerUnified } from "./seeds/seed-player.js";
 import { seed as seedScrimPlayers } from "./seeds/seed-scrim-players-4v4";
 import { seed as seedScrim4v4 } from "./seeds/seed-scrim-4v4-mme-ugd-vs-k4f.js";
+import { seed as seedScrim4v4UndergroundVsDinasty } from "./seeds/seed-scrim-4v4-mme-underground-vs-dinasty.js";
+import { seed as seedScrim4v4UgdThreatVsUgdLight } from "./seeds/seed-scrim-4v4-mme-ugd-threat-vs-ugd-light.js";
 
 export {
   seed,           // seed inicial (admins, settings, clans, teams, players)
@@ -18,4 +20,7 @@ export {
   seedPlayerUnified,
   seedScrimPlayers,  // Primeiro (garante jogadores no registry)
   seedScrim4v4,      // Depois (insere dados da scrim)
+  seedScrim4v4UndergroundVsDinasty, // Novo seed para scrim underground vs dinasty
+  seedScrim4v4UgdThreatVsUgdLight, // Novo seed para scrim UGD Threat vs UGD LIGHT
+
 };
