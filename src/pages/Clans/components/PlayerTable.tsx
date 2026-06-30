@@ -10,7 +10,7 @@ interface PlayerTableProps {
   sortField: PlayerSortField;
   sortDir: PlayerSortDir;
   onSort: (field: PlayerSortField) => void;
-  onPlayerClick: (nickname: string) => void;
+  onPlayerClick: (playerId: number) => void;
   isSingleXtreino: boolean;
   selectedDate?: string;
 }
@@ -121,7 +121,7 @@ export default function PlayerTable({ players, sortField, sortDir, onSort, onPla
                   className={`${i < 3 && !isMVP ? "bg-gradient-to-r from-emerald-500/10 to-transparent border-l-2 border-emerald-400" : ""} 
                              ${isMVP ? "bg-gradient-to-r from-yellow-500/10 to-transparent border-l-2 border-yellow-400" : ""} 
                              hover:bg-[#1a1a24] cursor-pointer transition-colors`}
-                  onClick={() => onPlayerClick(p.nickname)}
+                  onClick={() => onPlayerClick(p.id)}
                 >
                   <td className="px-6 py-3 text-sm font-bold text-[#5a5a6e] text-center">{i + 1}</td>
                   <td className="px-6 py-3">
@@ -161,7 +161,7 @@ export default function PlayerTable({ players, sortField, sortDir, onSort, onPla
             player={p}
             isMVP={p.nickname === mvpNickname}
             isSingleXtreino={isSingleXtreino}
-            onClick={() => onPlayerClick(p.nickname)}
+            onClick={() => onPlayerClick(p.id)}
           />
         ))}
       </div>

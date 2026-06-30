@@ -40,7 +40,7 @@ import {
   PodiumCard,
   ComparisonBar,
 } from "../components/xtreino";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // ============================================================
 // TIPOS LOCAIS
@@ -99,6 +99,7 @@ interface RankingSummary {
 }
 
 interface EnrichedPlayer extends PlayerRankingDisplay {
+  playerId?: number;
   sparkline: number[];
   streak: number;
   badges: string[];
@@ -369,6 +370,15 @@ export default function JogadoresTab() {
     [searchedStats, sortField, sortDir]
   );
 
+  const playerIdMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!playersList) return map;
+    for (const player of playersList) {
+      map.set(player.nickname.trim().toLowerCase(), player.id);
+    }
+    return map;
+  }, [playersList]);
+
   // Enriquecer stats no modo acumulado
   const enrichedStats: EnrichedPlayer[] = useMemo(() => {
     if (!isAccumulated) return sortedStats as unknown as EnrichedPlayer[];
@@ -382,9 +392,11 @@ export default function JogadoresTab() {
       const teamContribution = calcTeamContribution(rawStats, p.playerName, p.teamName);
       const trend = calcTrend(rawStats, p.playerName, idx);
       const previousNicks = previousNicksMap.get(p.playerName.trim().toLowerCase()) ?? [];
+      const playerId = playerIdMap.get(p.playerName.trim().toLowerCase());
 
       return {
         ...p,
+        playerId,
         sparkline,
         streak,
         badges,
@@ -559,12 +571,9 @@ export default function JogadoresTab() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {top3.map((p, i) => (
-              <Link
-                to={`/jogador/${encodeURIComponent(p.playerName)}`}
-                className="block"
-              >
+              // CORREÇÃO: Link envolvendo o PodiumCard corretamente e usando o ID
+              <Link key={p.playerName} to={`/jogador/${p.playerId ?? ''}`} className="block">
                 <PodiumCard
-                  key={p.playerName}
                   name={p.playerName}
                   subtitle={p.teamName ?? "Sem time"}
                   rank={i}
@@ -574,7 +583,6 @@ export default function JogadoresTab() {
                     { label: "Media", value: p.avgKills },
                   ]}
                   streak={p.streak >= 3 ? p.streak : undefined}
-                  // Remove o onClick aqui, o Link cuida da navegação
                 />
               </Link>
             ))}
@@ -768,10 +776,11 @@ export default function JogadoresTab() {
                         </div>
                       </td>
                       <td className="px-6 py-3">
+                        {/* CORREÇÃO: Usado o playerId numérico ao invés do nome no URL */}
                         <Link
-                              to={`/jogador/${encodeURIComponent(acc.playerName)}`}
-                              className="flex items-center gap-3 text-left w-full group/player"
-                            >
+                          to={`/jogador/${acc.playerId ?? ''}`}
+                          className="flex items-center gap-3 text-left w-full group/player"
+                        >
                           <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center group-hover/player:bg-green-500/20 transition-colors">
                             <Target className="w-4 h-4 text-green-400" />
                           </div>

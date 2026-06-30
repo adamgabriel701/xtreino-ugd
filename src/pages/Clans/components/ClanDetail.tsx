@@ -1,17 +1,52 @@
+import { useParams } from "react-router-dom";
 import { Shield, Star, Layers, Users, Swords, Award, ChevronRight, Crown, ExternalLink } from "lucide-react";
-import type { ClanItem, PlayerItem, EnrichedPlayerItem } from "../types/clans";
+import { trpc } from "@/providers/trpc";
+import { useXtreinoCalculations, calcKillPoints } from "@/hooks/useXtreinoCalculations";
+import type { PlayerItem, EnrichedPlayerItem } from "../types/clans";
 import { getStatusBadge, getStatusLabel } from "../utils/badges";
 import PageHeader from "./PageHeader";
 import StatsCards from "./StatsCards";
+import { useNavigate } from "react-router-dom";
 
-interface ClanDetailProps {
-  clan: ClanItem;
-  onBack: () => void;
-  onTeamClick: (teamId: number) => void;
-  enrichPlayer: (player: PlayerItem) => EnrichedPlayerItem;
-}
+export default function ClanDetail() {
+  const { clanId } = useParams<{ clanId: string }>();
+  const navigate = useNavigate();
+  const id = Number(clanId);
 
-export default function ClanDetail({ clan, onBack, onTeamClick, enrichPlayer }: ClanDetailProps) {
+  const { data: clan, isLoading } = trpc.clans.getById.useQuery(
+    { id },
+    { enabled: !isNaN(id) }
+  );
+
+  // Lógica de enriquecimento (igual você já fazia no index, movida para cá)
+  const { data: allResults } = trpc.xtreinos.listResults.useQuery(undefined, { enabled: !!clan });
+  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery(undefined, { enabled: !!clan });
+  const { playerAccumulated } = useXtreinoCalculations({ results: allResults ?? [], playerStats: allPlayerStats ?? [] });
+
+  const enrichPlayer = (player: PlayerItem): EnrichedPlayerItem => {
+    const statsMap = new Map(playerAccumulated.map(s => [s.playerName.trim().toLowerCase(), s]));
+    const stats = statsMap.get(player.nickname.trim().toLowerCase());
+    return {
+      ...player,
+      totalXtreinoKills: stats?.totalKills ?? 0,
+      q1Kills: stats?.totalQ1Kills ?? 0,
+      q2Kills: stats?.totalQ2Kills ?? 0,
+      q3Kills: stats?.totalQ3Kills ?? 0,
+      participations: stats?.participations ?? 0,
+      avgKills: stats?.avgKills ?? 0,
+      killPoints: calcKillPoints(stats?.totalKills ?? 0),
+      xtreinoDates: stats?.xtreinoDates ?? [],
+    };
+  };
+
+  if (isLoading || !clan) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   const activeTeams = clan.teams?.filter((t) => t.status === "active") ?? [];
   const allClanPlayers = clan.teams?.flatMap((t) => t.players ?? []) ?? [];
   const enrichedClanPlayers = allClanPlayers.map(enrichPlayer);
@@ -26,7 +61,7 @@ export default function ClanDetail({ clan, onBack, onTeamClick, enrichPlayer }: 
         title={clan.name}
         subtitle={clan.description}
         backLabel="Voltar para Clãs"
-        onBack={onBack}
+        onBack={() => navigate("/clas")}
         icon={clan.logo ? <img src={clan.logo} alt={clan.name} className="w-12 h-12 rounded-lg object-cover" /> : <Shield className="w-8 h-8 text-emerald-400/50" />}
         extraInfo={
           <div className="flex items-center gap-3 flex-wrap">
@@ -63,7 +98,12 @@ export default function ClanDetail({ clan, onBack, onTeamClick, enrichPlayer }: 
                 const teamKills = enrichedPlayers.reduce((sum, p) => sum + p.totalXtreinoKills, 0);
                 
                 return (
-                  <div key={team.id} onClick={() => onTeamClick(team.id)} className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 cursor-pointer hover:border-emerald-500/30 hover:bg-[#1a1a24] transition-all group">
+                  <div 
+                    key={team.id} 
+                    // CORREÇÃO: Navega usando o ID do clã e da line
+                    onClick={() => navigate(`/clas/${id}/line/${team.id}`)} 
+                    className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 cursor-pointer hover:border-emerald-500/30 hover:bg-[#1a1a24] transition-all group"
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-900/30 to-emerald-600/10 flex items-center justify-center shrink-0 border border-[#2a2a3a]">
