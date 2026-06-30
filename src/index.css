@@ -138,3 +138,11 @@
   text-shadow: 2px 0 #00fff9;
   animation: glitch-anim-2 2s infinite linear alternate-reverse;
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}

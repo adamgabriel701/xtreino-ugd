@@ -4,16 +4,20 @@ import ExperienceLayout from './ExperienceLayout';
 import { MouseTrailGlow } from './Effects';
 import { useExperienceData } from './useExperienceData';
 
+// Componentes Funcionais
 import { PremiumLoader } from './components/PremiumLoader';
 import { StatsSection } from './components/StatsSection';
 import { FeaturesGridAnimated } from './components/FeaturesGrid';
-import { LiveTicker } from './components/LiveTicker';
-import { UpcomingEvents } from './components/UpcomingEvents';
 import { MantraSection } from './components/MantraSection';
-import { VersusSection } from './components/VersusSection';
 import { TopPlayersSection } from './components/TopPlayersSection';
 import { TopTeamsSection } from './components/TopTeamsSection';
 import { RenderTimeline } from './components/TimelineSection';
+
+// NOVOS COMPONENTES 100% ESTÁVEIS
+import { SeasonHighlights } from './components/SeasonHighlights';
+import { KillDistribution } from './components/KillDistribution';
+import { SeasonSummary } from './components/SeasonSummary';
+import { FinalCTA } from './components/FinalCTA';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
@@ -34,8 +38,7 @@ function useTilt(factor = 15) {
 
 export default function ExperiencePage() {
   const { scrollYProgress } = useScroll();
-  // AQUI PUXAMOS TUDO, INCLUINDO OS NOVOS upcomingEvents
-  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, upcomingEvents } = useExperienceData();
+  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary } = useExperienceData();
 
   const sphereScale = useTransform(scrollYProgress, [0, 0.25], [1, 0.4]);
   const sphereOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
@@ -92,9 +95,7 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
-        {/* PASSANDO OS DADOS REAIS POR PROPS AQUI */}
-        <LiveTicker activities={recentActivities} />
-
+        {/* STATS & FEATURES */}
         <section className="relative z-20 bg-[#0a0a0f] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16">
@@ -106,15 +107,20 @@ export default function ExperiencePage() {
           </div>
         </section>
 
-        {/* PASSANDO OS DADOS REAIS POR PROPS AQUI */}
-        <UpcomingEvents events={upcomingEvents || []} />
-        
         <MantraSection />
-        <VersusSection />
         
+        {/* NOVOS COMPONENTES */}
+        <SeasonSummary summary={periodSummary} />
+        <SeasonHighlights topPlayers={topPlayers} topTeams={topTeams} />
+        <KillDistribution players={topPlayers} />
+        
+        {/* RANKINGS & TIMELINE */}
         <TopPlayersSection players={topPlayers} orgName={orgName} />
         <TopTeamsSection teams={topTeams} orgName={orgName} />
         <RenderTimeline activities={recentActivities} />
+
+        {/* CTA FINAL */}
+        <FinalCTA />
       </div>
     </ExperienceLayout>
   );
