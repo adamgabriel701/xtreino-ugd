@@ -68,7 +68,7 @@ export default function MatchResultPage() {
     team1Name = match[1].trim();
     score1 = parseInt(match[2], 10);
     score2 = parseInt(match[3], 10);
-    team2Name = match[4].trim();
+    team2Name = match[4].trim().split(/\s*\(/)[0].trim();
   } else {
     team1Name = scrim.team1Name || "Time 1";
     team2Name = scrim.team2Name || "Time 2";
