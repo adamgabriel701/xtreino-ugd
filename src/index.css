@@ -45,7 +45,10 @@
   }
 }
 
-/* Adicione no seu index.css ou globals.css */
+/* ==========================================================================
+   ANIMAÇÕES DA PÁGINA EXPERIENCE
+   ========================================================================== */
+
 @property --angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -68,33 +71,11 @@
   0%, 100% { opacity: 0.4; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.1); }
 }
+
 .animate-pulse-slow {
   animation: pulse-slow 6s ease-in-out infinite;
 }
 
-/* Adicione isso no seu index.css ou globals.css */
-
-@keyframes ticker-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%); /* Move exatamente a metade (porque duplicamos o array no React) */
-  }
-}
-
-.animate-ticker-scroll {
-  animation: ticker-scroll 40s linear infinite;
-}
-
-/* Pausa a rolagem se o usuário preferir menos movimentação (Acessibilidade) */
-@media (prefers-reduced-motion: reduce) {
-  .animate-ticker-scroll {
-    animation: none;
-  }
-}
-
-/* Efeito Glitch Cyberpunk */
 @keyframes glitch-anim-1 {
   0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 2px); }
   20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
@@ -125,6 +106,7 @@
   left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
 .glitch-text::before {
@@ -143,6 +125,7 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
