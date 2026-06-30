@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom"; // NOVO
 import {
   Shield,
   TrendingUp,
@@ -55,13 +56,11 @@ function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
     top3Count: clanSum.top3Count || 0,
     bestPosition: clanSum.bestPosition || null,
     
-    // NOVO: Usa as médias reais calculadas para o clã
     avgPosition: clanSum.avgPosition || 0, 
     consistency: 0,
     streak: 0,
     trend: "same" as const,
     
-    // NOVO: Cria um gráfico de evolução baseado em quando as lines do clã participaram
     sparkline: clanSum.sparklineData || [], 
     xtreinos: [], 
     
@@ -113,6 +112,16 @@ export default function RankingClasTab() {
     return map;
   }, [clansList]);
 
+  // NOVO: Mapa para achar o ID real do Clã baseado no nome
+  const clanNameToIdMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!clansList) return map;
+    clansList.forEach((clan) => {
+      map.set(clan.name.trim().toLowerCase(), clan.id);
+    });
+    return map;
+  }, [clansList]);
+
   const availableMonths = useMemo(() => {
     if (!allResults) return [];
     const months = new Set<string>();
@@ -138,7 +147,6 @@ export default function RankingClasTab() {
     const statsToUse = filteredPlayerStats;
     const clanMap = new Map<string, any>();
 
-    // 1. Soma Pontos de Posição, conta Top 1/2/3 e calcula Médias
     resultsToUse.forEach((result) => {
       const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
@@ -156,9 +164,9 @@ export default function RankingClasTab() {
           top2Count: 0,
           top3Count: 0,
           bestPosition: null,
-          sumAllPositions: 0, // Novo: para calcular a média real
-          countAllPositions: 0, // Novo: para calcular a média real
-          datesPlayed: new Set<string>(), // Novo: para gerar o gráfico de evolução
+          sumAllPositions: 0,
+          countAllPositions: 0,
+          datesPlayed: new Set<string>(),
         });
       }
 
@@ -167,7 +175,7 @@ export default function RankingClasTab() {
       clan.totalPosPoints += result.totalPoints || 0;
       clan.xtreinosPlayed += 1; 
       clan.lines.add(result.teamName);
-      if (result.date) clan.datesPlayed.add(result.date); // Registra a data para o gráfico
+      if (result.date) clan.datesPlayed.add(result.date);
 
       const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter((p): p is number => p !== null && p !== undefined);
       
@@ -176,7 +184,6 @@ export default function RankingClasTab() {
         if (pos === 2) clan.top2Count++;
         if (pos === 3) clan.top3Count++;
         
-        // NOVO: Calcula a melhor posição e a soma das posições
         if (clan.bestPosition === null || pos < clan.bestPosition) {
           clan.bestPosition = pos;
         }
@@ -185,21 +192,17 @@ export default function RankingClasTab() {
       });
     });
 
-    // 2. Soma as Kills (COM BUSCA PARCIAL PARA ARRUMAR AS LINES SOLOS)
     statsToUse.forEach((stat) => {
       const statTeamName = stat.teamName.trim().toLowerCase();
       let matchedClanName: string | null = null;
 
-      // Tenta achar o clã dono desta line
       for (const [lineKey, clanName] of lineToClanMap.entries()) {
-        // Se o nome da stat contém o nome da line (ou vice-versa), eles são a mesma equipe
         if (statTeamName.includes(lineKey) || lineKey.includes(statTeamName)) {
           matchedClanName = clanName;
           break;
         }
       }
 
-      // Se não achou dono, é solo/desconhecida
       if (!matchedClanName) {
         matchedClanName = "Lines Solos/Desconhecidas";
       }
@@ -210,21 +213,17 @@ export default function RankingClasTab() {
       }
     });
 
-    // 3. Finaliza os cálculos matemáticos
     const finalArray = Array.from(clanMap.values());
     finalArray.forEach(c => {
       c.lines = Array.from(c.lines);
       c.totalKillPoints = calcKillPoints(c.totalKills);
       c.totalPoints = c.totalPosPoints + c.totalKillPoints; 
       
-      // NOVO: Calcula a média de posição real do clã
       c.avgPosition = c.countAllPositions > 0 
         ? Math.round((c.sumAllPositions / c.countAllPositions) * 10) / 10 
         : 0;
 
-      // NOVO: Gera o gráfico de evolução (quantas linhas desse clã jogaram por data)
       const datesArray = Array.from(c.datesPlayed).sort();
-      // O valor do gráfico será quantas linhas diferentes do clã jogaram naquela data
       c.sparklineData = datesArray.map(date => {
         return resultsToUse.filter(r => {
           const lineKey = r.teamName.trim().toLowerCase();
@@ -366,25 +365,34 @@ export default function RankingClasTab() {
       {isLoading && <LoadingSpinner text="Agrupando estatísticas por Clã..." />}
       {!isLoading && <SummaryCards cards={summaryCards} columns={5} />}
 
+      {/* PÓDIO ATUALIZADO COM LINKS */}
       {!isLoading && top3.length === 3 && (
         <div>
           <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">
             🏆 Pódio de Clãs
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {top3.map((t, i) => (
-              <PodiumCard
-                key={t.teamName}
-                name={t.teamName}
-                rank={i}
-                stats={[
-                  { label: "Kills", value: t.totalKills, color: "text-green-400" },
-                  { label: "XTs", value: t.xtreinosPlayed },
-                  { label: "Total Pts", value: t.totalPoints },
-                ]}
-                streak={t.xtreinosPlayed >= 10 ? t.xtreinosPlayed : undefined}
-              />
-            ))}
+            {top3.map((t, i) => {
+              const clanId = clanNameToIdMap.get(t.teamName.trim().toLowerCase());
+              return (
+                <Link 
+                  key={t.teamName} 
+                  to={clanId ? `/clans/${clanId}` : "#"}
+                  className="block"
+                >
+                  <PodiumCard
+                    name={t.teamName}
+                    rank={i}
+                    stats={[
+                      { label: "Kills", value: t.totalKills, color: "text-green-400" },
+                      { label: "XTs", value: t.xtreinosPlayed },
+                      { label: "Total Pts", value: t.totalPoints },
+                    ]}
+                    streak={t.xtreinosPlayed >= 10 ? t.xtreinosPlayed : undefined}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
@@ -404,6 +412,7 @@ export default function RankingClasTab() {
           getTeamPlayers={getTeamPlayers}
           title={selectedMonth ? `Ranking de Clãs — ${getMonthName(selectedMonth)}` : "Ranking de Clãs — Acumulado Geral"}
           flameThreshold={10}
+          clanNameToIdMap={clanNameToIdMap} // NOVA PROP PASSADA AQUI
         />
       )}
 
