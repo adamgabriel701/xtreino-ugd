@@ -17,12 +17,10 @@ import {
   seedMinimal,
   seedLogos,
   seedLogosAuto,
-  seedAllXtreinos,  // 🆕 seed genérico de xtreinos
+  seedAllXtreinos,
+  seedAllScrims,  // 🆕 seed genérico de scrims
   seedPlayerUnified,
   seedScrimPlayers,
-  seedScrim4v4,
-  seedScrim4v4UndergroundVsDinasty,
-  seedScrim4v4UgdThreatVsUgdLight,
 } from "../db/seed.js";
 
 console.log("[BOOT] Starting server...");
@@ -175,6 +173,9 @@ if (env.isProduction) {
     // 🆕 Seed genérico de todos os xtreinos
     runSeedIfNeeded("xtreinos_all", seedAllXtreinos);
 
+    // 🆕 Seed genérico de todas as scrims
+    runSeedIfNeeded("scrims_all", seedAllScrims);
+
     // Na seção de seeds:
     runSeedIfNeeded("player_unified", seedPlayerUnified);
 
@@ -183,10 +184,7 @@ if (env.isProduction) {
     // runSeedIfNeeded("logos_auto", () => seedLogosAuto("public")); // descomente se quiser auto
 
     runSeedIfNeeded("scrim_players", seedScrimPlayers);
-    runSeedIfNeeded("scrim_4v4", seedScrim4v4);
-    runSeedIfNeeded("scrim_4v4_underground_vs_dinasty", seedScrim4v4UndergroundVsDinasty);
-    runSeedIfNeeded("scrim_4v4_ugd_threat_vs_ugd_light", seedScrim4v4UgdThreatVsUgdLight);
-    
+
     console.log("[BOOT] All seeds processed");
 
   } catch (error) {
