@@ -13,7 +13,7 @@ export default function PlayerDetail() {
     if (!isNaN(pid)) {
       // O estado 'from' ajuda o botão "Voltar" do JogadorDetalhe a saber 
       // que ele deve voltar para o Clã em vez da lista de jogadores global
-      navigate(`/jogador/${pid}?from=cla/${clanId}/line/${teamId}`, { replace: true });
+      navigate(`/jogador/${pid}?from=clans/${clanId}/line/${teamId}`, { replace: true });
     }
   }, [pid, clanId, teamId, navigate]);
 

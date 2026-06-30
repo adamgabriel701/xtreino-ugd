@@ -1,11 +1,11 @@
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { useCallback } from "react";
 
 export function useClanNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Pega os parâmetros da URL (ex: /clas/1/line/2/jogador/5)
+  // Pega os parâmetros da URL (ex: /clans/1/line/2/jogador/5)
   const { clanId, teamId, playerId } = useParams<{
     clanId: string;
     teamId: string;
