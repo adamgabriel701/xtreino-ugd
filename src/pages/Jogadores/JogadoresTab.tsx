@@ -40,6 +40,7 @@ import {
   PodiumCard,
   ComparisonBar,
 } from "../components/xtreino";
+import { Link, useNavigate } from "react-router-dom";
 
 // ============================================================
 // TIPOS LOCAIS
@@ -558,19 +559,24 @@ export default function JogadoresTab() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {top3.map((p, i) => (
-              <PodiumCard
-                key={p.playerName}
-                name={p.playerName}
-                subtitle={p.teamName ?? "Sem time"}
-                rank={i}
-                stats={[
-                  { label: "Kills", value: p.totalKills, color: "text-green-400" },
-                  { label: "XTs", value: p.participations },
-                  { label: "Media", value: p.avgKills },
-                ]}
-                streak={p.streak >= 3 ? p.streak : undefined}
-                onClick={() => setModalPlayer(p)}
-              />
+              <Link
+                to={`/jogador/${encodeURIComponent(p.playerName)}`}
+                className="block"
+              >
+                <PodiumCard
+                  key={p.playerName}
+                  name={p.playerName}
+                  subtitle={p.teamName ?? "Sem time"}
+                  rank={i}
+                  stats={[
+                    { label: "Kills", value: p.totalKills, color: "text-green-400" },
+                    { label: "XTs", value: p.participations },
+                    { label: "Media", value: p.avgKills },
+                  ]}
+                  streak={p.streak >= 3 ? p.streak : undefined}
+                  // Remove o onClick aqui, o Link cuida da navegação
+                />
+              </Link>
             ))}
           </div>
         </div>
@@ -762,10 +768,10 @@ export default function JogadoresTab() {
                         </div>
                       </td>
                       <td className="px-6 py-3">
-                        <button
-                          onClick={() => isAcc && setModalPlayer(acc)}
-                          className="flex items-center gap-3 text-left w-full group/player"
-                        >
+                        <Link
+                              to={`/jogador/${encodeURIComponent(acc.playerName)}`}
+                              className="flex items-center gap-3 text-left w-full group/player"
+                            >
                           <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center group-hover/player:bg-green-500/20 transition-colors">
                             <Target className="w-4 h-4 text-green-400" />
                           </div>
@@ -802,7 +808,7 @@ export default function JogadoresTab() {
                               </div>
                             )}
                           </div>
-                        </button>
+                        </Link>
                       </td>
                       <td className="px-6 py-3 text-sm text-[#8a8a9e]">
                         {p.teamName ?? "—"}

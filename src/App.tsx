@@ -7,7 +7,10 @@ import Scrims from "./pages/Scrims/page";
 import MatchResult from "./pages/Scrims/match/[id]/page"; // <-- NOVO IMPORT
 import Rankings from "./pages/Rankings";
 import Clans from "./pages/Clans";
+
 import Jogadores from "./pages/Jogadores/page";
+import JogadorDetalhe from "./pages/Jogadores/JogadorDetalhe";
+
 import Inscricoes from "./pages/Inscricoes";
 import Salinhas from "./pages/Salinhas";
 import Sobre from "./pages/Sobre/page";
@@ -29,7 +32,10 @@ export default function App() {
         <Route path="/scrims/match/:id" element={<MatchResult />} /> {/* <-- NOVA ROTA */}
         <Route path="/rankings" element={<Rankings />} />
         <Route path="/clans" element={<Clans />} />
+
         <Route path="/jogadores" element={<Jogadores />} />
+        <Route path="jogador/:id" element={<JogadorDetalhe />} />
+
         <Route path="/inscricoes" element={<Inscricoes />} />
         <Route path="/salinhas" element={<Salinhas />} />
         <Route path="/sobre" element={<Sobre />} />
