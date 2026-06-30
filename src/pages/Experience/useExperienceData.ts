@@ -20,34 +20,35 @@ export interface ExperienceStats {
 }
 
 export interface TopPlayer {
-  id: string;
+  id: number;         // ID do Jogador
+  clanId?: number;    // ID do Clã ao qual ele pertence (adicione isso)
+  teamId?: number;    // ID da Line/Time ao qual ele pertence (adicione isso)
   name: string;
   teamName: string | null;
   kills: number;
-  participations: number;
   avgKills: number;
-  bestPerformance: number;
+  participations: number;
   streak: number;
-  badges: string[];
   rank: number;
-  trend: "up" | "down" | "same";
+  badges: string[];
   sparkline: number[];
+  trend: "up" | "down" | "same";
 }
 
+
 export interface TopTeam {
-  id: string;
+  id: number;         // ID do Time (Line)
+  clanId?: number;    // ID do Clã (adicione isso)
   name: string;
-  points: number;
-  kills: number;
   wins: number;
   top3Count: number;
-  xtreinosPlayed: number;
-  bestPosition: number | null;
+  kills: number;
+  points: number;
   avgPoints: number;
   rank: number;
+  badges: string[];
   sparkline: number[];
   trend: "up" | "down" | "same";
-  badges: string[];
 }
 
 export interface RecentActivity {
@@ -193,10 +194,10 @@ export function useExperienceData(): ExperienceData {
     }
 
     return Array.from(playerMap.values())
-      .map((p) => ({
-        id: `player-${p.playerName}`, name: p.playerName, teamName: p.teamName, kills: p.totalKills,
+      .map((p, index) => ({
+        id: index, name: p.playerName, teamName: p.teamName, kills: p.totalKills,
         participations: p.participations, avgKills: p.participations > 0 ? Math.round((p.totalKills / p.participations) * 10) / 10 : 0,
-        bestPerformance: 0, streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
+        streak: calcPlayerStreak(rawPlayerRanking, p.playerName),
         badges: calcPlayerBadges(p.totalKills, p.participations, p.participations > 0 ? p.totalKills / p.participations : 0),
         rank: 0, trend: "same" as const, sparkline: calcPlayerSparkline(rawPlayerRanking, p.playerName),
       }))
@@ -213,7 +214,7 @@ export function useExperienceData(): ExperienceData {
       .map((team, i) => {
         const sparkline = calcTeamSparkline(team.xtreinos);
         return {
-          id: `team-${team.teamName}`, name: team.teamName, points: team.totalPoints, kills: team.totalKills,
+          id: i + 1, name: team.teamName, points: team.totalPoints, kills: team.totalKills,
           wins: team.top1Count, top3Count: team.top3Count, xtreinosPlayed: team.xtreinosPlayed, bestPosition: team.bestPosition,
           avgPoints: team.xtreinosPlayed > 0 ? Math.round((team.totalPoints / team.xtreinosPlayed) * 10) / 10 : 0,
           rank: i + 1, sparkline, trend: calcTeamTrend(sparkline), badges: calcTeamBadges(team),
