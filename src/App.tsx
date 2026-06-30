@@ -38,7 +38,7 @@ export default function App() {
 
         <Route path="/rankings" element={<Rankings />} />
 
-        <Route path="/clas" element={<Clans />}>
+        <Route path="/clans" element={<Clans />}>
           <Route path=":clanId" element={<ClanDetail />} />
           <Route path=":clanId/line/:teamId" element={<TeamDetail />} />
           <Route path=":clanId/line/:teamId/jogador/:playerId" element={<PlayerDetail />} />
