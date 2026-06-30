@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
-import type { UpcomingEvent } from "./components/UpcomingEvents"; // Importando a tipagem nova
+import type { UpcomingEvent } from "./components/UpcomingEvents";
 
 // ============================================================================
 // TIPOS EXPORTADOS
@@ -20,10 +20,19 @@ export interface ExperienceStats {
   avgPointsPerTeam: number;
 }
 
+export interface DetailedEventStats {
+  xtreinoStats: { total: number; abertos: number; emAndamento: number; fechados: number };
+  championshipStats: { total: number; ativos: number; inscricoes: number; encerrados: number };
+  scrimStats: { total: number; agendados: number; emAndamento: number; finalizados: number };
+  salinhaStats: { total: number; abertas: number; encerradas: number };
+  xtreinoRealStats: { totalTeams: number; totalKills: number; totalPoints: number; totalXtreinos: number };
+  scrimRealStats: { totalTeams: number; totalKills: number; totalPoints: number; totalScrims: number };
+}
+
 export interface TopPlayer {
-  id: number;         // ID REAL do Jogador no banco
-  clanId?: number;    // ID REAL do Clã
-  teamId?: number;    // ID REAL da Line/Time
+  id: number;
+  clanId?: number;
+  teamId?: number;
   name: string;
   teamName: string | null;
   kills: number;
@@ -37,8 +46,8 @@ export interface TopPlayer {
 }
 
 export interface TopTeam {
-  id: number;         // ID REAL do Time (Line) no banco
-  clanId?: number;    // ID REAL do Clã
+  id: number;
+  clanId?: number;
   name: string;
   wins: number;
   top3Count: number;
@@ -64,10 +73,11 @@ export interface ExperienceData {
   orgName: string;
   isLoading: boolean;
   stats: ExperienceStats;
+  detailedEventStats: DetailedEventStats;
   topPlayers: TopPlayer[];
   topTeams: TopTeam[];
   recentActivities: RecentActivity[];
-  upcomingEvents: UpcomingEvent[]; // NOVO CAMPO
+  upcomingEvents: UpcomingEvent[];
   periodSummary: {
     totalKills: number;
     totalPosPoints: number;
@@ -138,17 +148,10 @@ function calcTeamBadges(team: { totalKills: number; totalPoints: number; xtreino
   return badges;
 }
 
-// ============================================================================
-// FUNÇÃO AUXILIAR PARA TRATAR DATAS NO FORMATO TEXT DO SQLITE
-// ============================================================================
 function parseDateString(dateStr: string): Date | null {
   if (!dateStr) return null;
-  
-  // Tenta YYYY-MM-DD
   let d = new Date(dateStr);
   if (!isNaN(d.getTime())) return d;
-  
-  // Tenta DD/MM/YYYY
   if (dateStr.includes('/')) {
     const parts = dateStr.split('/');
     if (parts.length === 3) {
@@ -156,7 +159,6 @@ function parseDateString(dateStr: string): Date | null {
       if (!isNaN(d.getTime())) return d;
     }
   }
-  
   return null;
 }
 
@@ -175,12 +177,7 @@ export function useExperienceData(): ExperienceData {
   const { data: rawPlayerRanking } = trpc.players.rankingStats.useQuery();
   const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
   const { data: clansList } = trpc.clans.list.useQuery();
-  
-  // NOVAS QUERIES PARA OS PRÓXIMOS EVENTOS
-  const { data: openXtreinos } = trpc.xtreinos.list.useQuery(undefined);
-  const { data: upcomingChamps } = trpc.championships.list.useQuery({ status: "em_breve" });
-  const { data: openSalinhas } = trpc.salinhas.list.useQuery({ status: "aberta" });
-  
+  const { data: salinhasList } = trpc.salinhas.list.useQuery(); // NOVO: Traz as salinhas para as stats
   const { data: settings } = trpc.settings.get.useQuery();
 
   const calculations = useXtreinoCalculations({
@@ -351,78 +348,109 @@ export function useExperienceData(): ExperienceData {
   const upcomingEvents = useMemo<UpcomingEvent[]>(() => {
     const events: UpcomingEvent[] = [];
 
-    // 1. XTreinos Abertos
-    if (openXtreinos && openXtreinos.length > 0) {
-      const filtered = openXtreinos.filter(x => x.status === "aberto");
+    if (allXtreinos && allXtreinos.length > 0) {
+      const filtered = allXtreinos.filter(x => x.status === "aberto");
       for (const xt of filtered) {
         events.push({
-          id: xt.id,
-          type: 'xtreino',
-          title: xt.name,
-          date: xt.date,
-          timeBr: xt.timeBr,
-          maxTeams: xt.maxTeams,
-          status: xt.status,
+          id: xt.id, type: 'xtreino', title: xt.name, date: xt.date,
+          timeBr: xt.timeBr, maxTeams: xt.maxTeams, status: xt.status,
         });
       }
     }
 
-    // 2. Campeonatos em Breve / Inscrições
-    if (upcomingChamps && upcomingChamps.length > 0) {
+    if (allChampionships && allChampionships.length > 0) {
+      const upcomingChamps = allChampionships.filter(c => c.status === "em_breve" || c.status === "inscricoes");
       for (const champ of upcomingChamps) {
         events.push({
-          id: champ.id,
-          type: 'championship',
-          title: champ.name,
-          date: champ.startDate || '',
-          maxTeams: champ.maxTeams,
-          registeredTeams: champ.registeredTeams,
-          status: champ.status,
-          location: champ.modality, // Usando modalidade como local/info extra
+          id: champ.id, type: 'championship', title: champ.name,
+          date: champ.startDate || '', maxTeams: champ.maxTeams,
+          registeredTeams: champ.registeredTeams, status: champ.status,
+          location: champ.modality,
         });
       }
     }
 
-    // 3. Salinhas Abertas
-    if (openSalinhas && openSalinhas.length > 0) {
+    if (salinhasList && salinhasList.length > 0) {
+      const openSalinhas = salinhasList.filter(s => s.status === "aberta");
       for (const salinha of openSalinhas) {
         events.push({
-          id: salinha.id,
-          type: 'salinha',
-          title: salinha.name,
-          date: salinha.date,
-          timeBr: salinha.timeBr,
-          maxParticipants: salinha.maxParticipants,
-          status: salinha.status,
-          location: salinha.modality, // Ex: "solo", "duo"
+          id: salinha.id, type: 'salinha', title: salinha.name,
+          date: salinha.date, timeBr: salinha.timeBr,
+          maxParticipants: salinha.maxParticipants, status: salinha.status,
+          location: salinha.modality,
         });
       }
     }
 
-    // Ordena os eventos pela data mais próxima (tratando strings de datas variadas)
     return events
       .sort((a, b) => {
         const dateA = parseDateString(a.date);
         const dateB = parseDateString(b.date);
-        
-        // Se não conseguir parsear, joga pro final da lista
         if (!dateA && !dateB) return 0;
         if (!dateA) return 1;
         if (!dateB) return -1;
-        
         return dateA.getTime() - dateB.getTime();
       })
-      .slice(0, 4); // Limita a 4 próximos eventos na tela
-  }, [openXtreinos, upcomingChamps, openSalinhas]);
+      .slice(0, 4);
+  }, [allXtreinos, allChampionships, salinhasList]);
+
+  // ========================================================================
+  // DADOS PARA ESTATÍSTICAS DETALHADAS
+  // ========================================================================
+  const detailedEventStats = useMemo<DetailedEventStats>(() => {
+    const xtreinoStats = {
+      total: allXtreinos?.length ?? 0,
+      abertos: allXtreinos?.filter((x) => x.status === "aberto" || !x.status).length ?? 0,
+      emAndamento: allXtreinos?.filter((x) => x.status === "em_andamento").length ?? 0,
+      fechados: allXtreinos?.filter((x) => x.status === "fechado").length ?? 0,
+    };
+
+    const championshipStats = {
+      total: allChampionships?.length ?? 0,
+      ativos: allChampionships?.filter((c) => c.status === "ativo" || !c.status).length ?? 0,
+      inscricoes: allChampionships?.filter((c) => c.status === "inscricoes").length ?? 0,
+      encerrados: allChampionships?.filter((c) => c.status === "encerrado").length ?? 0,
+    };
+
+    const scrimStats = {
+      total: allScrims?.length ?? 0,
+      agendados: allScrims?.filter((s) => s.status === "agendado" || !s.status).length ?? 0,
+      emAndamento: allScrims?.filter((s) => s.status === "em_andamento").length ?? 0,
+      finalizados: allScrims?.filter((s) => s.status === "finalizado").length ?? 0,
+    };
+
+    const salinhaStats = {
+      total: salinhasList?.length ?? 0,
+      abertas: salinhasList?.filter((s) => s.status === "aberta").length ?? 0,
+      encerradas: salinhasList?.filter((s) => s.status === "encerrada").length ?? 0,
+    };
+
+    const xtreinoRealStats = {
+      totalTeams: teamRanking?.length ?? 0,
+      totalKills: teamRanking?.reduce((acc, t) => acc + t.totalKills, 0) ?? 0,
+      totalPoints: teamRanking?.reduce((acc, t) => acc + t.totalPoints, 0) ?? 0,
+      totalXtreinos: teamRanking?.reduce((acc, t) => acc + t.xtreinosPlayed, 0) ?? 0,
+    };
+
+    const scrimRealStats = {
+      totalTeams: scrimTeamAllTime?.length ?? 0,
+      totalKills: scrimTeamAllTime?.reduce((acc, t) => acc + (t.totalKills || 0), 0) ?? 0,
+      totalPoints: scrimTeamAllTime?.reduce((acc, t) => acc + (t.totalPoints || 0), 0) ?? 0,
+      totalScrims: scrimTeamAllTime?.reduce((acc, t) => acc + (t.matches || 0), 0) ?? 0,
+    };
+
+    return { xtreinoStats, championshipStats, scrimStats, salinhaStats, xtreinoRealStats, scrimRealStats };
+  }, [allXtreinos, allChampionships, allScrims, salinhasList, teamRanking, scrimTeamAllTime]);
 
   return { 
     orgName: settings?.orgName ?? "Underground", 
     isLoading, 
     stats, 
+    detailedEventStats,
     topPlayers, 
     topTeams, 
     recentActivities, 
-    upcomingEvents, // RETORNANDO AQUI
+    upcomingEvents, 
     periodSummary 
   };
 }

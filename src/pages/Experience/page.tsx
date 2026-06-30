@@ -18,6 +18,7 @@ import { SeasonHighlights } from './components/SeasonHighlights';
 import { KillDistribution } from './components/KillDistribution';
 import { SeasonSummary } from './components/SeasonSummary';
 import { FinalCTA } from './components/FinalCTA';
+import { DetailedEventStats } from './components/DetailedEventStats';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
@@ -38,7 +39,7 @@ function useTilt(factor = 15) {
 
 export default function ExperiencePage() {
   const { scrollYProgress } = useScroll();
-  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary } = useExperienceData();
+  const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary, detailedEventStats } = useExperienceData();
 
   const sphereScale = useTransform(scrollYProgress, [0, 0.25], [1, 0.4]);
   const sphereOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
@@ -106,6 +107,8 @@ export default function ExperiencePage() {
             <FeaturesGridAnimated />
           </div>
         </section>
+
+      <DetailedEventStats {...detailedEventStats} />
 
         <MantraSection />
         
