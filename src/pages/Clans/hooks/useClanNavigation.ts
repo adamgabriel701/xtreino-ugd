@@ -17,36 +17,36 @@ export function useClanNavigation() {
   const selectedPlayer = playerId ? parseInt(playerId) : null;
 
   const navigateToClan = useCallback((id: number) => {
-    navigate(`/clas/${id}`);
+    navigate(`/clans/${id}`);
   }, [navigate]);
 
   const navigateToTeam = useCallback((clanIdNum: number, teamIdNum: number) => {
-    navigate(`/clas/${clanIdNum}/line/${teamIdNum}`);
+    navigate(`/clans/${clanIdNum}/line/${teamIdNum}`);
   }, [navigate]);
 
   const navigateToPlayer = useCallback((clanIdNum: number, teamIdNum: number, playerIdNum: number) => {
-    navigate(`/clas/${clanIdNum}/line/${teamIdNum}/jogador/${playerIdNum}`);
+    navigate(`/clans/${clanIdNum}/line/${teamIdNum}/jogador/${playerIdNum}`);
   }, [navigate]);
 
   const goBack = useCallback(() => {
     // Se estou no jogador, volto para a line
     if (selectedPlayer && selectedTeam && selectedClan) {
-      navigate(`/clas/${selectedClan}/line/${selectedTeam}`);
+      navigate(`/clans/${selectedClan}/line/${selectedTeam}`);
     } 
     // Se estou na line, volto para o clã
     else if (selectedTeam && selectedClan) {
-      navigate(`/clas/${selectedClan}`);
+      navigate(`/clans/${selectedClan}`);
     } 
     // Se estou no clã, volto para a lista
     else if (selectedClan) {
-      navigate("/clas");
+      navigate("/clans");
     } else {
       navigate(-1); // Fallback para o histórico do navegador
     }
   }, [navigate, selectedClan, selectedTeam, selectedPlayer]);
 
   const reset = useCallback(() => {
-    navigate("/clas");
+    navigate("/clans");
   }, [navigate]);
 
   return { 
