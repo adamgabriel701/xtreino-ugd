@@ -1,489 +1,34 @@
-import { Suspense, lazy, useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useInView, type Variants, AnimatePresence } from 'framer-motion';
-import {
-  Shield, Crosshair, Globe, Cpu, Trophy, Users, Swords, Zap,
-  Target, Crown, Calendar, Flame, TrendingUp
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Suspense, lazy, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import MainLayout from "@/layout/MainLayout";
-import { MouseTrailGlow, ScrambleText, MorphingNumber } from './Effects';
-import { useExperienceData, type RecentActivity, type TopPlayer, type TopTeam } from './useExperienceData';
+import { MouseTrailGlow } from './Effects';
+import { useExperienceData } from './useExperienceData';
+import { PremiumLoader } from './components/PremiumLoader';
+import { StatsSection } from './components/StatsSection';
+import { FeaturesGridAnimated } from './components/FeaturesGrid';
+import { TopPlayersSection } from './components/TopPlayersSection';
+import { TopTeamsSection } from './components/TopTeamsSection';
+import { RenderTimeline } from './components/TimelineSection';
+import { LiveTicker } from './components/LiveTicker';
+import { UpcomingEvents } from './components/UpcomingEvents';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 
-// ============================================================================
-// CONFIGS
-// ============================================================================
-const features = [
-  { icon: Crosshair, title: "Precisão Cirúrgica", desc: "Estatísticas milimétricas que revelam o verdadeiro potencial de cada jogador e equipe no cenário competitivo." },
-  { icon: Shield, title: "Infraestrutura Sólida", desc: "Tecnologia de ponta garantindo estabilidade, velocidade e segurança absoluta dos dados." },
-  { icon: Globe, title: "Cenário Conectado", desc: "Uma rede unindo jogadores, times e organizações em um ecossistema vivo e integrado." },
-  { icon: Cpu, title: "Inteligência Aplicada", desc: "Algoritmos próprios para pontuação, ranking e análise de desempenho evolutiva." },
-];
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.15 } }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
-};
-
-// ============================================================================
-// MELHORIA 1: Hook de Tilt 3D (Agora integrado ao Hero do page.tsx)
-// ============================================================================
+// Hook de Tilt mantido aqui pois controla o Hero diretamente
 function useTilt(factor = 15) {
   const [style, setStyle] = useState({ x: 0, y: 0 });
-  
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const x = ((e.clientX / window.innerWidth) - 0.5) * factor * 2;
-      const y = ((e.clientY / window.innerHeight) - 0.5) * factor * 2;
-      setStyle({ x, y });
+      setStyle({
+        x: ((e.clientX / window.innerWidth) - 0.5) * factor * 2,
+        y: ((e.clientY / window.innerHeight) - 0.5) * factor * 2,
+      });
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [factor]);
-
   return style;
 }
-
-// ============================================================================
-// COMPONENTES AUXILIARES
-// ============================================================================
-function SparklineSVG({ data, width = 120, height = 30, color = "#10b981" }: { data: number[]; width?: number; height?: number; color?: string }) {
-  if (data.length < 2) return <div className="text-xs text-[#5a5a6e]">—</div>;
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const points = data.map((val, i) => {
-    const x = (i / (data.length - 1)) * width;
-    const y = height - ((val - min) / range) * height;
-    return `${x},${y}`;
-  }).join(" ");
-  return (
-    <svg width={width} height={height} className="opacity-60">
-      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
-      <circle cx={width} cy={height - ((data[data.length - 1] - min) / range) * height} r="3" fill={color} />
-    </svg>
-  );
-}
-
-function TrendIcon({ trend }: { trend: "up" | "down" | "same" }) {
-  if (trend === "up") return <TrendingUp className="w-4 h-4 text-green-400" />;
-  if (trend === "down") return <TrendingUp className="w-4 h-4 text-red-400 rotate-180" />;
-  return <div className="w-4 h-4 text-[#5a5a6e]">—</div>;
-}
-
-// ============================================================================
-// MELHORIA 2: Premium Skeleton Loading
-// ============================================================================
-function PremiumLoader() {
-  return (
-    <MainLayout>
-      <div className="min-h-screen bg-[#0a0a0f] overflow-hidden">
-        <div className="h-screen flex items-center justify-center">
-          <div className="text-center space-y-6 animate-pulse">
-            <div className="h-4 w-48 bg-[#12121a] rounded-full mx-auto" />
-            <div className="h-20 w-[80vw] max-w-3xl bg-[#12121a] rounded-xl mx-auto" />
-            <div className="h-4 w-64 bg-[#12121a] rounded-full mx-auto" />
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-[#12121a] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
-          ))}
-        </div>
-      </div>
-    </MainLayout>
-  );
-}
-
-// ============================================================================
-// MELHORIA 5: Seção de Estatísticas com Trigger Corrigido
-// ============================================================================
-function StatsSection({ stats }: { stats: { totalXtreinos: number; totalKills: number; totalTeams: number; totalPlayers: number } }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-  
-  const displayStats = [
-    { value: stats.totalXtreinos, label: "XTreinos", icon: Swords },
-    { value: stats.totalKills, label: "Kills Totais", icon: Crosshair },
-    { value: stats.totalTeams, label: "Equipes", icon: Users },
-    { value: stats.totalPlayers, label: "Players", icon: Trophy },
-  ];
-
-  return (
-    <div ref={ref} className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-16 sm:mb-24">
-      {displayStats.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <motion.div 
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-            className="bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-2xl p-4 sm:p-5 text-center group hover:border-emerald-500/30 transition-all duration-300"
-          >
-            <Icon className="w-5 h-5 text-emerald-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-            <div className="text-2xl sm:text-3xl font-black text-white mb-1">
-              <MorphingNumber value={stat.value} trigger={isInView} />
-            </div>
-            <div className="text-[#5a5a6e] text-xs uppercase tracking-wider">{stat.label}</div>
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ============================================================================
-// MELHORIA 3 & 6: Features com Borda Gradiente Rotativa
-// ============================================================================
-function FeaturesGridAnimated() {
-  const [scrambleTriggers, setScrambleTriggers] = useState<boolean[]>(new Array(features.length).fill(false));
-
-  return (
-    <motion.div 
-      variants={containerVariants} 
-      initial="hidden" 
-      whileInView="show" 
-      viewport={{ once: true, amount: 0.2 }} 
-      onViewportEnter={() => features.forEach((_, i) => setTimeout(() => setScrambleTriggers(prev => { const n = [...prev]; n[i] = true; return n; }), i * 150))} 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-    >
-      {features.map((f, i) => {
-        const Icon = f.icon;
-        return (
-          <motion.div key={f.title} variants={itemVariants} whileHover={{ y: -5 }} className="group relative h-full">
-            {/* Borda Gradiente Animada */}
-            <div className="absolute -inset-[1px] rounded-2xl bg-conic-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-spin-slow blur-[1px]" />
-            <div className="relative h-full bg-[#0a0a0f] rounded-2xl p-5 sm:p-6 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-transparent group-hover:from-emerald-500/5 transition-all duration-500" />
-              <div className="relative z-10">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-[#f0f0f5] font-bold text-base sm:text-lg mb-2 group-hover:text-emerald-400 transition-colors font-mono">
-                  <ScrambleText text={f.title} trigger={scrambleTriggers[i]} />
-                </h3>
-                <p className="text-[#5a5a6e] text-xs sm:text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </motion.div>
-  );
-}
-
-// ============================================================================
-// SEÇÕES DE RANKING (Com Zebra Striping - Melhoria 6)
-// ============================================================================
-
-function TopPlayersSection({ players, orgName }: { players: TopPlayer[]; orgName: string }) {
-  if (players.length === 0) return null;
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 30 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ once: true }} 
-      transition={{ duration: 0.8 }} 
-      className="relative z-20 bg-[#0d0d14] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-            {orgName} Elite
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Top <span className="text-emerald-400">Players</span>
-          </h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {players.map((player, i) => (
-            <motion.div 
-              key={player.id} 
-              initial={{ opacity: 0, x: -20 }} 
-              whileInView={{ opacity: 1, x: 0 }} 
-              viewport={{ once: true }} 
-              transition={{ delay: i * 0.08, duration: 0.5 }} 
-              whileHover={{ y: -4, transition: { duration: 0.2 } }} 
-              className="group relative bg-[#12121a]/80 backdrop-blur-sm border border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden"
-            >
-              <div className={`absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm ${
-                player.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' : 
-                player.rank === 2 ? 'bg-gray-400/20 text-gray-300' : 
-                player.rank === 3 ? 'bg-amber-600/20 text-amber-500' : 
-                'bg-[#1a1a2e] text-[#5a5a6e]'
-              }`}>
-                {player.rank}
-              </div>
-              
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <Target className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div className="min-w-0">
-                  <Link to={`/jogador/${player.id}`} className="text-white font-bold text-sm truncate group-hover:text-emerald-400 transition-colors hover:underline">
-                    {player.name}
-                  </Link>
-                  {player.teamId ? (
-                    <Link to={`/clans/${player.clanId ?? 0}/line/${player.teamId}`} className="text-[#5a5a6e] text-xs hover:text-emerald-400 transition-colors block truncate">
-                      {player.teamName || "Sem time"}
-                    </Link>
-                  ) : (
-                    <p className="text-[#5a5a6e] text-xs">{player.teamName || "Sem time"}</p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-end gap-2 mb-2">
-                <span className="text-2xl font-black text-emerald-400">{player.kills}</span>
-                <span className="text-[#5a5a6e] text-xs mb-1">kills</span>
-              </div>
-              
-              <div className="flex gap-3 text-xs text-[#5a5a6e] mb-3">
-                <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-cyan-400" /> {player.avgKills} avg</span>
-                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-violet-400" /> {player.participations} xtrs</span>
-                {player.streak >= 3 && (
-                  <span className="flex items-center gap-1 text-orange-400"><Flame className="w-3 h-3" /> {player.streak}</span>
-                )}
-              </div>
-              
-              {player.badges.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {player.badges.slice(0, 3).map((badge) => (
-                    <span key={badge} className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-[10px] text-[#8a8a9e]">{badge}</span>
-                  ))}
-                </div>
-              )}
-
-              <div className="hidden sm:flex items-center justify-between">
-                <SparklineSVG data={player.sparkline} width={100} height={24} />
-                <TrendIcon trend={player.trend} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function TopTeamsSection({ teams, orgName }: { teams: TopTeam[]; orgName: string }) {
-  if (teams.length === 0) return null;
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 30 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ once: true }} 
-      transition={{ duration: 0.8 }} 
-      className="relative z-20 bg-[#0a0a0f] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">
-            {orgName} Rankings
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Top <span className="text-emerald-400">Equipes</span>
-          </h2>
-        </div>
-        
-        <div className="space-y-3">
-          {teams.map((team, i) => (
-            <motion.div 
-              key={team.id} 
-              initial={{ opacity: 0, x: 20 }} 
-              whileInView={{ opacity: 1, x: 0 }} 
-              viewport={{ once: true }} 
-              transition={{ delay: i * 0.08, duration: 0.5 }} 
-              whileHover={{ x: 4, transition: { duration: 0.2 } }} 
-              className="group flex items-center gap-4 bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${
-                team.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' : 
-                team.rank === 2 ? 'bg-gray-400/20 text-gray-300' : 
-                team.rank === 3 ? 'bg-amber-600/20 text-amber-500' : 
-                'bg-[#1a1a2e] text-[#5a5a6e]'
-              }`}>
-                {team.rank}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <Link to={`/clans/${team.clanId ?? 0}/line/${team.id}`} className="text-white font-bold text-sm sm:text-base truncate group-hover:text-emerald-400 transition-colors hover:underline block">
-                  {team.name}
-                </Link>
-                <div className="flex gap-3 text-xs text-[#5a5a6e] mt-0.5">
-                  <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-400" /> {team.wins} wins</span>
-                  <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-violet-400" /> {team.top3Count} podiums</span>
-                  {team.badges.slice(0, 2).map((badge) => (
-                    <span key={badge} className="px-1.5 py-0.5 rounded bg-[#1a1a24] border border-[#2a2a3a] text-[10px]">{badge}</span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
-                <div className="text-center hidden sm:block">
-                  <div className="text-emerald-400 font-black text-lg">{team.kills}</div>
-                  <div className="text-[#5a5a6e] text-[10px] uppercase">kills</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-black text-xl">{team.points.toLocaleString('pt-BR')}</div>
-                  <div className="text-[#5a5a6e] text-[10px] uppercase">pts</div>
-                </div>
-                <div className="text-center hidden md:block">
-                  <div className="text-cyan-400 font-bold">{team.avgPoints}</div>
-                  <div className="text-[#5a5a6e] text-[10px] uppercase">avg</div>
-                </div>
-                <div className="hidden lg:flex items-center gap-2">
-                  <SparklineSVG data={team.sparkline} width={80} height={24} color="#8b5cf6" />
-                  <TrendIcon trend={team.trend} />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ============================================================================
-// MELHORIA 4 & 7: Timeline com Filtros Animados e Badge "AO VIVO"
-// ============================================================================
-
-const filterOptions = [
-  { id: 'all', label: 'Todos' },
-  { id: 'xtreino', label: 'Treinos' },
-  { id: 'championship', label: 'Campeonatos' },
-  { id: 'scrim', label: 'Scrims' },
-  { id: 'ranking', label: 'Rankings' },
-] as const;
-
-const typeConfig: Record<string, { bg: string; text: string; icon: any }> = {
-  xtreino: { bg: 'bg-emerald-500', text: 'text-emerald-400', icon: Swords },
-  championship: { bg: 'bg-violet-500', text: 'text-violet-400', icon: Trophy },
-  scrim: { bg: 'bg-cyan-500', text: 'text-cyan-400', icon: Target },
-  ranking: { bg: 'bg-amber-500', text: 'text-amber-400', icon: Crown },
-};
-
-function TimelineItemWrapper({ activity, index }: { activity: RecentActivity; index: number }) {
-  const config = typeConfig[activity.type] || typeConfig.xtreino;
-  const Icon = config.icon;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, x: -30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="relative pl-16 group"
-    >
-      <div className={`absolute left-[18px] top-2 w-[18px] h-[18px] rounded-full ${config.bg} flex items-center justify-center z-10 ring-4 ring-[#0d0d14] group-hover:scale-125 transition-transform`}>
-        <div className="w-2 h-2 bg-white rounded-full" />
-      </div>
-      <div className="bg-[#12121a]/60 backdrop-blur-sm border border-white/5 rounded-xl p-5 group-hover:border-white/10 transition-all duration-300">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 min-w-0">
-            <div className={`w-10 h-10 rounded-xl ${config.bg}/10 flex items-center justify-center shrink-0 mt-1`}>
-              <Icon className={`w-5 h-5 ${config.text}`} />
-            </div>
-            <div>
-              <h4 className="text-white font-bold text-sm sm:text-base">{activity.title}</h4>
-              <p className="text-[#5a5a6e] text-xs sm:text-sm mt-1">
-                {activity.description.split(activity.highlight || '|||')[0]}
-                {activity.highlight && <span className="text-emerald-400 font-semibold">{activity.highlight}</span>}
-                {activity.description.split(activity.highlight || '|||')[1]}
-              </p>
-            </div>
-          </div>
-          <span className="text-[#3a3a4e] text-xs shrink-0 mt-1 hidden sm:block">{activity.date}</span>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function RenderTimeline({ activities }: { activities: RecentActivity[] }) {
-  const [activeFilter, setActiveFilter] = useState<string>('all');
-  const filteredActivities = activeFilter === 'all' ? activities : activities.filter(a => a.type === activeFilter);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-      className="relative z-20 bg-[#0d0d14] px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-t border-white/5"
-    >
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-            </span>
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-              Em tempo real
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            Atividades <span className="text-emerald-400">Recentes</span>
-          </h2>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {filterOptions.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => setActiveFilter(opt.id)}
-              className={`relative px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase transition-colors duration-300 ${
-                activeFilter === opt.id ? 'text-emerald-400' : 'text-[#5a5a6e] hover:text-white'
-              }`}
-            >
-              {activeFilter === opt.id && (
-                <motion.div
-                  layoutId="activeFilterBg"
-                  className="absolute inset-0 bg-emerald-500/10 border border-emerald-500/30 rounded-full"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">{opt.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="relative">
-          <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/50 via-white/10 to-transparent" />
-          <div className="space-y-8">
-            <AnimatePresence mode="popLayout">
-              {filteredActivities.map((activity, i) => (
-                <TimelineItemWrapper key={activity.id} activity={activity} index={i} />
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {filteredActivities.length === 0 && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-[#5a5a6e] py-12">
-            Nenhuma atividade deste tipo no momento.
-          </motion.p>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-
-// ============================================================================
-// PÁGINA PRINCIPAL
-// ============================================================================
 
 export default function ExperiencePage() {
   const { scrollYProgress } = useScroll();
@@ -493,7 +38,6 @@ export default function ExperiencePage() {
   const sphereOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 0.25], [0, -120]);
 
-  // MELHORIA 1: Integrando o Tilt
   const tilt = useTilt(10);
   const [showScroll, setShowScroll] = useState(true);
 
@@ -536,8 +80,7 @@ export default function ExperiencePage() {
               </span>
             </motion.div>
             <motion.h1 
-              initial={{ opacity: 0, y: 40 }} 
-              animate={{ opacity: 1, y: 0 }} 
+              initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} 
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" as const }} 
               className="text-[15vw] sm:text-[12vw] md:text-[8vw] lg:text-8xl font-black text-white leading-[0.85] sm:leading-[0.9] tracking-tighter mb-6 sm:mb-8 drop-shadow-[0_0_60px_rgba(16,185,129,0.4)]"
             >
@@ -556,49 +99,45 @@ export default function ExperiencePage() {
           </motion.div>
         </section>
 
-        {/* STATS COM NÚMEROS MORFANDO */}
+        {/* NOVO: SOCIAL PROOF TICKER */}
+        <LiveTicker />
+
+        {/* STATS E FEATURES */}
         <section className="relative z-20 bg-[#0a0a0f] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4">Construída para dominar</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Tecnologia de <span className="text-emerald-400">ponta</span></h2>
             </motion.div>
-            
             <StatsSection stats={stats} />
             <FeaturesGridAnimated />
           </div>
         </section>
 
+        {/* NOVO: PRÓXIMOS EVENTOS (COUNTDOWN) */}
+        <UpcomingEvents />
+
         {/* MANTRA */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" as const }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" as const }} viewport={{ once: true }}
           className="text-center py-16 sm:py-24 relative overflow-hidden bg-[#0d0d14] border-t border-white/5"
         >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-            <h2 className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}>
-              EVOLUÇÃO
-            </h2>
+            <h2 className="text-[20vw] sm:text-[14vw] md:text-[8vw] font-black text-[#12121a]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.05)' }}>EVOLUÇÃO</h2>
           </div>
           <div className="relative z-10 px-4">
             <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-[#f0f0f5] leading-tight max-w-4xl mx-auto tracking-tight">
               Não acompanhamos tendências. <br className="hidden sm:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">
-                Nós criamos o futuro.
-              </span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">Nós criamos o futuro.</span>
             </p>
           </div>
         </motion.div>
 
-        {/* RANKINGS */}
+        {/* RANKINGS & TIMELINE */}
         <TopPlayersSection players={topPlayers} orgName={orgName} />
         <TopTeamsSection teams={topTeams} orgName={orgName} />
-
-        {/* TIMELINE COM FILTROS */}
         <RenderTimeline activities={recentActivities} />
-
       </div>
     </MainLayout>
   );

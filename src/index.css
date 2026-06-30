@@ -71,3 +71,25 @@
 .animate-pulse-slow {
   animation: pulse-slow 6s ease-in-out infinite;
 }
+
+/* Adicione isso no seu index.css ou globals.css */
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* Move exatamente a metade (porque duplicamos o array no React) */
+  }
+}
+
+.animate-ticker-scroll {
+  animation: ticker-scroll 40s linear infinite;
+}
+
+/* Pausa a rolagem se o usuário preferir menos movimentação (Acessibilidade) */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker-scroll {
+    animation: none;
+  }
+}
