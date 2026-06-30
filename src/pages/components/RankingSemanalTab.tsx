@@ -143,6 +143,19 @@ export default function RankingSemanalTab() {
   const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(weekTeamRanking, totalXtreinosUnicos);
 
+  // NOVO: Buscar lista de times para poder gerar os links
+  const { data: teamsList } = trpc.teams.list.useQuery();
+
+  // NOVO: Mapa Nome do Time -> ID do Time e ID do Clã
+  const teamNameToIdMap = useMemo(() => {
+    const map = new Map<string, { teamId: number; clanId: number | null }>();
+    if (!teamsList) return map;
+    for (const team of teamsList) {
+      map.set(team.name.trim().toLowerCase(), { teamId: team.id, clanId: team.clanId ?? null });
+    }
+    return map;
+  }, [teamsList]);
+
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-4">
@@ -257,6 +270,8 @@ export default function RankingSemanalTab() {
           title={`Ranking Semanal — ${getWeekLabel(selectedWeek)}`}
           subtitle={weekDates ? `${weekDates.start} — ${weekDates.end}` : undefined}
           flameThreshold={3}
+          teamNameToIdMap={new Map(Array.from(teamNameToIdMap.entries()).map(([k, v]) => [k, v.teamId]))}
+          clanNameToIdMap={undefined} // Não precisa de mapa de clãs aqui
         />
       )}
 

@@ -49,7 +49,8 @@ interface RankingTableProps {
   title: string;
   subtitle?: string;
   flameThreshold?: number;
-  clanNameToIdMap?: Map<string, number>; // NOVA PROP
+  clanNameToIdMap?: Map<string, number>;
+  teamNameToIdMap?: Map<string, number>; // NOVO: Mapa de IDs para Lines
 }
 
 export function RankingTable({
@@ -67,7 +68,8 @@ export function RankingTable({
   title,
   subtitle,
   flameThreshold = 10,
-  clanNameToIdMap, // NOVA PROP DESTRUTURADA
+  clanNameToIdMap,
+  teamNameToIdMap, // NOVO
 }: RankingTableProps) {
   
   const baseCols = 6;
@@ -185,10 +187,18 @@ export function RankingTable({
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          {/* LINK NO NOME DA EQUIPE */}
-                          {clanId ? (
+                          {/* LINK INTELIGENTE: PRIORIZA CLÃ, DEPOIS LINE */}
+                          {clanNameToIdMap?.get(team.teamName.trim().toLowerCase()) ? (
                             <Link
-                              to={`/clans/${clanId}`}
+                              to={`/clans/${clanNameToIdMap.get(team.teamName.trim().toLowerCase())}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors"
+                            >
+                              {team.teamName}
+                            </Link>
+                          ) : teamNameToIdMap?.get(team.teamName.trim().toLowerCase()) ? (
+                            <Link
+                              to={`/clans/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}/line/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}`}
                               onClick={(e) => e.stopPropagation()}
                               className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors"
                             >

@@ -107,6 +107,19 @@ export default function RankingGeralTab() {
   const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(teamRanking, totalXtreinosUnicos);
 
+  // NOVO: Buscar lista de times para poder gerar os links
+  const { data: teamsList } = trpc.teams.list.useQuery();
+
+  // NOVO: Mapa Nome do Time -> ID do Time e ID do Clã
+  const teamNameToIdMap = useMemo(() => {
+    const map = new Map<string, { teamId: number; clanId: number | null }>();
+    if (!teamsList) return map;
+    for (const team of teamsList) {
+      map.set(team.name.trim().toLowerCase(), { teamId: team.id, clanId: team.clanId ?? null });
+    }
+    return map;
+  }, [teamsList]);
+
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
@@ -202,6 +215,8 @@ export default function RankingGeralTab() {
           getTeamPlayers={getTeamPlayers}
           title="Ranking Geral — Historico Completo"
           flameThreshold={10}
+          teamNameToIdMap={new Map(Array.from(teamNameToIdMap.entries()).map(([k, v]) => [k, v.teamId]))}
+          clanNameToIdMap={undefined} // Não precisa de mapa de clãs aqui
         />
       )}
 

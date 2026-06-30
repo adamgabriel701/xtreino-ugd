@@ -36,7 +36,10 @@ export default function App() {
         <Route path="/scrims" element={<Scrims />} />
         <Route path="/scrims/match/:id" element={<MatchResult />} />
 
-        <Route path="/rankings" element={<Rankings />} />
+        {/* NOVAS ROTAS ANINHADAS DE RANKINGS */}
+        <Route path="/rankings" element={<Rankings />}>
+          <Route path=":tab" element={<Rankings />} />
+        </Route>
 
         <Route path="/clans" element={<Clans />}>
           <Route path=":clanId" element={<ClanDetail />} />
