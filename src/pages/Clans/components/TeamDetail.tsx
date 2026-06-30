@@ -81,7 +81,7 @@ export default function TeamDetail({ xtreinoFilters }: { xtreinoFilters?: Xtrein
 
   // CORREÇÃO: Agora passa o ID numérico do jogador
   const handlePlayerClick = (player_id: number) => {
-    navigate(`/clas/${cId}/line/${tId}/jogador/${player_id}`);
+    navigate(`/clans/${cId}/line/${tId}/jogador/${player_id}`);
   };
 
   const filtersConfig: XtreinoFiltersConfig = {
@@ -97,7 +97,7 @@ export default function TeamDetail({ xtreinoFilters }: { xtreinoFilters?: Xtrein
         title={team.name}
         subtitle={`Line do clã ${clan?.name ?? "Clã"}${team.description ? ` — ${team.description}` : ""}`}
         backLabel={`Voltar para ${clan?.name ?? "Clã"}`}
-        onBack={() => navigate(`/clas/${cId}`)}
+        onBack={() => navigate(`/clans/${cId}`)}
         icon={team.logo ? <img src={team.logo} alt={team.name} className="w-12 h-12 rounded-lg object-cover" /> : <Shield className="w-8 h-8 text-emerald-400/50" />}
         extraInfo={<span className={`px-2 py-0.5 rounded text-xs font-medium border ${getStatusBadge(team.status)}`}>{getStatusLabel(team.status)}</span>}
       />
