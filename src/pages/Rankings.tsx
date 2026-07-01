@@ -94,7 +94,11 @@ export default function Rankings() {
   // Se cair aqui, o "tab" será sempre simples (ex: "geral", "xtreinos", etc).
   const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
 
-  const activeTab: TabKey = (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
+  // Se estiver na rota de jogadores, forçamos a aba ativa como "jogadores"
+  // Caso contrário, usamos o tab vindo da URL, ou "geral" como padrão
+  const activeTab: TabKey = subtab 
+    ? "jogadores" 
+    : (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
 
   if (!tab && !subtab) {
     return <Navigate to="/rankings/geral" replace />;

@@ -40,15 +40,11 @@ export default function App() {
         <Route path="/scrims/:tab" element={<ScrimsHub />} />
         <Route path="/scrims/match/:id" element={<ScrimsHub />} />
         <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
-
-        {/* 
-          NOVO: Rota específica para as sub-abas de Jogadores. 
-          IMPORTANTE: Deve vir ANTES da rota genérica :tab para ter prioridade.
-        */}
-        <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
-
+        
         {/* Rankings (X-Treinos e outras tabs genéricas) */}
         <Route path="/rankings" element={<Rankings />}>
+          {/* Rota específica dos jogadores ANTES da genérica para ter prioridade */}
+          <Route path="jogadores/:subtab" element={<Rankings />} />
           <Route path=":tab" element={<Rankings />} />
         </Route>
 
