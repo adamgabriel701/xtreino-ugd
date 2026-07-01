@@ -62,11 +62,18 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Neo",
+    canonicalNickname: "Santz",
     canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
       "UGD Neo",
+      "UGD Santz",
+      "UGD Sant",
+      "Sant",
+      "Neo",
+      "Santz",
+      "UGD Santz⁷",
+      "Santz⁷",
     ],
   },
 
@@ -81,6 +88,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD Kyz",
       "Kyz",
       "UGD Kyz`",
+      "Dopped",
     ],
   },
   {
@@ -130,14 +138,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Dopped",
-    canonicalTeam: "UGD LIGHT",
-    role: "off",
-    knownAliases: [
-      "Dopped",
-    ],
-  },
-  {
     canonicalNickname: "Hz",
     canonicalTeam: "UGD LIGHT",
     role: "off",
@@ -173,9 +173,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     canonicalTeam: "UGD LEGENDS",
     role: "off",
     knownAliases: [
-      "Santz",
-      "Sant",
+      "UGD Neo",
       "UGD Santz",
+      "UGD Sant",
+      "Sant",
+      "Neo",
+      "Santz",
       "UGD Santz⁷",
       "Santz⁷",
     ],
@@ -588,8 +591,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "CMF Syx",
-      "CMF Syx⁷",
-      "CMF Syx7",
     ],
   },
   {
@@ -610,7 +611,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "CMF MOIZO",
       "CMF M0IZO",
       "CMF Moizo",
-      "CMF MOZKAXR",
     ],
   },
   {
@@ -646,6 +646,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "CMF MOZKA",
+      "CMF MOZKAXR",
     ],
   },
   {
