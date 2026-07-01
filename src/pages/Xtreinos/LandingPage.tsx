@@ -12,11 +12,13 @@ const FEATURES = [
   { icon: <Users className="w-6 h-6 text-blue-400" />, title: "Por Times e Individual", desc: "Veja o desempenho da sua Line contra outras e compare estatísticas jogador por jogador." },
 ];
 
+// Substitua o array QUICK_LINKS no arquivo XTreinosLanding.tsx
 const QUICK_LINKS = [
   { to: "/rankings/geral", label: "Ranking Geral", icon: <Trophy className="w-4 h-4" /> },
   { to: "/rankings/mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" /> },
   { to: "/rankings/clas", label: "Ranking de Clãs", icon: <Users className="w-4 h-4" /> },
-  { to: "/rankings/jogadores", label: "Estatísticas Individuais", icon: <Target className="w-4 h-4" /> },
+  // ATUALIZADO: Agora aponta direto para a aba de kills de XT dentro de jogadores
+  { to: "/rankings/jogadores/xtreinos", label: "Kills em X-Treinos", icon: <Target className="w-4 h-4" /> },
 ];
 
 export default function XTreinosLanding() {

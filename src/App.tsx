@@ -58,6 +58,7 @@ export default function App() {
 
         <Route path="/jogadores" element={<Jogadores />} />
         <Route path="/jogador/:id" element={<JogadorDetalhe />} />
+        <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
 
         <Route path="/inscricoes" element={<Inscricoes />} />
         <Route path="/salinhas" element={<Salinhas />} />

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import XTreinosTab from "./components/XTreinosTab";
-import JogadoresTab from "./Jogadores/JogadoresTab";
+import JogadoresPage from "./Jogadores/JogadoresPage"; // NOVO IMPORT
 import RankingGeralTab from "./components/RankingGeralTab";
 import RankingMensalTab from "./components/RankingMensalTab";
 import RankingSemanalTab from "./components/RankingSemanalTab";
@@ -192,7 +192,10 @@ export default function Rankings() {
           {activeTab === "mensal" && <RankingMensalTab />}
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "clas" && <RankingClasTab />}
-          {activeTab === "jogadores" && <JogadoresTab />}
+          
+          {/* CORREÇÃO: Agora chama o JogadoresPage que gerencia as sub-abas */}
+          {activeTab === "jogadores" && <JogadoresPage />}
+          
           {activeTab === "historico" && <HistoricoGeralTab />}
           {activeTab === "duelo" && <DueloTab />}
           {activeTab === "h2h" && <HeadToHeadTab />}
