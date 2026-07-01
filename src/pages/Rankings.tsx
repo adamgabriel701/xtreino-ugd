@@ -1,4 +1,4 @@
-import { useParams, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useParams, Link, useLocation, Navigate } from "react-router-dom";
 import {
   Dumbbell,
   Trophy,
@@ -42,7 +42,6 @@ type TabKey =
   | "clas"       
   | "jogadores" 
   | "historico"
-  | "scrims" // NOVO
   | "duelo"
   | "h2h"
   | "evolucao"
@@ -55,6 +54,8 @@ interface TabConfig {
   icon: React.ReactNode;
   description: string;
   group: number; 
+  isExternal?: boolean; // NOVO: Flag para identificar links que saem do escopo
+  externalTo?: string; // NOVO: Para onde esse link deve apontar
 }
 
 // ============================================================
@@ -69,8 +70,15 @@ const TABS: TabConfig[] = [
   { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: 1 },
   
   { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 },
-  { key: "scrims", label: "Ranking Scrims", icon: <Swords className="w-4 h-4" />, description: "Rankings unificados dedicados exclusivamente às partidas de Scrims (MME)", group: 2 }, // NOVO
-  { key: "duelo", label: "Duelo de Times", icon: <Swords className="w-4 h-4" />, description: "Comparacao direta lado a lado entre dois times em um XT", group: 2 },
+  { 
+    key: "duelo", 
+    label: "Ranking Scrims", // Mudado o nome para bater com a nova página
+    icon: <Swords className="w-4 h-4" />, 
+    description: "Rankings unificados dedicados exclusivamente às partidas de Scrims (MME)", 
+    group: 2,
+    isExternal: true, // CORREÇÃO: Marca como link externo
+    externalTo: "/rankings/scrims/agendados" // CORREÇÃO: Aponta para o Hub
+  },
   { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: 2 },
   { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: 2 },
   
@@ -84,7 +92,6 @@ const TABS: TabConfig[] = [
 export default function Rankings() {
   const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Define a aba ativa baseada na URL. Padrão é "geral"
   const activeTab: TabKey = (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
@@ -94,6 +101,11 @@ export default function Rankings() {
     return <Navigate to="/rankings/geral" replace />;
   }
 
+  // CORREÇÃO: Se o usuário tentar acessar a rota antiga do scrim direto, redireciona
+  if (tab === "scrims") {
+    return <Navigate to="/rankings/scrims/agendados" replace />;
+  }
+
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
   const group1Tabs = TABS.filter((t) => t.group === 1);
   const group2Tabs = TABS.filter((t) => t.group === 2);
@@ -101,15 +113,27 @@ export default function Rankings() {
 
   const renderTabButton = (tabConfig: TabConfig) => {
     const isActive = activeTab === tabConfig.key;
+
+    // CORREÇÃO: Se for um link externo, renderiza um Link apontando fora do escopo atual
+    if (tabConfig.isExternal) {
+      return (
+        <Link
+          to={tabConfig.externalTo!}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
+        >
+          {tabConfig.icon}
+          {tabConfig.label}
+        </Link>
+      );
+    }
+
     const baseUrl = "/rankings";
     const fullPath = `${baseUrl}/${tabConfig.key}`;
 
     // Se a aba já é a atual, não precisa de Link (evita re-render desnecessário)
     if (isActive) {
       return (
-        <div
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5"
-        >
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
           {tabConfig.icon}
           {tabConfig.label}
         </div>
@@ -117,10 +141,7 @@ export default function Rankings() {
     }
 
     return (
-      <Link
-        to={fullPath}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
-      >
+      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
@@ -173,10 +194,6 @@ export default function Rankings() {
           {activeTab === "clas" && <RankingClasTab />}
           {activeTab === "jogadores" && <JogadoresTab />}
           {activeTab === "historico" && <HistoricoGeralTab />}
-          
-          {/* NOVO: Redireciona para a página dedicada de Ranking de Scrims */}
-          {activeTab === "scrims" && <Navigate to="/rankings/scrims/jogadores" replace />}
-          
           {activeTab === "duelo" && <DueloTab />}
           {activeTab === "h2h" && <HeadToHeadTab />}
           {activeTab === "evolucao" && <EvolucaoTab />}

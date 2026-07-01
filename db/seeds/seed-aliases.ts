@@ -49,7 +49,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "UGD Treon",
       "Treon",
-      "treon"
+      "treon",
+      "UGD treon",
     ],
   },
   {
@@ -592,6 +593,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "CMF Syx",
+      "CMF Syx⁷",
+      "CMF Syx7",
     ],
   },
   {
