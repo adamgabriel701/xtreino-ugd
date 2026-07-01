@@ -38,6 +38,7 @@ function useTilt(factor = 15) {
 }
 
 export default function ExperiencePage() {
+  // 1. Todos os Hooks vem primeiro (sem exceções)
   const { scrollYProgress } = useScroll();
   const { orgName, isLoading, stats, topPlayers, topTeams, recentActivities, periodSummary, detailedEventStats } = useExperienceData();
 
@@ -54,8 +55,16 @@ export default function ExperiencePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (isLoading) return <ExperienceLayout><PremiumLoader /></ExperienceLayout>;
+  // 2. Retorno antecipado (Loading) depois que todos os hooks já foram declarados
+  if (isLoading) {
+    return (
+      <ExperienceLayout>
+        <PremiumLoader />
+      </ExperienceLayout>
+    );
+  }
 
+  // 3. Renderização principal
   return (
     <ExperienceLayout>
       <div className="relative bg-[#0a0a0f] overflow-x-hidden -mx-4 lg:-mx-8">
@@ -108,7 +117,7 @@ export default function ExperiencePage() {
           </div>
         </section>
 
-      <DetailedEventStats {...detailedEventStats} />
+        <DetailedEventStats {...detailedEventStats} />
 
         <MantraSection />
         
