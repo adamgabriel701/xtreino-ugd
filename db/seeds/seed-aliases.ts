@@ -36,7 +36,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   {
     canonicalNickname: "Kaze",
     canonicalTeam: "UGD Threat",
-    role: "off",
+    role: "cap",
     knownAliases: [
       "UGD Kaze",
       "Kaze",
@@ -45,10 +45,11 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   {
     canonicalNickname: "Treon",
     canonicalTeam: "UGD Threat",
-    role: "cap",
+    role: "off",
     knownAliases: [
       "UGD Treon",
       "Treon",
+      "treon"
     ],
   },
   {
