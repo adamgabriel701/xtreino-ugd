@@ -407,6 +407,59 @@ export const unifiedRouter = createRouter({
     }),
 
   // ============================================================
+  // HISTÓRICO GERAL UNIFICADO
+  // ============================================================
+  listGeneralHistory: publicQuery
+    .input(
+      z.object({
+        limit: z.number().optional(),
+      }).optional()
+    )
+    .query(({ input }) => {
+      const db = getDb();
+      
+      // 1. Busca todos os X-Treinos ordenados por data
+      // (Renomeado para xtList para não conflitar com a importação da tabela 'xtreinos')
+      const xtList = db.select().from(xtreinos).orderBy(desc(xtreinos.date)).all();
+      
+      // 2. Busca todos os Scrims ordenados por data
+      // (Renomeado para scList para não conflitar com a importação da tabela 'scrims')
+      const scList = db.select().from(scrims).orderBy(desc(scrims.date)).all();
+
+      // 3. Busca todos os times para popular os nomes de forma rápida
+      const allTeams = db.select().from(teams).all();
+      const teamMap = new Map(allTeams.map((t: any) => [t.id, t.name]));
+
+      // 4. Formata os eventos de XT
+      const xtEvents = xtList.map((xt: any) => ({
+        id: xt.id,
+        type: "xtreino" as const,
+        date: xt.date,
+        title: xt.name || `XT #${xt.id}`,
+        team1Name: null as string | null,
+        team2Name: null as string | null,
+        details: "X-Treino",
+      }));
+
+      // 5. Formata os eventos de Scrim
+      const scrimEvents = scList.map((sc: any) => ({
+        id: sc.id,
+        type: "scrim" as const,
+        date: sc.date,
+        title: `Scrim MME`,
+        team1Name: teamMap.get(sc.team1Id) ?? null,
+        team2Name: teamMap.get(sc.team2Id) ?? null,
+        details: `${teamMap.get(sc.team1Id) ?? "?"} vs ${teamMap.get(sc.team2Id) ?? "?"}`,
+      }));
+
+      // 6. Junta tudo, ordena pela data mais recente e limita se necessário
+      const combined = [...xtEvents, ...scrimEvents].sort((a, b) => b.date.localeCompare(a.date));
+      
+      if (input?.limit) return combined.slice(0, input.limit);
+      return combined;
+    }),
+
+  // ============================================================
   // ADMIN
   // ============================================================
   recalculateStats: adminQuery.mutation(({ ctx }) => {
