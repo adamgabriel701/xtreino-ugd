@@ -771,7 +771,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "RED APENAS",
+    canonicalNickname: "RED iVERONz",
     canonicalTeam: "RED INSS",
     role: "off",
     knownAliases: [
@@ -779,6 +779,10 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "RED APENAS",
       "REÐ Apenas",
       "RED- REZE",
+      "RED iVERONz",
+      "RED IVERON",
+      "VERON",
+      "veron",
     ],
   },
   {
@@ -821,14 +825,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "RED iVERONz",
-    canonicalTeam: "RED INSS",
-    role: "off",
-    knownAliases: [
-      "RED iVERONz",
-    ],
-  },
-  {
     canonicalNickname: "valha",
     canonicalTeam: "RED INSS",
     role: "off",
@@ -850,14 +846,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "yKWIM",
-    ],
-  },
-  {
-    canonicalNickname: "VERON",
-    canonicalTeam: "RED INSS",
-    role: "off",
-    knownAliases: [
-      "VERON",
     ],
   },
   {
@@ -2010,6 +1998,7 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
     knownAliases: [
       "UGD OLYMPIQUE",
       "UGD OLYMPIQUE / LEGENDS",
+      "UGD Threat + Olympique",
     ],
   },
   {
@@ -2029,6 +2018,7 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
     knownAliases: [
       "FURY ELITE",
       "FURY ELITE / MIX (Line H)",
+      "FURY MIX (ELITE / ROYAL)",
     ],
   },
   {
