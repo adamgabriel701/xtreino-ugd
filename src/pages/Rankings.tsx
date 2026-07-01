@@ -67,7 +67,7 @@ const TABS: TabConfig[] = [
   { key: "mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" />, description: "Ranking consolidado por mes com variacao", group: 1 },
   { key: "semanal", label: "Ranking Semanal", icon: <Calendar className="w-4 h-4" />, description: "Ranking consolidado por semana", group: 1 },
   { key: "clas", label: "Ranking Clãs", icon: <Shield className="w-4 h-4" />, description: "Ranking acumulando todas as lines do mesmo clã", group: 1 },
-  { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: 1 },
+  { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatísticas individuais de XT, Geral e Scrims", group: 1 },
   
   { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 },
   { 
