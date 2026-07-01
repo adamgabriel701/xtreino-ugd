@@ -8,7 +8,7 @@ import XTreinosLanding from "./pages/Xtreinos/LandingPage";
 import ScrimsLanding from "./pages/Scrims/LandingPage"; 
 
 // Páginas Internas
-import XTreinos from "./pages/XTreinos"; // O antigo, caso use em algum lugar específico
+import XTreinos from "./pages/XTreinos"; 
 import ScrimsHub from "./pages/Scrims/ScrimsHub"; 
 import Rankings from "./pages/Rankings";
 
@@ -32,20 +32,16 @@ export default function App() {
       <Toaster position="top-right" toastOptions={{ style: { background: "#12121a", color: "#f0f0f5", border: "1px solid #2a2a3a" } }} />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/campeonatos" element={<Campeonatos />} />
+        <Route path="/camponatos" element={<Campeonatos />} />
 
-        {/* 
-          NOVO: Landing Pages (Rotas exatas devem vir ANTES das rotas dinâmicas) 
-        */}
         <Route path="/xtreinos" element={<XTreinosLanding />} />
         <Route path="/scrims" element={<ScrimsLanding />} />
 
-        {/* Rotas Internas do Hub de Scrims */}
         <Route path="/scrims/:tab" element={<ScrimsHub />} />
         <Route path="/scrims/match/:id" element={<ScrimsHub />} />
         <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
 
-        {/* Rankings (X-Treinos) */}
+        {/* Rankings (X-Treinos) - A rota :tab já cuida de tudo inclusive jogadores/xtreinos */}
         <Route path="/rankings" element={<Rankings />}>
           <Route path=":tab" element={<Rankings />} />
         </Route>
@@ -58,7 +54,6 @@ export default function App() {
 
         <Route path="/jogadores" element={<Jogadores />} />
         <Route path="/jogador/:id" element={<JogadorDetalhe />} />
-        <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
 
         <Route path="/inscricoes" element={<Inscricoes />} />
         <Route path="/salinhas" element={<Salinhas />} />

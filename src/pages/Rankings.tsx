@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import XTreinosTab from "./components/XTreinosTab";
-import JogadoresPage from "./Jogadores/JogadoresPage"; // NOVO IMPORT
+import JogadoresPage from "./Jogadores/JogadoresPage"; 
 import RankingGeralTab from "./components/RankingGeralTab";
 import RankingMensalTab from "./components/RankingMensalTab";
 import RankingSemanalTab from "./components/RankingSemanalTab";
@@ -54,8 +54,8 @@ interface TabConfig {
   icon: React.ReactNode;
   description: string;
   group: number; 
-  isExternal?: boolean; // NOVO: Flag para identificar links que saem do escopo
-  externalTo?: string; // NOVO: Para onde esse link deve apontar
+  isExternal?: boolean; 
+  externalTo?: string; 
 }
 
 // ============================================================
@@ -72,12 +72,12 @@ const TABS: TabConfig[] = [
   { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 },
   { 
     key: "duelo", 
-    label: "Ranking Scrims", // Mudado o nome para bater com a nova página
+    label: "Ranking Scrims", 
     icon: <Swords className="w-4 h-4" />, 
     description: "Rankings unificados dedicados exclusivamente às partidas de Scrims (MME)", 
     group: 2,
-    isExternal: true, // CORREÇÃO: Marca como link externo
-    externalTo: "/rankings/scrims/agendados" // CORREÇÃO: Aponta para o Hub
+    isExternal: true, 
+    externalTo: "/rankings/scrims/agendados" 
   },
   { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: 2 },
   { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: 2 },
@@ -93,15 +93,26 @@ export default function Rankings() {
   const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
 
-  // Define a aba ativa baseada na URL. Padrão é "geral"
-  const activeTab: TabKey = (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
+  // NOVO: Intercepta sub-rotas de jogadores (ex: /rankings/jogadores/xtreinos)
+  const isJogadoresSubRoute = location.pathname.startsWith("/rankings/jogadores/");
+  const jogadoresSubTab = location.pathname.replace("/rankings/jogadores/", "");
+
+  // Define a aba ativa. Se estiver em sub-rota de jogadores, força a aba principal como "jogadores"
+  const activeTab: TabKey = isJogadoresSubRoute 
+    ? "jogadores" 
+    : (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
 
   // Se o usuário acessou apenas /rankings sem nenhuma tab, redireciona para /rankings/geral
-  if (!tab) {
+  if (!tab && !isJogadoresSubRoute) {
     return <Navigate to="/rankings/geral" replace />;
   }
 
-  // CORREÇÃO: Se o usuário tentar acessar a rota antiga do scrim direto, redireciona
+  // Se acessou /rankings/jogadores sem subtab, redireciona para a padrão
+  if (tab === "jogadores" && !isJogadoresSubRoute) {
+    return <Navigate to="/rankings/jogadores/xtreinos" replace />;
+  }
+
+  // Se o usuário tentar acessar a rota antiga do scrim direto, redireciona
   if (tab === "scrims") {
     return <Navigate to="/rankings/scrims/agendados" replace />;
   }
@@ -114,7 +125,6 @@ export default function Rankings() {
   const renderTabButton = (tabConfig: TabConfig) => {
     const isActive = activeTab === tabConfig.key;
 
-    // CORREÇÃO: Se for um link externo, renderiza um Link apontando fora do escopo atual
     if (tabConfig.isExternal) {
       return (
         <Link
@@ -127,10 +137,11 @@ export default function Rankings() {
       );
     }
 
-    const baseUrl = "/rankings";
-    const fullPath = `${baseUrl}/${tabConfig.key}`;
+    // NOVO: Garante que o botão "Jogadores" sempre aponte para a sub-rota correta
+    const basePath = tabConfig.key === "jogadores" 
+      ? "/rankings/jogadores/xtreinos" 
+      : `/rankings/${tabConfig.key}`;
 
-    // Se a aba já é a atual, não precisa de Link (evita re-render desnecessário)
     if (isActive) {
       return (
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
@@ -141,7 +152,7 @@ export default function Rankings() {
     }
 
     return (
-      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
+      <Link to={basePath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
@@ -169,7 +180,7 @@ export default function Rankings() {
           <MomentosCarousel />
         </div>
 
-        {/* Tabs Navigation Agrupada (Agora com Links) */}
+        {/* Tabs Navigation Agrupada */}
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
           
           <div className="flex flex-wrap gap-1">
@@ -193,8 +204,8 @@ export default function Rankings() {
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "clas" && <RankingClasTab />}
           
-          {/* CORREÇÃO: Agora chama o JogadoresPage que gerencia as sub-abas */}
-          {activeTab === "jogadores" && <JogadoresPage />}
+          {/* CORREÇÃO FINAL: Passa a subtab capturada pela URL para o JogadoresPage */}
+          {activeTab === "jogadores" && <JogadoresPage initialSubTab={jogadoresSubTab} />}
           
           {activeTab === "historico" && <HistoricoGeralTab />}
           {activeTab === "duelo" && <DueloTab />}
