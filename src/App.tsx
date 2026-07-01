@@ -32,7 +32,7 @@ export default function App() {
       <Toaster position="top-right" toastOptions={{ style: { background: "#12121a", color: "#f0f0f5", border: "1px solid #2a2a3a" } }} />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/camponatos" element={<Campeonatos />} />
+        <Route path="/campeonatos" element={<Campeonatos />} />
 
         <Route path="/xtreinos" element={<XTreinosLanding />} />
         <Route path="/scrims" element={<ScrimsLanding />} />
@@ -41,7 +41,13 @@ export default function App() {
         <Route path="/scrims/match/:id" element={<ScrimsHub />} />
         <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
 
-        {/* Rankings (X-Treinos) - A rota :tab já cuida de tudo inclusive jogadores/xtreinos */}
+        {/* 
+          NOVO: Rota específica para as sub-abas de Jogadores. 
+          IMPORTANTE: Deve vir ANTES da rota genérica :tab para ter prioridade.
+        */}
+        <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
+
+        {/* Rankings (X-Treinos e outras tabs genéricas) */}
         <Route path="/rankings" element={<Rankings />}>
           <Route path=":tab" element={<Rankings />} />
         </Route>

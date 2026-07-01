@@ -1,4 +1,4 @@
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import {
   Dumbbell,
   Trophy,
@@ -90,28 +90,21 @@ const TABS: TabConfig[] = [
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  const location = useLocation();
-  const path = location.pathname;
+  // O router agora trata o "jogadores/xtreinos" separadamente antes de cair aqui.
+  // Se cair aqui, o "tab" será sempre simples (ex: "geral", "xtreinos", etc).
+  const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
 
-  // NOVO: Lógica a prova de falhas usando a URL inteira
-  const isJogadoresSubRoute = path.startsWith("/rankings/jogadores/");
-  const jogadoresSubTab = isJogadoresSubRoute ? path.replace("/rankings/jogadores/", "") : null;
-  
-  // Se for rota de jogadores, a aba ativa principal é "jogadores"
-  const activeTab: TabKey = isJogadoresSubRoute 
-    ? "jogadores" 
-    : (TABS.find(t => path === `/rankings/${t.key}`)?.key as TabKey) || "geral";
+  const activeTab: TabKey = (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
 
-  // Redirecionamentos seguros
-  if (path === "/rankings") {
+  if (!tab && !subtab) {
     return <Navigate to="/rankings/geral" replace />;
   }
 
-  if (path === "/rankings/jogadores") {
+  if (tab === "jogadores" && !subtab) {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
   }
 
-  if (path === "/rankings/scrims") {
+  if (tab === "scrims") {
     return <Navigate to="/rankings/scrims/agendados" replace />;
   }
 
@@ -135,7 +128,6 @@ export default function Rankings() {
       );
     }
 
-    // Garante que links de jogadores apontem para a sub-rota correta
     const targetPath = tabConfig.key === "jogadores" 
       ? "/rankings/jogadores/xtreinos" 
       : `/rankings/${tabConfig.key}`;
@@ -180,7 +172,6 @@ export default function Rankings() {
 
         {/* Tabs Navigation Agrupada */}
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
-          
           <div className="flex flex-wrap gap-1">
             {group1Tabs.map((tabConfig) => renderTabButton(tabConfig))}
           </div>
@@ -202,8 +193,8 @@ export default function Rankings() {
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "clas" && <RankingClasTab />}
           
-          {/* Passa o valor correto da sub-rota via prop */}
-          {activeTab === "jogadores" && <JogadoresPage initialSubTab={jogadoresSubTab} />}
+          {/* Passa a subtab capturada nativamente pelo Router */}
+          {activeTab === "jogadores" && <JogadoresPage initialSubTab={subtab} />}
           
           {activeTab === "historico" && <HistoricoGeralTab />}
           {activeTab === "duelo" && <DueloTab />}

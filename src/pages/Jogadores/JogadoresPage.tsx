@@ -1,8 +1,4 @@
-// ============================================================
-// JogadoresPage.tsx (Sub-rotas dentro de /rankings/jogadores)
-// ============================================================
-
-import { useParams, Navigate, Link } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Users, Dumbbell, BarChart3, Swords } from "lucide-react";
 import JogadoresXTKillsTab from "../components/JogadoresXTKillsTab";
 import JogadoresTab from "./JogadoresTab";
@@ -21,12 +17,10 @@ const SUBTABS: SubTabConfig[] = [
   { key: "scrims", label: "Scrims (MME)", icon: <Swords className="w-4 h-4" /> },
 ];
 
-export default function JogadoresPage({ initialSubTab }: { initialSubTab?: string | null }) {
-  // Define a sub-aba ativa baseada na prop recebida. Padrão é "xtreinos"
+export default function JogadoresPage({ initialSubTab }: { initialSubTab?: string }) {
   const activeSubTab: SubTabKey =
     (SUBTABS.find((t) => t.key === initialSubTab)?.key as SubTabKey) || "xtreinos";
 
-  // Redireciona se por algum motivo não tiver subtab (ex: acesso direto isolado)
   if (!initialSubTab) {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
   }
@@ -77,15 +71,12 @@ export default function JogadoresPage({ initialSubTab }: { initialSubTab?: strin
       <div>
         {activeSubTab === "xtreinos" && <JogadoresXTKillsTab />}
         {activeSubTab === "geral" && <JogadoresTab />}
-        {activeSubTab === "scrims" && (
-          <RedirectToScrimsHub />
-        )}
+        {activeSubTab === "scrims" && <RedirectToScrimsHub />}
       </div>
     </div>
   );
 }
 
-// Componente auxiliar pois Scrims tem Hub próprio
 function RedirectToScrimsHub() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 bg-[#12121a] rounded-xl border border-[#2a2a3a] p-8">
