@@ -12,7 +12,7 @@ import {
   Crosshair,
   Target,
   Shield,
-  History, // NOVO
+  History,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import XTreinosTab from "./components/XTreinosTab";
@@ -24,7 +24,7 @@ import RankingClasTab from "./components/RankingClasTab";
 import DueloTab from "./components/DueloTab";
 import HeadToHeadTab from "./components/HeadToHeadTab";
 import EvolucaoTab from "./components/EvolucaoTab";
-import HistoricoGeralTab from "./components/HistoricoGeralTab"; // NOVO
+import HistoricoGeralTab from "./components/HistoricoGeralTab";
 import {
   PredicoesTab,
   MomentosCarousel,
@@ -41,7 +41,8 @@ type TabKey =
   | "semanal" 
   | "clas"       
   | "jogadores" 
-  | "historico" // NOVO
+  | "historico"
+  | "scrims" // NOVO
   | "duelo"
   | "h2h"
   | "evolucao"
@@ -67,7 +68,8 @@ const TABS: TabConfig[] = [
   { key: "clas", label: "Ranking Clãs", icon: <Shield className="w-4 h-4" />, description: "Ranking acumulando todas as lines do mesmo clã", group: 1 },
   { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatisticas individuais detalhadas", group: 1 },
   
-  { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 }, // NOVO
+  { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 },
+  { key: "scrims", label: "Ranking Scrims", icon: <Swords className="w-4 h-4" />, description: "Rankings unificados dedicados exclusivamente às partidas de Scrims (MME)", group: 2 }, // NOVO
   { key: "duelo", label: "Duelo de Times", icon: <Swords className="w-4 h-4" />, description: "Comparacao direta lado a lado entre dois times em um XT", group: 2 },
   { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: 2 },
   { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: 2 },
@@ -170,7 +172,11 @@ export default function Rankings() {
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "clas" && <RankingClasTab />}
           {activeTab === "jogadores" && <JogadoresTab />}
-          {activeTab === "historico" && <HistoricoGeralTab />} {/* NOVO */}
+          {activeTab === "historico" && <HistoricoGeralTab />}
+          
+          {/* NOVO: Redireciona para a página dedicada de Ranking de Scrims */}
+          {activeTab === "scrims" && <Navigate to="/rankings/scrims/jogadores" replace />}
+          
           {activeTab === "duelo" && <DueloTab />}
           {activeTab === "h2h" && <HeadToHeadTab />}
           {activeTab === "evolucao" && <EvolucaoTab />}

@@ -1,58 +1,62 @@
 // src/app/scrims/hooks/useScrimData.ts
-// Hook centralizado para buscar todos os dados de scrims
-
+import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import type { ScrimMode } from "../types";
 
 export function useScrimData(selectedDate: string, selectedMode: ScrimMode | "all" = "all") {
   const isAllTime = selectedDate === "all";
 
-  const { data: scrimsList, isLoading: loadingScrims } = trpc.scrims.list.useQuery();
-  const { data: availableDates, isLoading: loadingDates } = trpc.scrims.dates.useQuery();
+  // 1. Busca a lista principal de scrims e os detalhes do backend unificado
+  const { data: scrimsList, isLoading: loadingScrims } = trpc.unified.listScrims.useQuery();
+  const { data: scrimDetails, isLoading: loadingDetails } = trpc.scrims.list.useQuery();
 
-  // teamResults filtra por modo quando não é "all"
-  const { data: scrimTeamResults, isLoading: loadingTeamResults } = trpc.scrims.teamResults.useQuery(
-    {
-      date: isAllTime ? undefined : selectedDate,
-      mode: selectedMode === "all" ? undefined : selectedMode,
-    },
-    { enabled: !isAllTime }
-  );
+  // 2. Extrai as datas disponíveis dinamicamente da lista de scrims
+  const availableDates = useMemo(() => {
+    if (!scrimsList) return [];
+    const dates = new Set(scrimsList.map((s) => s.date).filter(Boolean) as string[]);
+    return Array.from(dates).sort().reverse();
+  }, [scrimsList]);
 
-  // playerStats filtra por modo quando não é "all"
-  const { data: scrimPlayerStats, isLoading: loadingPlayerStats } = trpc.scrims.playerStats.useQuery(
-    {
-      date: isAllTime ? undefined : selectedDate,
-      mode: selectedMode === "all" ? undefined : selectedMode,
-    },
-    { enabled: !isAllTime }
-  );
+  // 3. Filtra os detalhes baseado na data e modo selecionados
+  const filteredDetails = useMemo(() => {
+    if (!scrimDetails) return [];
+    let data = scrimDetails;
+    
+    if (!isAllTime && selectedDate) {
+      data = data.filter((s) => s.date === selectedDate);
+    }
+    
+    // O modo "br" ou "mme" pode vir da propriedade `modality` ou ser inferido. 
+    // Ajuste isso se o seu banco usar outra lógica. Por enquanto assumimos que a lista principal já separou.
+    return data;
+  }, [scrimDetails, isAllTime, selectedDate]);
 
-  // playerStatsAllTime opcionalmente filtra por modo
-  const { data: scrimPlayerAllTime, isLoading: loadingPlayerAllTime } = trpc.scrims.playerStatsAllTime.useQuery(
-    selectedMode === "all" ? undefined : { mode: selectedMode }
-  );
-
-  const { data: scrimTeamAllTimeBR, isLoading: loadingTeamAllTimeBR } = trpc.scrims.teamResultsAllTimeBR.useQuery();
-  const { data: scrimTeamAllTimeMME, isLoading: loadingTeamAllTimeMME } = trpc.scrims.teamResultsAllTimeMME.useQuery();
+  // 4. Formata os dados para o tipo "ScrimItem" que a página espera
+  const normalizedScrimsList = useMemo(() => {
+    if (!scrimsList) return [];
+    return scrimsList.map((s) => ({
+      id: s.id,
+      name: s.name || `Scrim #${s.id}`,
+      team1Id: s.team1Id,
+      team2Id: s.team2Id,
+      team1Name: s.team1Name,
+      team2Name: s.team2Name,
+      team1Tag: s.team1Tag,
+      team2Tag: s.team2Tag,
+      date: s.date,
+      time: null, // Adicione se existir no seu schema
+      modality: "4v4", // Ajuste baseado no seu schema real
+      mode: "mme" as ScrimMode, // Ajuste baseado no seu schema real
+      status: "concluido",
+      result: null, // Preencha dinamicamente se tiver no schema
+      createdAt: new Date(),
+    }));
+  }, [scrimsList]);
 
   return {
-    scrimsList,
+    scrimsList: normalizedScrimsList,
     availableDates,
-    scrimTeamResults,
-    scrimPlayerStats,
-    scrimPlayerAllTime,
-    scrimTeamAllTimeBR,
-    scrimTeamAllTimeMME,
-    isLoading: loadingScrims || loadingDates || loadingTeamResults || loadingPlayerStats || loadingPlayerAllTime || loadingTeamAllTimeBR || loadingTeamAllTimeMME,
-    loadingStates: {
-      scrims: loadingScrims,
-      dates: loadingDates,
-      teamResults: loadingTeamResults,
-      playerStats: loadingPlayerStats,
-      playerAllTime: loadingPlayerAllTime,
-      teamAllTimeBR: loadingTeamAllTimeBR,
-      teamAllTimeMME: loadingTeamAllTimeMME,
-    },
+    scrimDetails: filteredDetails,
+    isLoading: loadingScrims || loadingDetails,
   };
 }

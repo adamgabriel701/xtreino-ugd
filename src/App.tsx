@@ -6,6 +6,7 @@ import XTreinos from "./pages/XTreinos";
 import Scrims from "./pages/Scrims/page";
 import MatchResult from "./pages/Scrims/match/[id]/page";
 import Rankings from "./pages/Rankings";
+import RankingScrims from "./pages/components/RankingScrims"; // NOVO
 
 import Clans from "./pages/Clans";
 import ClanDetail from "./pages/Clans/components/ClanDetail";
@@ -36,10 +37,13 @@ export default function App() {
         <Route path="/scrims" element={<Scrims />} />
         <Route path="/scrims/match/:id" element={<MatchResult />} />
 
-        {/* NOVAS ROTAS ANINHADAS DE RANKINGS */}
+        {/* Rankings */}
         <Route path="/rankings" element={<Rankings />}>
           <Route path=":tab" element={<Rankings />} />
         </Route>
+        
+        {/* NOVA ROTA ISOLADA PARA O RANKING DE SCRIMS */}
+        <Route path="/rankings/scrims/:tab" element={<RankingScrims />} />
 
         <Route path="/clans" element={<Clans />}>
           <Route path=":clanId" element={<ClanDetail />} />

@@ -4,14 +4,10 @@ import { useState } from "react";
 import { Swords, Calendar, Trophy, Target, BarChart3, Users, Plus } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import { trpc } from "@/providers/trpc";
-import type { TabType, ScrimItem, ScrimMode, TeamResult, PlayerStat } from "./types"; // <-- Importei os tipos
+import type { TabType, ScrimItem, ScrimMode } from "./types";
 import { useScrimData } from "./hooks/useScrimData";
 import { AgendadosTab } from "./components/tabs/AgendadosTab";
-import { HistoricoTimesTab } from "./components/tabs/HistoricoTimesTab";
-import { HistoricoJogadoresTab } from "./components/tabs/HistoricoJogadoresTab";
 import { ScrimDetailModal } from "./components/modals/ScrimDetailModal";
-import { TeamStatsModal } from "./components/modals/TeamStatsModal";
-import { PlayerStatsModal } from "./components/modals/PlayerStatsModal";
 import { ScrimFormModal } from "./components/modals/ScrimFormModal";
 
 const TAB_CONFIG = [
@@ -31,27 +27,19 @@ export default function ScrimsPage() {
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<ScrimMode | "all">("all");
   const [selectedScrim, setSelectedScrim] = useState<ScrimItem | null>(null);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<{ name: string; team: string } | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const { refetch: refetchScrims } = trpc.scrims.list.useQuery();
+  const { refetch: refetchScrims } = trpc.unified.listScrims.useQuery();
 
   const {
     scrimsList,
     availableDates,
-    scrimTeamResults,
-    scrimPlayerStats,
-    scrimPlayerAllTime,
-    scrimTeamAllTimeBR,
-    scrimTeamAllTimeMME,
+    scrimDetails,
+    isLoading,
   } = useScrimData(selectedDate, selectedMode);
 
-  // FORÇA A TIPAGEM CORRETA AQUI, RESOLVENDO O ERRO DO "createdAt | null"
-  const typedTeamResults = scrimTeamResults as TeamResult[] | undefined;
-  const typedPlayerStats = scrimPlayerStats as PlayerStat[] | undefined;
-
-  const normalizedScrimsList = (scrimsList as ScrimItem[] | undefined)?.filter((scrim) => {
+  // Filtra a lista principal pelo modo selecionado (se necessário)
+  const filteredScrimsList = scrimsList.filter((scrim) => {
     if (selectedMode === "all") return true;
     return scrim.mode?.toLowerCase() === selectedMode;
   });
@@ -152,48 +140,39 @@ export default function ScrimsPage() {
         )}
 
         {/* Tab Content */}
-        {tab === "agendados" && (
-          <AgendadosTab scrimsList={normalizedScrimsList} onScrimClick={setSelectedScrim} />
-        )}
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[40vh] text-[#5a5a6e]">
+            <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mr-3" />
+            Carregando dados de Scrims...
+          </div>
+        ) : (
+          <>
+            {tab === "agendados" && (
+              <AgendadosTab scrimsList={filteredScrimsList} onScrimClick={setSelectedScrim} />
+            )}
 
-        {tab === "historico-times" && (
-          <HistoricoTimesTab
-            selectedDate={selectedDate}
-            availableDates={availableDates}
-            onDateChange={setSelectedDate}
-            selectedMode={selectedMode}
-            scrimTeamResults={typedTeamResults} // <-- USE A VARIÁVEL TIPADA
-            scrimPlayerStats={typedPlayerStats} // <-- USE A VARIÁVEL TIPADA
-            scrimTeamAllTimeBR={scrimTeamAllTimeBR}
-            scrimTeamAllTimeMME={scrimTeamAllTimeMME}
-            onTeamClick={(team) => setSelectedTeam(team)}
-          />
-        )}
+            {tab === "historico-times" && (
+              <div className="text-center py-16 text-[#5a5a6e]">
+                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">Histórico de Times via Scrim Detail</p>
+                <p className="text-sm mt-1">Clique em um scrim agendado para ver as estatísticas detalhadas das equipes.</p>
+              </div>
+            )}
 
-        {tab === "historico-jogadores" && (
-          <HistoricoJogadoresTab
-            selectedDate={selectedDate}
-            availableDates={availableDates}
-            onDateChange={setSelectedDate}
-            scrimPlayerStats={typedPlayerStats} // <-- USE A VARIÁVEL TIPADA
-            scrimPlayerAllTime={scrimPlayerAllTime}
-            onPlayerClick={(name, team) => setSelectedPlayer({ name, team })}
-          />
+            {tab === "historico-jogadores" && (
+              <div className="text-center py-16 text-[#5a5a6e]">
+                <Target className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">Histórico de Jogadores via Scrim Detail</p>
+                <p className="text-sm mt-1">Clique em um scrim agendado para analisar as estatísticas individuais dos jogadores.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
-      {/* Modals de Visualização */}
+      {/* Modais */}
       <ScrimDetailModal scrim={selectedScrim} isOpen={!!selectedScrim} onClose={() => setSelectedScrim(null)} />
       
-      {selectedTeam && (
-        <TeamStatsModal teamName={selectedTeam} isOpen={!!selectedTeam} onClose={() => setSelectedTeam(null)} />
-      )}
-      
-      {selectedPlayer && (
-        <PlayerStatsModal playerName={selectedPlayer.name} teamName={selectedPlayer.team} isOpen={!!selectedPlayer} onClose={() => setSelectedPlayer(null)} />
-      )}
-
-      {/* NOVO Modal de Criação */}
       <ScrimFormModal 
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 

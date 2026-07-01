@@ -2,7 +2,7 @@ export type TabType = "agendados" | "historico-times" | "historico-jogadores";
 export type ScrimMode = "br" | "mme";
 
 export interface ScrimItem {
-  id: number; name: string; team1Id?: number | null; team2Id?: number | null;
+  id: number; name?: string | null; team1Id?: number | null; team2Id?: number | null;
   team1Name?: string | null; team2Name?: string | null; team1Tag?: string | null; team2Tag?: string | null;
   date?: string | null; time?: string | null; modality?: string | null; mode?: ScrimMode | null;
   status: string; result?: string | null; createdAt: Date;
