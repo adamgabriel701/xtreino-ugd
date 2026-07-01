@@ -29,11 +29,15 @@ export default function App() {
         <Route path="/campeonatos" element={<Campeonatos />} />
         <Route path="/xtreinos" element={<XTreinos />} />
 
-        {/* SCRIMS UNIFICADO: O Hub agora cuida de TUDO, incluindo a rota do Match */}
-        <Route path="/scrims/*" element={<ScrimsHub />} />
-        <Route path="/rankings/scrims/*" element={<ScrimsHub />} />
+        {/* 
+          CORREÇÃO 1: Rotas de Scrims ANTES das rotas de Rankings. 
+          Mudado de /* para :tab para que o useParams funcione corretamente.
+        */}
+        <Route path="/scrims/:tab" element={<ScrimsHub />} />
+        <Route path="/scrims/match/:id" element={<ScrimsHub />} />
+        <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
 
-        {/* Rankings (X-Treinos) */}
+        {/* Rankings (X-Treinos) - DEPOIS de /rankings/scrims */}
         <Route path="/rankings" element={<Rankings />}>
           <Route path=":tab" element={<Rankings />} />
         </Route>
