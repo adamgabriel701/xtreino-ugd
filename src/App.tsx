@@ -2,9 +2,15 @@ import { Routes, Route } from "react-router";
 import { Toaster } from "sonner";
 import Home from "./pages/Home/page";
 import Campeonatos from "./pages/Campeonatos";
-import XTreinos from "./pages/XTreinos";
-import Rankings from "./pages/Rankings";
+
+// Landing Pages (NOVAS)
+import XTreinosLanding from "./pages/Xtreinos/LandingPage"; 
+import ScrimsLanding from "./pages/Scrims/LandingPage"; 
+
+// Páginas Internas
+import XTreinos from "./pages/XTreinos"; // O antigo, caso use em algum lugar específico
 import ScrimsHub from "./pages/Scrims/ScrimsHub"; 
+import Rankings from "./pages/Rankings";
 
 import Clans from "./pages/Clans";
 import ClanDetail from "./pages/Clans/components/ClanDetail";
@@ -27,17 +33,19 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/campeonatos" element={<Campeonatos />} />
-        <Route path="/xtreinos" element={<XTreinos />} />
 
         {/* 
-          CORREÇÃO 1: Rotas de Scrims ANTES das rotas de Rankings. 
-          Mudado de /* para :tab para que o useParams funcione corretamente.
+          NOVO: Landing Pages (Rotas exatas devem vir ANTES das rotas dinâmicas) 
         */}
+        <Route path="/xtreinos" element={<XTreinosLanding />} />
+        <Route path="/scrims" element={<ScrimsLanding />} />
+
+        {/* Rotas Internas do Hub de Scrims */}
         <Route path="/scrims/:tab" element={<ScrimsHub />} />
         <Route path="/scrims/match/:id" element={<ScrimsHub />} />
         <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
 
-        {/* Rankings (X-Treinos) - DEPOIS de /rankings/scrims */}
+        {/* Rankings (X-Treinos) */}
         <Route path="/rankings" element={<Rankings />}>
           <Route path=":tab" element={<Rankings />} />
         </Route>
