@@ -30,7 +30,7 @@ const QUICK_LINKS = [
   { to: "/scrims/agendados", label: "Partidas Agendadas", icon: <Calendar className="w-4 h-4" /> },
   { to: "/scrims/ranking-jogadores", label: "Ranking Jogadores", icon: <Crosshair className="w-4 h-4" /> },
   { to: "/scrims/ranking-times", label: "Ranking Times", icon: <Shield className="w-4 h-4" /> },
-  { to: "/rankings/scrims/agendados", label: "Ver via Rankings", icon: <BarChart3 className="w-4 h-4" /> },
+  { to: "/scrims/agendados", label: "Ver Hub Completo", icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
 export default function ScrimsLanding() {

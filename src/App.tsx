@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, Navigate } from "react-router";
 import { Toaster } from "sonner";
 import Home from "./pages/Home/page";
 import Campeonatos from "./pages/Campeonatos";
@@ -39,7 +39,9 @@ export default function App() {
 
         <Route path="/scrims/:tab" element={<ScrimsHub />} />
         <Route path="/scrims/match/:id" element={<ScrimsHub />} />
-        <Route path="/rankings/scrims/:tab" element={<ScrimsHub />} />
+        
+        {/* Redireciona rotas antigas de Rankings de Scrims para a nova rota unificada */}
+        <Route path="/rankings/scrims/:tab" element={<Navigate to="/scrims/:tab" replace />} />
         
         {/* Rankings (X-Treinos e outras tabs genéricas) */}
         <Route path="/rankings" element={<Rankings />}>

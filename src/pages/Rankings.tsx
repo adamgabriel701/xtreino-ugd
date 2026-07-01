@@ -77,7 +77,7 @@ const TABS: TabConfig[] = [
     description: "Rankings unificados dedicados exclusivamente às partidas de Scrims (MME)", 
     group: 2,
     isExternal: true, 
-    externalTo: "/rankings/scrims/agendados" 
+    externalTo: "/scrims/agendados" 
   },
   { key: "h2h", label: "Head-to-Head", icon: <Target className="w-4 h-4" />, description: "Confronto direto entre dois jogadores", group: 2 },
   { key: "evolucao", label: "Evolucao Temporal", icon: <TrendingUp className="w-4 h-4" />, description: "Grafico de linhas comparando times ao longo dos meses", group: 2 },
@@ -90,8 +90,6 @@ const TABS: TabConfig[] = [
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  // O router agora trata o "jogadores/xtreinos" separadamente antes de cair aqui.
-  // Se cair aqui, o "tab" será sempre simples (ex: "geral", "xtreinos", etc).
   const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
 
   // Se estiver na rota de jogadores, forçamos a aba ativa como "jogadores"
@@ -106,10 +104,6 @@ export default function Rankings() {
 
   if (tab === "jogadores" && !subtab) {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
-  }
-
-  if (tab === "scrims") {
-    return <Navigate to="/rankings/scrims/agendados" replace />;
   }
 
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;

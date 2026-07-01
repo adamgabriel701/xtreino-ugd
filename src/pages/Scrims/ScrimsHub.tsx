@@ -60,7 +60,6 @@ const TABS: TabConfig[] = [
 export default function ScrimsHub() {
   const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
-  const isRankingsRoute = location.pathname.startsWith("/rankings");
 
   // Se estiver na rota exata do match, renderiza a tela de resultado
   if (location.pathname.includes("/match/")) {
@@ -69,26 +68,21 @@ export default function ScrimsHub() {
 
   // Segurança: Se acessou sem tab, redireciona
   if (!tab) {
-    return <Navigate to={isRankingsRoute ? "/rankings/scrims/agendados" : "/scrims/agendados"} replace />;
+    return <Navigate to="/scrims/agendados" replace />;
   }
 
   const activeTab: ScrimsTabKey = (TABS.find(t => t.key === tab)?.key) || "agendados";
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
   const gestaoTabs = TABS.filter((t) => t.group === "gestao");
   const rankingTabs = TABS.filter((t) => t.group === "ranking");
-  const baseUrl = isRankingsRoute ? "/rankings/scrims" : "/scrims";
 
   const renderTabButton = (tabConfig: TabConfig) => {
     const isActive = activeTab === tabConfig.key;
-    const fullPath = `${baseUrl}/${tabConfig.key}`;
+    const fullPath = `/scrims/${tabConfig.key}`;
 
     if (isActive) {
       return (
-        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-          isRankingsRoute 
-            ? "bg-red-500/10 text-red-400 border-red-500/20 shadow-sm shadow-red-500/5" 
-            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5"
-        }`}>
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5">
           {tabConfig.icon}
           {tabConfig.label}
         </div>
@@ -103,48 +97,47 @@ export default function ScrimsHub() {
     );
   };
 
-  const content = (
-    <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
-      {/* Header Dinâmico */}
-      <div className="bg-[#12121a] border-b border-[#2a2a3a] -mx-4 lg:-mx-8 px-4 lg:px-8 py-12 mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Swords className={`w-8 h-8 ${isRankingsRoute ? "text-red-400" : "text-emerald-400"}`} />
-              <h1 className="text-3xl md:text-4xl font-extrabold text-[#f0f0f5]">
-                {isRankingsRoute ? "Rankings de Scrims" : "Centro de Scrims"}
-              </h1>
+  return (
+    <MainLayout>
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        {/* Header Dinâmico */}
+        <div className="bg-[#12121a] border-b border-[#2a2a3a] -mx-4 lg:-mx-8 px-4 lg:px-8 py-12 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Swords className="w-8 h-8 text-emerald-400" />
+                <h1 className="text-3xl md:text-4xl font-extrabold text-[#f0f0f5]">
+                  Centro de Scrims
+                </h1>
+              </div>
+              <p className="text-[#8a8a9e]">{activeTabConfig.label}</p>
             </div>
-            <p className="text-[#8a8a9e]">{activeTabConfig.label}</p>
+            
+            {activeTab === "agendados" && (
+              <Link to="/scrims/novo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 w-fit">
+                <Plus className="w-4 h-4" /> Nova Scrim
+              </Link>
+            )}
           </div>
-          
-          {!isRankingsRoute && activeTab === "agendados" && (
-            <Link to="/scrims/novo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 w-fit">
-              <Plus className="w-4 h-4" /> Nova Scrim
-            </Link>
-          )}
         </div>
-      </div>
 
-      {/* Tabs Agrupadas */}
-      <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
-        <div className="flex flex-wrap gap-1">{gestaoTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
-        <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">{rankingTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
-      </div>
-
-      {/* Tab Content com Error Boundary */}
-      <ErrorBoundary fallback={<ErrorFallback />}>
-        <div className="pb-12">
-          {activeTab === "agendados" && <PartidasTab />}
-          {activeTab === "ranking-jogadores" && <RankingJogadoresTab />}
-          {activeTab === "ranking-times" && <RankingTimesTab />}
+        {/* Tabs Agrupadas */}
+        <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
+          <div className="flex flex-wrap gap-1">{gestaoTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
+          <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">{rankingTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
         </div>
-      </ErrorBoundary>
-    </div>
+
+        {/* Tab Content com Error Boundary */}
+        <ErrorBoundary fallback={<ErrorFallback />}>
+          <div className="pb-12">
+            {activeTab === "agendados" && <PartidasTab />}
+            {activeTab === "ranking-jogadores" && <RankingJogadoresTab />}
+            {activeTab === "ranking-times" && <RankingTimesTab />}
+          </div>
+        </ErrorBoundary>
+      </div>
+    </MainLayout>
   );
-
-  if (isRankingsRoute) return content;
-  return <MainLayout>{content}</MainLayout>;
 }
 
 // ============================================================
