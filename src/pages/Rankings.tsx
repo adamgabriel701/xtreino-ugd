@@ -1,4 +1,4 @@
-import { useParams, Link, useLocation, Navigate } from "react-router-dom";
+import { Link, useLocation, Navigate } from "react-router-dom";
 import {
   Dumbbell,
   Trophy,
@@ -90,30 +90,28 @@ const TABS: TabConfig[] = [
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
+  const path = location.pathname;
 
-  // NOVO: Intercepta sub-rotas de jogadores (ex: /rankings/jogadores/xtreinos)
-  const isJogadoresSubRoute = location.pathname.startsWith("/rankings/jogadores/");
-  const jogadoresSubTab = location.pathname.replace("/rankings/jogadores/", "");
-
-  // Define a aba ativa. Se estiver em sub-rota de jogadores, força a aba principal como "jogadores"
+  // NOVO: Lógica a prova de falhas usando a URL inteira
+  const isJogadoresSubRoute = path.startsWith("/rankings/jogadores/");
+  const jogadoresSubTab = isJogadoresSubRoute ? path.replace("/rankings/jogadores/", "") : null;
+  
+  // Se for rota de jogadores, a aba ativa principal é "jogadores"
   const activeTab: TabKey = isJogadoresSubRoute 
     ? "jogadores" 
-    : (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
+    : (TABS.find(t => path === `/rankings/${t.key}`)?.key as TabKey) || "geral";
 
-  // Se o usuário acessou apenas /rankings sem nenhuma tab, redireciona para /rankings/geral
-  if (!tab && !isJogadoresSubRoute) {
+  // Redirecionamentos seguros
+  if (path === "/rankings") {
     return <Navigate to="/rankings/geral" replace />;
   }
 
-  // Se acessou /rankings/jogadores sem subtab, redireciona para a padrão
-  if (tab === "jogadores" && !isJogadoresSubRoute) {
+  if (path === "/rankings/jogadores") {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
   }
 
-  // Se o usuário tentar acessar a rota antiga do scrim direto, redireciona
-  if (tab === "scrims") {
+  if (path === "/rankings/scrims") {
     return <Navigate to="/rankings/scrims/agendados" replace />;
   }
 
@@ -137,8 +135,8 @@ export default function Rankings() {
       );
     }
 
-    // NOVO: Garante que o botão "Jogadores" sempre aponte para a sub-rota correta
-    const basePath = tabConfig.key === "jogadores" 
+    // Garante que links de jogadores apontem para a sub-rota correta
+    const targetPath = tabConfig.key === "jogadores" 
       ? "/rankings/jogadores/xtreinos" 
       : `/rankings/${tabConfig.key}`;
 
@@ -152,7 +150,7 @@ export default function Rankings() {
     }
 
     return (
-      <Link to={basePath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
+      <Link to={targetPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
@@ -175,7 +173,7 @@ export default function Rankings() {
           </p>
         </div>
 
-        {/* Momentos Históricos (Global no topo) */}
+        {/* Momentos Históricos */}
         <div className="mb-6">
           <MomentosCarousel />
         </div>
@@ -204,7 +202,7 @@ export default function Rankings() {
           {activeTab === "semanal" && <RankingSemanalTab />}
           {activeTab === "clas" && <RankingClasTab />}
           
-          {/* CORREÇÃO FINAL: Passa a subtab capturada pela URL para o JogadoresPage */}
+          {/* Passa o valor correto da sub-rota via prop */}
           {activeTab === "jogadores" && <JogadoresPage initialSubTab={jogadoresSubTab} />}
           
           {activeTab === "historico" && <HistoricoGeralTab />}

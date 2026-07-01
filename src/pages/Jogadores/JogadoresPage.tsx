@@ -21,12 +21,12 @@ const SUBTABS: SubTabConfig[] = [
   { key: "scrims", label: "Scrims (MME)", icon: <Swords className="w-4 h-4" /> },
 ];
 
-export default function JogadoresPage({ initialSubTab }: { initialSubTab?: string }) {
-  // Define a sub-aba ativa. Padrão é "xtreinos"
+export default function JogadoresPage({ initialSubTab }: { initialSubTab?: string | null }) {
+  // Define a sub-aba ativa baseada na prop recebida. Padrão é "xtreinos"
   const activeSubTab: SubTabKey =
     (SUBTABS.find((t) => t.key === initialSubTab)?.key as SubTabKey) || "xtreinos";
 
-  // Redireciona para a sub-aba padrão se acessar direto sem subtab (caso retorne a usar rotas próprias)
+  // Redireciona se por algum motivo não tiver subtab (ex: acesso direto isolado)
   if (!initialSubTab) {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
   }
