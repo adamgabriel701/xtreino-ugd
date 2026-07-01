@@ -78,18 +78,21 @@ export const teams = sqliteTable("teams", {
 // ============================================================
 export const players = sqliteTable("players", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  nickname: text("nickname").notNull(),
+  nickname: text("nickname").notNull(),        // ← Mantém (nickname "oficial")
   uid: text("uid"),
   discord: text("discord"),
   teamId: integer("team_id", { mode: "number" }),
   role: text("role").notNull().default("official"),
   joinDate: text("join_date"),
-  kills: integer("kills").notNull().default(0),
+  kills: integer("kills").notNull().default(0), // ← Pode DEPRECAR depois
   deaths: integer("deaths").notNull().default(0),
   wins: integer("wins").notNull().default(0),
   matches: integer("matches").notNull().default(0),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  // NOVOS:
+  isUnified: integer("is_unified", { mode: "boolean" }).notNull().default(false), // Já foi processado?
+  primaryTeamId: integer("primary_team_id", { mode: "number" }), // Time principal (mais jogado)
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 // ============================================================
@@ -393,3 +396,98 @@ export const playerMerges = sqliteTable("player_merges", {
   mergedPlayerId: integer("merged_player_id", { mode: "number" }).notNull().references(() => players.id, { onDelete: "cascade" }).unique(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
+
+// ============================================================
+// ALIASES DE JOGADORES — Resolve o problema de nicknames
+// ============================================================
+export const playerAliases = sqliteTable("player_aliases", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  playerId: integer("player_id", { mode: "number" }).notNull().references(() => players.id, { onDelete: "cascade" }),
+  alias: text("alias").notNull().unique(), // Cada alias único no sistema
+  normalizedAlias: text("normalized_alias").notNull(), // Versão limpa para busca
+  source: text("source").notNull().default("manual"), // "manual" | "xtreino" | "scrim" | "campeonato"
+  confidence: integer("confidence", { mode: "number" }).notNull().default(100), // 100=manual, menor=auto
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const teamAliases = sqliteTable("team_aliases", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  teamId: integer("team_id", { mode: "number" }).notNull().references(() => teams.id, { onDelete: "cascade" }),
+  alias: text("alias").notNull(),
+  normalizedAlias: text("normalized_alias").notNull(),
+  source: text("source").notNull().default("manual"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// ============================================================
+// ESTATÍSTICAS UNIFICADAS DO JOGADOR — Agregado de TODAS as fontes
+// ============================================================
+export const unifiedPlayerStats = sqliteTable("unified_player_stats", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  playerId: integer("player_id", { mode: "number" }).notNull().unique().references(() => players.id, { onDelete: "cascade" }),
+  
+  // XTreinos (BR - Só kills por queda)
+  xtreinoMatches: integer("xtreino_matches").notNull().default(0),
+  xtreinoKills: integer("xtreino_kills").notNull().default(0),
+  xtreinoBestQ1: integer("xtreino_best_q1").notNull().default(0),
+  xtreinoBestQ2: integer("xtreino_best_q2").notNull().default(0),
+  xtreinoBestQ3: integer("xtreino_best_q3").notNull().default(0),
+  
+  // Scrims (MME - kills, assists, deaths, damage, MVPs)
+  scrimMatches: integer("scrim_matches").notNull().default(0),
+  scrimRounds: integer("scrim_rounds").notNull().default(0),
+  scrimKills: integer("scrim_kills").notNull().default(0),
+  scrimAssists: integer("scrim_assists").notNull().default(0),
+  scrimDeaths: integer("scrim_deaths").notNull().default(0),
+  scrimDamage: integer("scrim_damage").notNull().default(0),
+  scrimMvps: integer("scrim_mvps").notNull().default(0),
+  scrimWins: integer("scrim_wins").notNull().default(0),
+  scrimLosses: integer("scrim_losses").notNull().default(0),
+  
+  // Campeonatos (BR - Só kills por queda)
+  campeonatoMatches: integer("campeonato_matches").notNull().default(0),
+  campeonatoKills: integer("campeonato_kills").notNull().default(0),
+  
+  // Totais calculados
+  totalMatches: integer("total_matches").notNull().default(0),
+  totalKills: integer("total_kills").notNull().default(0),
+  
+  // K/D apenas de scrims (onde tem deaths)
+  scrimKdRatio: real("scrim_kd_ratio"),
+  
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const unifiedTeamStats = sqliteTable("unified_team_stats", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  teamId: integer("team_id", { mode: "number" }).notNull().unique().references(() => teams.id, { onDelete: "cascade" }),
+  
+  // XTreinos
+  xtreinoMatches: integer("xtreino_matches").notNull().default(0),
+  xtreinoWins: integer("xtreino_wins").notNull().default(0),
+  xtreinoTotalPoints: integer("xtreino_total_points").notNull().default(0),
+  xtreinoKills: integer("xtreino_kills").notNull().default(0),
+  
+  // Scrims
+  scrimMatches: integer("scrim_matches").notNull().default(0),
+  scrimWins: integer("scrim_wins").notNull().default(0),
+  scrimLosses: integer("scrim_losses").notNull().default(0),
+  scrimRoundsWon: integer("scrim_rounds_won").notNull().default(0),
+  scrimRoundsLost: integer("scrim_rounds_lost").notNull().default(0),
+  scrimKills: integer("scrim_kills").notNull().default(0), // <--- ESSE CAMPO AQUI
+  
+  // Campeonatos
+  campeonatoMatches: integer("campeonato_matches").notNull().default(0),
+  campeonatoKills: integer("campeonato_kills").notNull().default(0),
+  campeonatoWins: integer("campeonato_wins").notNull().default(0),
+  
+  // Totais
+  totalMatches: integer("total_matches").notNull().default(0),
+  totalKills: integer("total_kills").notNull().default(0),
+  totalWins: integer("total_wins").notNull().default(0),
+  
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+

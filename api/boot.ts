@@ -18,9 +18,9 @@ import {
   seedLogos,
   seedLogosAuto,
   seedAllXtreinos,
-  seedAllScrims,  // 🆕 seed genérico de scrims
-  seedPlayerUnified,
-  seedScrimPlayers,
+  seedAllScrims,
+  seedAliases, // 🆕 Cria jogadores canônicos e mapeia variações de nick
+  seedUnify,   // 🆕 Calcula estatísticas unificadas cruzando os dados
 } from "../db/seed.js";
 
 console.log("[BOOT] Starting server...");
@@ -168,22 +168,21 @@ if (env.isProduction) {
     // ============================================================
     console.log("[BOOT] Checking specific seeds...");
 
-    //resetAllSeedRuns(); // 🆕 Limpa TUDO, força re-execução
+    // resetAllSeedRuns(); // 🚨 CUIDADO: Limpa TUDO, força re-execução de todos os seeds abaixo
 
-    // 🆕 Seed genérico de todos os xtreinos
+    // 1. Mapeamento de jogadores e times (precisa rodar antes do unify)
+    runSeedIfNeeded("aliases-xtreinos-v1", seedAliases);
+
+    // 2. Dados detalhados por evento (XTreinos e Scrims)
     runSeedIfNeeded("xtreinos_all", seedAllXtreinos);
-
-    // 🆕 Seed genérico de todas as scrims
     runSeedIfNeeded("scrims_all", seedAllScrims);
 
-    // Na seção de seeds:
-    runSeedIfNeeded("player_unified", seedPlayerUnified);
+    // 3. Cálculo das estatísticas unificadas (precisa rodar DEPOIS do aliases)
+    runSeedIfNeeded("unify-v1", seedUnify);
 
-    // Seed de logos (manual ou auto)
+    // 4. Estéticos (Logos)
     runSeedIfNeeded("logos", seedLogos);
     // runSeedIfNeeded("logos_auto", () => seedLogosAuto("public")); // descomente se quiser auto
-
-    runSeedIfNeeded("scrim_players", seedScrimPlayers);
 
     console.log("[BOOT] All seeds processed");
 
