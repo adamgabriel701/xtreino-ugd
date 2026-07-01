@@ -168,7 +168,7 @@ if (env.isProduction) {
     // ============================================================
     console.log("[BOOT] Checking specific seeds...");
 
-    resetAllSeedRuns(); // 🚨 CUIDADO: Limpa TUDO, força re-execução de todos os seeds abaixo
+    // resetAllSeedRuns(); // 🚨 CUIDADO: Limpa TUDO, força re-execução de todos os seeds abaixo
 
     // 1. Mapeamento de jogadores e times (precisa rodar antes do unify)
     runSeedIfNeeded("aliases-xtreinos-v1", seedAliases);

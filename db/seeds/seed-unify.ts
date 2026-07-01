@@ -329,11 +329,11 @@ export function seed() {
   console.log("[UNIFY] === END REPORT ===\n");
 
   // Registrar seed run
-  const seedName = "unify-v1";
-  const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
-  if (!existingSeed) {
-    db.insert(seedRuns).values({ seedName }).run();
-  }
+  //const seedName = "unify-v1";
+  //const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
+  //if (!existingSeed) {
+  //  db.insert(seedRuns).values({ seedName }).run();
+  //}
 
   console.log("[UNIFY] Unification completed!");
 }

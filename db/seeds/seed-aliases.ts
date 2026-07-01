@@ -2240,11 +2240,11 @@ export function seed() {
   console.log(`[SEED] ${playersCreated} players created, ${aliasesCreated} aliases created`);
 
   // Registrar seed run
-  const seedName = "aliases-xtreinos-v1";
-  const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
-  if (!existingSeed) {
-    db.insert(seedRuns).values({ seedName }).run();
-  }
+  //const seedName = "aliases-xtreinos-v1";
+  //const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
+  //if (!existingSeed) {
+  //  db.insert(seedRuns).values({ seedName }).run();
+  //}
 
   console.log("[SEED] Xtreinos aliases seed completed!");
 }
