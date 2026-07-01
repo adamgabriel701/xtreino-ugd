@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import { useParams, Link, Navigate, useLocation } from "react-router-dom";
+import { useParams, Link, Navigate, useLocation, Routes, Route } from "react-router-dom";
 import {
   Swords, Trophy, BarChart3, Users, Target, Shield, TrendingUp,
-  Crosshair, Medal, Award, Calendar, Plus, Filter,
+  Crosshair, Medal, Award, Calendar, Plus,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import { trpc } from "@/providers/trpc";
@@ -10,18 +10,19 @@ import {
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
   RankBadge, SummaryCards,
 } from "@/pages/components/xtreino";
+import MatchResult from "./match/[id]/page"; // NOVO: Importado para cá
 
 // ============================================================
 // TIPOS
 // ============================================================
 
-type ScrimsTabKey = "agendados" | "ranking-jogadores" | "ranking-times";
+type ScrimsTabKey = "agendados" | "ranking-jogadores" | "ranking-times" | "match";
 
 interface TabConfig {
   key: ScrimsTabKey;
   label: string;
   icon: React.ReactNode;
-  group: "gestao" | "ranking";
+  group: "gestao" | "ranking" | "match";
 }
 
 interface EnrichedScrimPlayer {
@@ -57,14 +58,19 @@ const TABS: TabConfig[] = [
 // ============================================================
 
 export default function ScrimsHub() {
-  const { tab } = useParams<{ tab?: string }>();
+  const { tab, id } = useParams<{ tab?: string; id?: string }>();
   const location = useLocation();
   const isRankingsRoute = location.pathname.startsWith("/rankings");
+
+  // Se estiver na rota exata do match, renderiza a tela de resultado
+  if (location.pathname.includes("/match/")) {
+    return <MatchResult />;
+  }
 
   // Define a aba ativa baseada na URL
   const activeTab: ScrimsTabKey = (TABS.find(t => t.key === tab)?.key) || "agendados";
 
-  // Se acessou /scrims ou /rankings/scrims sem tab, redireciona
+  // Segurança: Se acessou /scrims ou /rankings/scrims sem tab, redireciona
   if (!tab) {
     return <Navigate to={isRankingsRoute ? "/rankings/scrims/agendados" : "/scrims/agendados"} replace />;
   }
@@ -72,7 +78,6 @@ export default function ScrimsHub() {
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
   const gestaoTabs = TABS.filter((t) => t.group === "gestao");
   const rankingTabs = TABS.filter((t) => t.group === "ranking");
-
   const baseUrl = isRankingsRoute ? "/rankings/scrims" : "/scrims";
 
   const renderTabButton = (tabConfig: TabConfig) => {
@@ -100,7 +105,7 @@ export default function ScrimsHub() {
     );
   };
 
-  // Renderiza dentro do MainLayout ou direto na tela (se estiver dentro do layout de Rankings)
+  // Renderiza dentro do MainLayout ou direto na tela
   const content = (
     <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
       {/* Header Dinâmico */}
@@ -143,14 +148,12 @@ export default function ScrimsHub() {
     </div>
   );
 
-  // Se for a rota de rankings, NÃO envolve o MainLayout de novo (pois já vem dele)
   if (isRankingsRoute) return content;
-
   return <MainLayout>{content}</MainLayout>;
 }
 
 // ============================================================
-// TAB: PARTIDAS AGENDADAS (Placeholder Integrado)
+// TAB: PARTIDAS AGENDADAS
 // ============================================================
 
 function PartidasTab() {
@@ -163,11 +166,10 @@ function PartidasTab() {
       <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-6 text-center">
         <Swords className="w-12 h-12 text-[#5a5a6e] mx-auto mb-3" />
         <h3 className="text-lg font-bold text-[#f0f0f5] mb-2">Histórico de Scrims</h3>
-        <p className="text-sm text-[#5a5a6e] max-w-md mx-auto">
-          Esta aba exibirá o calendário de partidas agendadas e o histórico detalhado de resultados (MME). 
-          Clique em uma partida para ver as estatísticas detalhadas dos jogadores e rodadas.
+        <p className="text-sm text-[#8a8a9e] max-w-md mx-auto mb-4">
+          Clique em uma partida para ver a tela de resultado e as estatísticas detalhadas dos jogadores.
         </p>
-        <div className="mt-6 flex justify-center gap-4 text-sm text-[#8a8a9e]">
+        <div className="flex justify-center gap-4 text-sm text-[#8a8a9e]">
           <div className="bg-[#12121a] rounded-lg px-4 py-2 border border-[#2a2a3a]">
             Total de Scrims: <span className="text-emerald-400 font-bold ml-1">{scrimsList?.length || 0}</span>
           </div>
@@ -346,12 +348,8 @@ function RankingTimesTab() {
     return (teamsList as unknown as Array<Record<string, any>>)
       .filter(t => (t.scrimMatches ?? 0) > 0)
       .map(t => ({
-        name: t.name,
-        tag: t.tag,
-        scrimKills: t.scrimKills ?? 0,
-        scrimWins: t.scrimWins ?? 0,
-        scrimLosses: t.scrimLosses ?? 0,
-        scrimMatches: t.scrimMatches ?? 0,
+        name: t.name, tag: t.tag, scrimKills: t.scrimKills ?? 0, scrimWins: t.scrimWins ?? 0,
+        scrimLosses: t.scrimLosses ?? 0, scrimMatches: t.scrimMatches ?? 0,
         winRate: (t.scrimMatches ?? 0) > 0 ? Math.round(((t.scrimWins ?? 0) / (t.scrimMatches ?? 0)) * 1000) / 10 : 0,
       })) as EnrichedScrimTeam[];
   }, [teamsList]);

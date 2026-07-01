@@ -3,9 +3,8 @@ import { Toaster } from "sonner";
 import Home from "./pages/Home/page";
 import Campeonatos from "./pages/Campeonatos";
 import XTreinos from "./pages/XTreinos";
-import MatchResult from "./pages/Scrims/match/[id]/page";
 import Rankings from "./pages/Rankings";
-import ScrimsHub from "./pages/Scrims/ScrimsHub"; // NOVO: O Super Componente
+import ScrimsHub from "./pages/Scrims/ScrimsHub"; 
 
 import Clans from "./pages/Clans";
 import ClanDetail from "./pages/Clans/components/ClanDetail";
@@ -30,10 +29,9 @@ export default function App() {
         <Route path="/campeonatos" element={<Campeonatos />} />
         <Route path="/xtreinos" element={<XTreinos />} />
 
-        {/* SCRIMS UNIFICADO: O Hub cuida de /scrims, /scrims/agendados, /rankings/scrims/* */}
+        {/* SCRIMS UNIFICADO: O Hub agora cuida de TUDO, incluindo a rota do Match */}
         <Route path="/scrims/*" element={<ScrimsHub />} />
         <Route path="/rankings/scrims/*" element={<ScrimsHub />} />
-        <Route path="/scrims/match/:id" element={<MatchResult />} />
 
         {/* Rankings (X-Treinos) */}
         <Route path="/rankings" element={<Rankings />}>
