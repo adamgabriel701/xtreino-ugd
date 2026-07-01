@@ -30,6 +30,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD cool7",
       "UGD cool⁷",
       "Cool",
+      "Rivers AR"
     ],
   },
   {
@@ -48,7 +49,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "UGD Treon",
       "Treon",
-      "Rivers AR",
     ],
   },
   {

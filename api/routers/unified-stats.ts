@@ -30,8 +30,8 @@ export const unifiedRouter = createRouter({
       z.object({
         search: z.string().optional(),
         teamId: z.number().optional(),
-        // CORREÇÃO 1: Removido "kills" e adicionado "scrimMvps" para bater com o objeto
-        sortBy: z.enum(["totalKills", "xtreinoKills", "scrimKills", "totalMatches", "scrimMvps"]).optional(),
+        // CORREÇÃO: Adicionado "scrimKdRatio" no enum para permitir ordenar por essa coluna no frontend
+        sortBy: z.enum(["totalKills", "xtreinoKills", "scrimKills", "scrimMvps", "scrimKdRatio", "totalMatches"]).optional(),
         limit: z.number().optional(),
       }).optional()
     )
@@ -103,7 +103,6 @@ export const unifiedRouter = createRouter({
         return playerData;
       });
 
-      // CORREÇÃO 2: Usando 'as keyof typeof playerData' para garantir tipagem segura
       const sort = (input?.sortBy || "totalKills") as keyof typeof enriched[0];
       enriched.sort((a, b) => (Number(b[sort]) || 0) - (Number(a[sort]) || 0));
 
@@ -247,7 +246,6 @@ export const unifiedRouter = createRouter({
       const t1 = getTeam(s.team1Id);
       const t2 = getTeam(s.team2Id);
       
-      // CORREÇÃO 3: Removido fallback para s.team1Name pois não existe no schema da tabela
       return { 
         ...s, 
         team1Name: t1?.name ?? null, 
@@ -283,7 +281,6 @@ export const unifiedRouter = createRouter({
         return { ...ps, rounds };
       });
 
-      // Adiciona nomes dinamicamente no objeto retornado
       const t1 = scrim.team1Id ? db.select().from(teams).where(eq(teams.id, scrim.team1Id)).get() : null;
       const t2 = scrim.team2Id ? db.select().from(teams).where(eq(teams.id, scrim.team2Id)).get() : null;
 

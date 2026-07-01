@@ -1,25 +1,37 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-  Target,
-  Calendar,
-  TrendingUp,
-  BarChart3,
-  Award,
-  ArrowLeft,
-  History,
-  Tag,
-  Flame,
-  Users,
+  Target, TrendingUp, Award, ArrowLeft, History, Tag, Flame, Users, Swords, Shield,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { Sparkline, BadgeIcon } from "../components/xtreino";
+
+// CORREÇÃO: Tipo adicionado para inferir corretamente as propriedades de stats
+type PlayerStats = {
+  xtreinoMatches?: number | null;
+  xtreinoKills?: number | null;
+  xtreinoBestQ1?: number | null;
+  xtreinoBestQ2?: number | null;
+  xtreinoBestQ3?: number | null;
+  scrimMatches?: number | null;
+  scrimRounds?: number | null;
+  scrimKills?: number | null;
+  scrimAssists?: number | null;
+  scrimDeaths?: number | null;
+  scrimDamage?: number | null;
+  scrimMvps?: number | null;
+  scrimWins?: number | null;
+  scrimLosses?: number | null;
+  scrimKdRatio?: number | null;
+  totalMatches?: number | null;
+  totalKills?: number | null;
+};
 
 export default function PlayerPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const playerId = Number(id);
 
-  const { data: player, isLoading, isError } = trpc.players.getById.useQuery(
+  const { data: player, isLoading, isError } = trpc.unified.getPlayerDetails.useQuery(
     { id: playerId },
     { enabled: !isNaN(playerId) }
   );
@@ -46,50 +58,48 @@ export default function PlayerPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Target className="w-12 h-12 text-[#5a5a6e]" />
         <p className="text-[#8a8a9e] text-lg">Jogador não encontrado</p>
-        <Link
-          to="/jogadores"
-          className="text-sm text-green-400 hover:text-green-300 transition-colors"
-        >
+        <Link to="/jogadores" className="text-sm text-green-400 hover:text-green-300 transition-colors">
           Voltar para o ranking
         </Link>
       </div>
     );
   }
 
-  const sparklineData = player.xtreinoStats
+  // CORREÇÃO: Usando a tipagem correta para garantir que o TS reconheça as propriedades
+  const s = (player.stats || {}) as PlayerStats;
+  
+  const a = player.aliases || [];
+
+  // Dados do Sparkline
+  const sparklineData = (player.xtreinoHistory || [])
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map((s) => s.totalKills ?? 0);
+    .map((h) => h.totalKills ?? 0);
 
-  // CORREÇÃO: Usado xtreinoParticipations em vez de participations
-  const p = player.xtreinoParticipations || 1;
-  const totalQ1 = player.xtreinoStats.reduce((sum, s) => sum + (s.q1Kills ?? 0), 0);
-  const totalQ2 = player.xtreinoStats.reduce((sum, s) => sum + (s.q2Kills ?? 0), 0);
-  const totalQ3 = player.xtreinoStats.reduce((sum, s) => sum + (s.q3Kills ?? 0), 0);
-  const avgQ1 = Math.round((totalQ1 / p) * 10) / 10;
-  const avgQ2 = Math.round((totalQ2 / p) * 10) / 10;
-  const avgQ3 = Math.round((totalQ3 / p) * 10) / 10;
+  const xtMatches = s.xtreinoMatches || 1;
+  const xtKills = s.xtreinoKills ?? 0;
+  const avgXT = s.xtreinoMatches ? Math.round((xtKills / xtMatches) * 10) / 10 : 0;
 
+  // Badges
   const badges: string[] = [];
-  if (player.totalXtreinoKills >= 100) badges.push("100 Kills");
-  if (player.totalXtreinoKills >= 300) badges.push("300 Kills");
-  if (player.totalXtreinoKills >= 500) badges.push("500 Kills");
-  if (player.xtreinoParticipations >= 5) badges.push("5 XTs");
-  if (player.xtreinoParticipations >= 10) badges.push("10 XTs");
-  if (player.xtreinoParticipations >= 20) badges.push("20 XTs");
-  if (totalQ1 >= 50) badges.push("Q1 Master");
-  if (totalQ2 >= 50) badges.push("Q2 Master");
-  if (totalQ3 >= 50) badges.push("Q3 Master");
-  const avg = player.xtreinoParticipations > 0 ? player.totalXtreinoKills / player.xtreinoParticipations : 0;
-  if (avg >= 8) badges.push("Sniper");
-  if (avg >= 12) badges.push("Elite");
+  const totalKills = s.totalKills ?? 0;
+  if (totalKills >= 100) badges.push("100 Kills");
+  if (totalKills >= 300) badges.push("300 Kills");
+  if (totalKills >= 500) badges.push("500 Kills");
+  if ((s.xtreinoMatches ?? 0) >= 5) badges.push("5 XTs");
+  if ((s.xtreinoMatches ?? 0) >= 10) badges.push("10 XTs");
+  if ((s.scrimMatches ?? 0) >= 5) badges.push("5 Scrims");
+  if ((s.scrimMatches ?? 0) >= 10) badges.push("10 Scrims");
+  if ((s.scrimMvps ?? 0) >= 5) badges.push("5 MVPs");
+  if ((s.xtreinoBestQ1 ?? 0) >= 8) badges.push("Q1 Master");
+  if ((s.xtreinoBestQ2 ?? 0) >= 8) badges.push("Q2 Master");
+  if ((s.xtreinoBestQ3 ?? 0) >= 8) badges.push("Q3 Master");
+  if (avgXT >= 8) badges.push("Sniper");
+  if (avgXT >= 12) badges.push("Elite");
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5] transition-colors"
-        >
+        <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5] transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
@@ -99,26 +109,21 @@ export default function PlayerPage() {
             </div>
             {player.nickname}
           </h1>
-          <p className="text-sm text-[#5a5a6e] mt-1">
-            Perfil do jogador • ID: {player.id}
-          </p>
+          <p className="text-sm text-[#5a5a6e] mt-1">Perfil do jogador • {player.teamName}</p>
         </div>
       </div>
 
-      {player.previousNicks && player.previousNicks.length > 0 && (
+      {a.length > 0 && (
         <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-4">
           <div className="flex items-center gap-2 mb-2">
             <Tag className="w-4 h-4 text-[#5a5a6e]" />
-            <h3 className="text-sm font-medium text-[#8a8a9e]">Nicks anteriores</h3>
+            <h3 className="text-sm font-medium text-[#8a8a9e]">Variações de Nick / Nicks Anteriores</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {player.previousNicks.map((nick) => (
-              <span
-                key={nick}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0a0a0f] border border-[#2a2a3a] text-xs text-[#8a8a9e]"
-              >
+            {a.map((al) => (
+              <span key={al.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0a0a0f] border border-[#2a2a3a] text-xs text-[#8a8a9e]">
                 <History className="w-3 h-3 text-[#5a5a6e]" />
-                {nick}
+                {al.alias}
               </span>
             ))}
           </div>
@@ -127,51 +132,30 @@ export default function PlayerPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a]">
-          <div className="flex items-center gap-2 mb-2">
-            <Flame className="w-4 h-4 text-green-400" />
-            <p className="text-xs text-[#5a5a6e] uppercase">Total Kills</p>
-          </div>
-          <p className="text-3xl font-bold text-green-400">{player.totalXtreinoKills}</p>
+          <div className="flex items-center gap-2 mb-2"><Flame className="w-4 h-4 text-green-400" /><p className="text-xs text-[#5a5a6e] uppercase">Total Kills</p></div>
+          <p className="text-3xl font-bold text-green-400">{totalKills}</p>
         </div>
         <div className="bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a]">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-green-400" />
-            <p className="text-xs text-[#5a5a6e] uppercase">Participações</p>
-          </div>
-          <p className="text-3xl font-bold text-[#f0f0f5]">{player.xtreinoParticipations}</p>
+          <div className="flex items-center gap-2 mb-2"><Users className="w-4 h-4 text-green-400" /><p className="text-xs text-[#5a5a6e] uppercase">Participações</p></div>
+          <p className="text-3xl font-bold text-[#f0f0f5]">{s.totalMatches ?? 0}</p>
         </div>
         <div className="bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a]">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-400" />
-            <p className="text-xs text-[#5a5a6e] uppercase">Média</p>
-          </div>
-          <p className="text-3xl font-bold text-[#f0f0f5]">{avg.toFixed(1)}</p>
+          <div className="flex items-center gap-2 mb-2"><TrendingUp className="w-4 h-4 text-green-400" /><p className="text-xs text-[#5a5a6e] uppercase">Média XT</p></div>
+          <p className="text-3xl font-bold text-[#f0f0f5]">{avgXT}</p>
         </div>
         <div className="bg-[#12121a] rounded-xl p-5 border border-[#2a2a3a]">
-          <div className="flex items-center gap-2 mb-2">
-            <Award className="w-4 h-4 text-yellow-400" />
-            <p className="text-xs text-[#5a5a6e] uppercase">Recorde</p>
-          </div>
-          <p className="text-3xl font-bold text-yellow-400">{player.bestXtreinoKills}</p>
-          {player.bestXtreinoDate && (
-            <p className="text-xs text-[#5a5a6e] mt-1">{player.bestXtreinoDate}</p>
-          )}
+          <div className="flex items-center gap-2 mb-2"><Award className="w-4 h-4 text-yellow-400" /><p className="text-xs text-[#5a5a6e] uppercase">MVPs Scrims</p></div>
+          <p className="text-3xl font-bold text-yellow-400">{s.scrimMvps ?? 0}</p>
         </div>
       </div>
 
       {badges.length > 0 && (
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5">
-          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">
-            <Award className="w-4 h-4" /> Conquistas
-          </h3>
+          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2"><Award className="w-4 h-4" /> Conquistas</h3>
           <div className="flex flex-wrap gap-2">
             {badges.map((badge) => (
-              <span
-                key={badge}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-xs font-medium text-[#f0f0f5]"
-              >
-                <BadgeIcon badge={badge} />
-                {badge}
+              <span key={badge} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a24] border border-[#2a2a3a] text-xs font-medium text-[#f0f0f5]">
+                <BadgeIcon badge={badge} /> {badge}
               </span>
             ))}
           </div>
@@ -180,33 +164,68 @@ export default function PlayerPage() {
 
       {sparklineData.length > 0 && (
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5">
-          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" /> Evolução nos XTreinos
-          </h3>
+          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Evolução nos XTreinos</h3>
           <Sparkline data={sparklineData} width={800} height={100} color="#4ade80" />
-          <div className="flex justify-between mt-2 text-xs text-[#5a5a6e]">
-            <span>Primeiro XT</span>
-            <span>Último XT</span>
-          </div>
+          <div className="flex justify-between mt-2 text-xs text-[#5a5a6e]"><span>Primeiro XT</span><span>Último XT</span></div>
         </div>
       )}
 
-      <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5">
-        <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4" /> Média por Quarto
-        </h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-[#1a1a24] rounded-xl p-4 border border-[#2a2a3a] text-center">
-            <p className="text-xs text-[#5a5a6e] mb-1">Q1</p>
-            <p className="text-2xl font-bold text-red-400">{avgQ1}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 space-y-4">
+          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2 text-sm">
+            <Target className="w-4 h-4 text-blue-400" /> Estatísticas de XTreinos
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">Partidas</p>
+              <p className="text-xl font-bold text-blue-400">{s.xtreinoMatches ?? 0}</p>
+            </div>
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">Kills</p>
+              <p className="text-xl font-bold text-green-400">{s.xtreinoKills ?? 0}</p>
+            </div>
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">Média</p>
+              <p className="text-xl font-bold text-[#f0f0f5]">{avgXT}</p>
+            </div>
           </div>
-          <div className="bg-[#1a1a24] rounded-xl p-4 border border-[#2a2a3a] text-center">
-            <p className="text-xs text-[#5a5a6e] mb-1">Q2</p>
-            <p className="text-2xl font-bold text-orange-400">{avgQ2}</p>
+          <div className="bg-[#1a1a24] rounded-xl p-4 border border-[#2a2a3a]">
+            <h4 className="text-xs text-[#5a5a6e] uppercase mb-2">Melhor Q1 / Q2 / Q3</h4>
+            <div className="flex justify-between text-center font-bold">
+              <span className="text-red-400">{s.xtreinoBestQ1 ?? 0}</span>
+              <span className="text-orange-400">{s.xtreinoBestQ2 ?? 0}</span>
+              <span className="text-purple-400">{s.xtreinoBestQ3 ?? 0}</span>
+            </div>
           </div>
-          <div className="bg-[#1a1a24] rounded-xl p-4 border border-[#2a2a3a] text-center">
-            <p className="text-xs text-[#5a5a6e] mb-1">Q3</p>
-            <p className="text-2xl font-bold text-purple-400">{avgQ3}</p>
+        </div>
+
+        <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 space-y-4">
+          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2 text-sm">
+            <Swords className="w-4 h-4 text-red-400" /> Estatísticas de Scrims (MME)
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">Scrims</p>
+              <p className="text-xl font-bold text-red-400">{s.scrimMatches ?? 0}</p>
+            </div>
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">K/D</p>
+              <p className="text-xl font-bold text-[#f0f0f5]">{s.scrimKdRatio ?? 0}</p>
+            </div>
+            <div className="bg-[#1a1a24] rounded-xl p-3 border border-[#2a2a3a] text-center">
+              <p className="text-xs text-[#5a5a6e] mb-1">MVPs</p>
+              <p className="text-xl font-bold text-yellow-400">{s.scrimMvps ?? 0}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div className="bg-[#1a1a24] rounded-xl p-2 border border-[#2a2a3a]">
+              <p className="text-[10px] text-[#5a5a6e] uppercase">Vitórias</p>
+              <p className="text-lg font-bold text-green-400">{s.scrimWins ?? 0}</p>
+            </div>
+            <div className="bg-[#1a1a24] rounded-xl p-2 border border-[#2a2a3a]">
+              <p className="text-[10px] text-[#5a5a6e] uppercase">Derrotas</p>
+              <p className="text-lg font-bold text-red-400">{s.scrimLosses ?? 0}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -215,41 +234,60 @@ export default function PlayerPage() {
         <div className="px-6 py-4 border-b border-[#2a2a3a]">
           <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2">
             <History className="w-5 h-5 text-green-400" />
-            Histórico de Participações ({player.xtreinoStats.length})
+            Histórico de XTreinos ({player.xtreinoHistory?.length ?? 0})
           </h3>
         </div>
-        <div className="divide-y divide-[#2a2a3a]">
-          {player.xtreinoStats
-            .sort((a, b) => b.date.localeCompare(a.date))
-            .map((stat) => (
-              <div
-                key={`${stat.date}-${stat.id}`}
-                className="flex items-center justify-between px-6 py-4 hover:bg-[#1a1a24] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#1a1a24] flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-[#5a5a6e]" />
-                  </div>
-                  <span className="text-sm font-medium text-[#f0f0f5]">{stat.date}</span>
-                </div>
-                <div className="flex items-center gap-6">
-                  <span className="text-xs text-[#5a5a6e]">
-                    Q1: <span className="text-red-400 font-medium">{stat.q1Kills}</span>
-                  </span>
-                  <span className="text-xs text-[#5a5a6e]">
-                    Q2: <span className="text-orange-400 font-medium">{stat.q2Kills}</span>
-                  </span>
-                  <span className="text-xs text-[#5a5a6e]">
-                    Q3: <span className="text-purple-400 font-medium">{stat.q3Kills}</span>
-                  </span>
-                  <span className="text-sm font-bold text-green-400 min-w-[60px] text-right">
-                    {stat.totalKills} kills
-                  </span>
-                </div>
+        <div className="divide-y divide-[#2a2a3a] max-h-[400px] overflow-y-auto">
+          {(player.xtreinoHistory || []).sort((a, b) => b.date.localeCompare(a.date)).map((h) => (
+            <div key={`${h.date}-${h.id}`} className="flex items-center justify-between px-6 py-3 hover:bg-[#1a1a24] transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1a24] flex items-center justify-center"><History className="w-4 h-4 text-[#5a5a6e]" /></div>
+                <span className="text-sm font-medium text-[#f0f0f5]">{h.date}</span>
               </div>
-            ))}
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-[#5a5a6e]">Q1: <span className="text-red-400 font-medium">{h.q1Kills}</span></span>
+                <span className="text-[#5a5a6e]">Q2: <span className="text-orange-400 font-medium">{h.q2Kills}</span></span>
+                <span className="text-[#5a5a6e]">Q3: <span className="text-purple-400 font-medium">{h.q3Kills}</span></span>
+                <span className="text-sm font-bold text-green-400 min-w-[60px] text-right">{h.totalKills} kills</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
+      {(player.scrimHistory?.length ?? 0) > 0 && (
+        <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#2a2a3a]">
+            <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2">
+              <Swords className="w-5 h-5 text-red-400" />
+              Histórico de Scrims ({player.scrimHistory.length})
+            </h3>
+          </div>
+          <div className="divide-y divide-[#2a2a3a] max-h-[400px] overflow-y-auto">
+            {(player.scrimHistory || []).sort((a, b) => b.date.localeCompare(a.date)).map((sh) => {
+              const totalK = (sh.rounds || []).reduce((s, r) => s + (r.kills || 0), 0);
+              const isMvp = (sh.rounds || []).some(r => r.mvp);
+              return (
+                <div key={sh.id} className="flex items-center justify-between px-6 py-3 hover:bg-[#1a1a24] transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center"><Shield className="w-4 h-4 text-red-400" /></div>
+                    <div>
+                      <span className="text-sm font-medium text-[#f0f0f5]">{sh.date}</span>
+                      <span className="text-xs text-[#5a5a6e] ml-2">vs {sh.teamName}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs">
+                    {isMvp && <span className="px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 font-bold border border-yellow-500/20">MVP</span>}
+                    <span className="text-[#5a5a6e]">K: <span className="text-green-400">{totalK}</span></span>
+                    <span className="text-[#5a5a6e]">D: <span className="text-red-400">{sh.totalDeaths}</span></span>
+                    <span className="text-[#5a5a6e]">A: <span className="text-blue-400">{sh.totalAssists}</span></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
