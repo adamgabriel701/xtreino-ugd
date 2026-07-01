@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import { useParams, Link, Navigate, useLocation, Routes, Route } from "react-router-dom";
+import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import {
   Swords, Trophy, BarChart3, Users, Target, Shield, TrendingUp,
-  Crosshair, Medal, Award, Calendar, Plus,
+  Crosshair, Medal, Award, Calendar, Plus, AlertTriangle,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
 import { trpc } from "@/providers/trpc";
@@ -10,19 +10,19 @@ import {
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
   RankBadge, SummaryCards,
 } from "@/pages/components/xtreino";
-import MatchResult from "./match/[id]/page"; // NOVO: Importado para cá
+import MatchResult from "./match/[id]/page";
 
 // ============================================================
 // TIPOS
 // ============================================================
 
-type ScrimsTabKey = "agendados" | "ranking-jogadores" | "ranking-times" | "match";
+type ScrimsTabKey = "agendados" | "ranking-jogadores" | "ranking-times";
 
 interface TabConfig {
   key: ScrimsTabKey;
   label: string;
   icon: React.ReactNode;
-  group: "gestao" | "ranking" | "match";
+  group: "gestao" | "ranking";
 }
 
 interface EnrichedScrimPlayer {
@@ -58,7 +58,7 @@ const TABS: TabConfig[] = [
 // ============================================================
 
 export default function ScrimsHub() {
-  const { tab, id } = useParams<{ tab?: string; id?: string }>();
+  const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
   const isRankingsRoute = location.pathname.startsWith("/rankings");
 
@@ -67,14 +67,12 @@ export default function ScrimsHub() {
     return <MatchResult />;
   }
 
-  // Define a aba ativa baseada na URL
-  const activeTab: ScrimsTabKey = (TABS.find(t => t.key === tab)?.key) || "agendados";
-
-  // Segurança: Se acessou /scrims ou /rankings/scrims sem tab, redireciona
+  // Segurança: Se acessou sem tab, redireciona
   if (!tab) {
     return <Navigate to={isRankingsRoute ? "/rankings/scrims/agendados" : "/scrims/agendados"} replace />;
   }
 
+  const activeTab: ScrimsTabKey = (TABS.find(t => t.key === tab)?.key) || "agendados";
   const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
   const gestaoTabs = TABS.filter((t) => t.group === "gestao");
   const rankingTabs = TABS.filter((t) => t.group === "ranking");
@@ -98,14 +96,13 @@ export default function ScrimsHub() {
     }
 
     return (
-      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
+      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
     );
   };
 
-  // Renderiza dentro do MainLayout ou direto na tela
   const content = (
     <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
       {/* Header Dinâmico */}
@@ -131,20 +128,18 @@ export default function ScrimsHub() {
 
       {/* Tabs Agrupadas */}
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-2 mb-6 space-y-2">
-        <div className="flex flex-wrap gap-1">
-          {gestaoTabs.map((tabConfig) => renderTabButton(tabConfig))}
-        </div>
-        <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">
-          {rankingTabs.map((tabConfig) => renderTabButton(tabConfig))}
-        </div>
+        <div className="flex flex-wrap gap-1">{gestaoTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
+        <div className="border-t border-[#2a2a3a] pt-2 flex flex-wrap gap-1">{rankingTabs.map((tabConfig) => renderTabButton(tabConfig))}</div>
       </div>
 
-      {/* Tab Content */}
-      <div className="pb-12">
-        {activeTab === "agendados" && <PartidasTab />}
-        {activeTab === "ranking-jogadores" && <RankingJogadoresTab />}
-        {activeTab === "ranking-times" && <RankingTimesTab />}
-      </div>
+      {/* Tab Content com Error Boundary */}
+      <ErrorBoundary fallback={<ErrorFallback />}>
+        <div className="pb-12">
+          {activeTab === "agendados" && <PartidasTab />}
+          {activeTab === "ranking-jogadores" && <RankingJogadoresTab />}
+          {activeTab === "ranking-times" && <RankingTimesTab />}
+        </div>
+      </ErrorBoundary>
     </div>
   );
 
@@ -153,13 +148,75 @@ export default function ScrimsHub() {
 }
 
 // ============================================================
-// TAB: PARTIDAS AGENDADAS
+// NOVO: COMPONENTE DE TRATAMENTO DE ERROS
+// ============================================================
+
+import React from "react";
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode, fallback: React.ReactNode }> {
+  state = { hasError: false, error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+function ErrorFallback() {
+  return (
+    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
+      <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+      <h2 className="text-xl font-bold text-red-400 mb-2">Erro ao renderizar esta aba</h2>
+      <p className="text-sm text-red-300/80 max-w-md mx-auto mb-4">
+        Isso geralmente acontece porque uma query do backend falhou ou algum componente importado não foi encontrado. 
+        Abra o console do navegador (F12) para ver os detalhes do erro.
+      </p>
+      <button 
+        onClick={() => window.location.reload()} 
+        className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-sm font-medium transition-colors"
+      >
+        Recarregar Página
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// TAB: PARTIDAS AGENDADAS (Desacoplado para não quebrar se o tRPC falhar)
 // ============================================================
 
 function PartidasTab() {
-  const { data: scrimsList, isLoading } = trpc.unified.listScrims.useQuery();
+  // CORREÇÃO: Desestruturado de forma segura para evitar erros se a query falhar
+  const queryResult = trpc.unified.listScrims.useQuery();
+  
+  const isLoading = queryResult.isLoading;
+  const isError = queryResult.isError;
+  const error = queryResult.error;
+  const scrimsList = queryResult.data;
 
   if (isLoading) return <LoadingSpinner text="Carregando partidas..." />;
+  
+  // NOVO: Se der erro no backend, mostra a mensagem de erro em vez de tela branca
+  if (isError) {
+    return (
+      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
+        <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-red-400 mb-2">Erro ao buscar partidas</h2>
+        <p className="text-sm text-red-300/80 max-w-lg mx-auto mb-2 bg-black/30 p-3 rounded-lg font-mono text-left">
+          {error?.message || "Erro desconhecido no servidor"}
+        </p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-sm font-medium transition-colors">
+          Tentar Novamente
+        </button>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -219,7 +276,7 @@ function RankingJogadoresTab() {
   const [sortField, setSortField] = useState<"scrimKills" | "scrimMvps" | "scrimKdRatio" | "totalMatches">("scrimKills");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const { data: playersList, isLoading } = trpc.unified.listPlayers.useQuery();
+  const queryResult = trpc.unified.listPlayers.useQuery();
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -228,6 +285,8 @@ function RankingJogadoresTab() {
 
   const clearFilters = () => { setSearch(""); setSelectedTeam(null); };
   const hasFilters = !!search || !!selectedTeam;
+
+  const playersList = queryResult.data;
 
   const filteredPlayers = useMemo(() => {
     if (!playersList) return [];
@@ -260,7 +319,8 @@ function RankingJogadoresTab() {
     { icon: <Award className="w-4 h-4 text-yellow-400" />, label: "Total MVPs", value: sortedPlayers.reduce((s, p) => s + (p.scrimMvps || 0), 0), valueColor: "text-yellow-400" },
   ];
 
-  if (isLoading) return <LoadingSpinner text="Carregando ranking de scrims..." />;
+  if (queryResult.isLoading) return <LoadingSpinner text="Carregando ranking de scrims..." />;
+  if (queryResult.isError) return <ErrorFallback />;
 
   return (
     <div className="space-y-6">
@@ -273,7 +333,7 @@ function RankingJogadoresTab() {
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2"><TrendingUp className="w-5 h-5 text-red-400" /> Ranking de Jogadores em Scrims</h3>
+          <h3 className="font-bold text-[#f0f0f0f5] flex items-center gap-2"><TrendingUp className="w-5 h-5 text-red-400" /> Ranking de Jogadores em Scrims</h3>
           <span className="text-xs text-[#5a5a6e]">{sortedPlayers.length} jogadores</span>
         </div>
         <div className="overflow-x-auto">
@@ -333,7 +393,7 @@ function RankingTimesTab() {
   const [sortField, setSortField] = useState<"scrimKills" | "scrimWins" | "scrimMatches">("scrimWins");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const { data: teamsList, isLoading } = trpc.unified.listTeams.useQuery();
+  const queryResult = trpc.unified.listTeams.useQuery();
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -344,15 +404,15 @@ function RankingTimesTab() {
   const hasFilters = !!search;
 
   const filteredTeams = useMemo(() => {
-    if (!teamsList) return [];
-    return (teamsList as unknown as Array<Record<string, any>>)
+    if (!queryResult.data) return [];
+    return (queryResult.data as unknown as Array<Record<string, any>>)
       .filter(t => (t.scrimMatches ?? 0) > 0)
       .map(t => ({
         name: t.name, tag: t.tag, scrimKills: t.scrimKills ?? 0, scrimWins: t.scrimWins ?? 0,
         scrimLosses: t.scrimLosses ?? 0, scrimMatches: t.scrimMatches ?? 0,
         winRate: (t.scrimMatches ?? 0) > 0 ? Math.round(((t.scrimWins ?? 0) / (t.scrimMatches ?? 0)) * 1000) / 10 : 0,
       })) as EnrichedScrimTeam[];
-  }, [teamsList]);
+  }, [queryResult.data]);
 
   const sortedTeams = useMemo(() => {
     return [...filteredTeams].sort((a, b) => {
@@ -369,7 +429,8 @@ function RankingTimesTab() {
     { icon: <BarChart3 className="w-4 h-4 text-blue-400" />, label: "Partidas", value: sortedTeams.reduce((s, t) => s + (t.scrimMatches || 0), 0) },
   ];
 
-  if (isLoading) return <LoadingSpinner text="Carregando ranking de times..." />;
+  if (queryResult.isLoading) return <LoadingSpinner text="Carregando ranking de times..." />;
+  if (queryResult.isError) return <ErrorFallback />;
 
   return (
     <div className="space-y-6">
@@ -381,7 +442,7 @@ function RankingTimesTab() {
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2"><Medal className="w-5 h-5 text-yellow-400" /> Ranking de Times em Scrims</h3>
+          <h3 className="font-bold text-[#f0f0f0f5] flex items-center gap-2"><Medal className="w-5 h-5 text-yellow-400" /> Ranking de Times em Scrims</h3>
           <span className="text-xs text-[#5a5a6e]">{sortedTeams.length} times</span>
         </div>
         <div className="overflow-x-auto">
