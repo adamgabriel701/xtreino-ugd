@@ -347,6 +347,27 @@ export const scrimsRouter = createRouter({
       })).sort((a, b) => a.roundNumber - b.roundNumber)
     }));
   }),
+
+  getHeadToHead: publicQuery
+    .input(z.object({ team1Name: z.string(), team2Name: z.string() }))
+    .query(({ input }) => {
+      const db = getDb();
+      // Busca todos os scrims onde o Time A enfrentou o Time B
+      const h2h = db.select().from(scrims).where(
+        sql`(LOWER(name) LIKE ${`%${input.team1Name.toLowerCase()}%`} OR LOWER(name) LIKE ${`%${input.team2Name.toLowerCase()}%`})`
+      ).all();
+
+      return h2h.map(s => {
+        const results = db.select().from(scrimResults).where(eq(scrimResults.scrimId, s.id)).all();
+        return {
+          ...s,
+          results: results.map(r => {
+            const rounds = db.select().from(scrimResultRounds).where(eq(scrimResultRounds.scrimResultId, r.id)).all();
+            return { ...r, rounds };
+          })
+        };
+      });
+    }),
 });
 
 function getPointsByPosition(pos: number): number {

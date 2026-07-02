@@ -1,5 +1,5 @@
 // ============================================================
-// HeadToHeadTab.tsx
+// HeadToHeadTab.tsx (ATUALIZADO COM MODO SCRIM)
 // ============================================================
 
 import { useState, useMemo } from "react";
@@ -7,6 +7,7 @@ import {
   Swords,
   Target,
   UserCircle,
+  Dumbbell,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import {
@@ -37,7 +38,10 @@ interface PlayerFullStats {
   sparkline: number[];
 }
 
+type H2HMode = "xtreino" | "scrim";
+
 export default function HeadToHeadTab() {
+  const [mode, setMode] = useState<H2HMode>("xtreino");
   const [searchA, setSearchA] = useState("");
   const [searchB, setSearchB] = useState("");
   const [playerAName, setPlayerAName] = useState("");
@@ -46,8 +50,15 @@ export default function HeadToHeadTab() {
   const { data: rawStatsData } = trpc.players.rankingStats.useQuery();
   const { data: playersList } = trpc.players.list.useQuery();
 
+  // NOVA QUERY DE SCRIM
+  const { data: scrimH2H, isLoading: isLoadingScrim } = trpc.scrims.getHeadToHead.useQuery(
+    { team1Name: playerAName, team2Name: playerBName },
+    { enabled: mode === "scrim" && !!playerAName && !!playerBName }
+  );
+
   const rawStats = (rawStatsData ?? []) as XtreinoPlayerStat[];
-  const isLoading = !rawStatsData;
+  const isLoadingXT = !rawStatsData;
+  const isLoading = mode === "xtreino" ? isLoadingXT : isLoadingScrim;
 
   // Nomes únicos para os selects
   const playerNames = useMemo(() => {
@@ -101,6 +112,33 @@ export default function HeadToHeadTab() {
   const playerA = getPlayerStats(playerAName);
   const playerB = getPlayerStats(playerBName);
 
+  // NOVA LÓGICA DE VITÓRIAS DO SCRIM
+  const scrimStats = useMemo(() => {
+    if (!scrimH2H || scrimH2H.length === 0) return null;
+    let winsA = 0;
+    let winsB = 0;
+    let totalRoundsA = 0;
+    let totalRoundsB = 0;
+
+    scrimH2H.forEach((match: any) => {
+      // Assume que match.results tem os resultados dos times (Time 1 e Time 2)
+      // A lógica abaixo soma rounds/se pontos para decidir quem ganhou o scrim
+      const resA = match.results?.find((r: any) => r.teamName === playerAName);
+      const resB = match.results?.find((r: any) => r.teamName === playerBName);
+
+      const scoreA = resA?.rounds?.reduce((sum: number, r: any) => sum + (r.value || 0), 0) || 0;
+      const scoreB = resB?.rounds?.reduce((sum: number, r: any) => sum + (r.value || 0), 0) || 0;
+
+      if (scoreA > scoreB) winsA++;
+      else if (scoreB > scoreA) winsB++;
+
+      totalRoundsA += scoreA;
+      totalRoundsB += scoreB;
+    });
+
+    return { winsA, winsB, totalRoundsA, totalRoundsB, matches: scrimH2H.length };
+  }, [scrimH2H, playerAName, playerBName]);
+
   const handleClear = () => {
     setSearchA("");
     setSearchB("");
@@ -114,6 +152,22 @@ export default function HeadToHeadTab() {
     <div className="space-y-6">
       {/* Seleção de Jogadores */}
       <FilterBar hasFilters={hasFilters} onClear={handleClear}>
+        {/* NOVO: Toggle do Modo */}
+        <div className="flex bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-1">
+          <button 
+            onClick={() => setMode("xtreino")} 
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${mode === "xtreino" ? "bg-blue-500/20 text-blue-400" : "text-[#5a5a6e]"}`}
+          >
+            <Dumbbell className="w-4 h-4 inline mr-1.5" />X-Treino
+          </button>
+          <button 
+            onClick={() => setMode("scrim")} 
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${mode === "scrim" ? "bg-red-500/20 text-red-400" : "text-[#5a5a6e]"}`}
+          >
+            <Swords className="w-4 h-4 inline mr-1.5" />Scrim
+          </button>
+        </div>
+
         <div className="flex-1 max-w-[300px]">
           <p className="text-xs text-yellow-400 font-bold mb-1">JOGADOR A</p>
           <SearchInput
@@ -122,7 +176,7 @@ export default function HeadToHeadTab() {
               setSearchA(v);
               if (v === "") setPlayerAName("");
             }}
-            placeholder="Buscar jogador..."
+            placeholder="Buscar jogador/time..."
             minWidth="100%"
           />
           {searchA && !playerAName && (
@@ -154,7 +208,7 @@ export default function HeadToHeadTab() {
               setSearchB(v);
               if (v === "") setPlayerBName("");
             }}
-            placeholder="Buscar jogador..."
+            placeholder="Buscar jogador/time..."
             minWidth="100%"
           />
           {searchB && !playerBName && (
@@ -179,8 +233,8 @@ export default function HeadToHeadTab() {
 
       {isLoading && <LoadingSpinner text="Carregando stats..." />}
 
-      {/* Área do Confronto */}
-      {!isLoading && playerA && playerB && (
+      {/* RENDERIZAÇÃO X-TREINO (Original) */}
+      {!isLoading && mode === "xtreino" && playerA && playerB && (
         <div className="relative bg-[#12121a] rounded-2xl border border-[#2a2a3a] p-6">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#0a0a0f] border-2 border-[#2a2a3a] rounded-full w-14 h-14 flex items-center justify-center shadow-2xl">
             <span className="text-xl font-black text-[#5a5a6e]">VS</span>
@@ -191,13 +245,62 @@ export default function HeadToHeadTab() {
             <PlayerH2HCard data={playerB} opponentTotal={playerA.totalKills} colorClass="text-gray-300" />
           </div>
 
-          {/* Comparativo Visual Q1 Q2 Q3 */}
           <div className="mt-8 pt-6 border-t border-[#2a2a3a]">
              <H2HBarComparison label="Q1 Média" a={playerA.avgPerQuarter.q1} b={playerB.avgPerQuarter.q1} color="bg-red-500" />
              <H2HBarComparison label="Q2 Média" a={playerA.avgPerQuarter.q2} b={playerB.avgPerQuarter.q2} color="bg-orange-500" />
              <H2HBarComparison label="Q3 Média" a={playerA.avgPerQuarter.q3} b={playerB.avgPerQuarter.q3} color="bg-purple-500" />
              <H2HBarComparison label="Total Geral" a={playerA.totalKills} b={playerB.totalKills} color="bg-green-500" />
           </div>
+        </div>
+      )}
+
+      {/* NOVA RENDERIZAÇÃO SCRIM */}
+      {!isLoading && mode === "scrim" && playerA && playerB && (
+        <div className="relative bg-[#12121a] rounded-2xl border border-[#2a2a3a] p-6">
+          <div className="text-center mb-8 border-b border-[#2a2a3a] pb-6">
+            <h2 className="text-xl font-bold text-[#f0f0f5] mb-2">Histórico de Confrontos Diretos</h2>
+            {scrimStats && scrimStats.matches > 0 ? (
+              <p className="text-[#5a5a6e]">{scrimStats.matches} scrims disputados entre eles</p>
+            ) : (
+              <p className="text-[#5a5a6e]">Nenhum histórico encontrado</p>
+            )}
+          </div>
+          
+          {scrimStats && scrimStats.matches > 0 ? (
+            <div className="space-y-8">
+              {/* Placar de Vitórias */}
+              <div className="grid grid-cols-3 gap-4 items-center text-center">
+                <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-6">
+                  <p className="text-5xl font-black text-yellow-400">{scrimStats.winsA}</p>
+                  <p className="text-sm text-[#8a8a9e] mt-2 font-medium">VITÓRIAS</p>
+                  <p className="text-xs text-yellow-400 mt-1 truncate">{playerAName}</p>
+                </div>
+                <div className="text-4xl font-black text-[#2a2a3a]">VS</div>
+                <div className="bg-gray-300/5 border border-gray-300/20 rounded-xl p-6">
+                  <p className="text-5xl font-black text-gray-300">{scrimStats.winsB}</p>
+                  <p className="text-sm text-[#8a8a9e] mt-2 font-medium">VITÓRIAS</p>
+                  <p className="text-xs text-gray-300 mt-1 truncate">{playerBName}</p>
+                </div>
+              </div>
+
+              {/* Comparativo de Rounds Ganhos (Acumulado) */}
+              <div className="bg-[#1a1a24] rounded-xl border border-[#2a2a3a] p-5">
+                <h4 className="text-sm font-medium text-[#8a8a9e] mb-4 text-center uppercase">Total de Rounds/Score Acumulado</h4>
+                <H2HBarComparison 
+                  label="Score" 
+                  a={scrimStats.totalRoundsA} 
+                  b={scrimStats.totalRoundsB} 
+                  color="bg-red-500" 
+                />
+              </div>
+            </div>
+          ) : (
+            <EmptyState 
+              icon={<Swords className="w-12 h-12" />} 
+              title="Nenhum Scrim encontrado" 
+              subtitle="Estes jogadores/times não se enfrentaram em scrims registrados até o momento." 
+            />
+          )}
         </div>
       )}
 

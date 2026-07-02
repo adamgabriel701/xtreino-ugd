@@ -1,5 +1,5 @@
 // ============================================================
-// EvolucaoTab.tsx (CORRIGIDO)
+// EvolucaoTab.tsx (COM MÉDIA MÓVEL PROFISSIONAL)
 // ============================================================
 
 import { useState, useMemo } from "react";
@@ -29,7 +29,7 @@ const TEAM_COLORS = [
 interface ChartDataPoint {
   month: string;
   label: string;
-  value: number; // CORRIGIDO: Adicionado o valor aqui
+  value: number;
 }
 
 export default function EvolucaoTab() {
@@ -122,7 +122,6 @@ export default function EvolucaoTab() {
     });
   };
 
-  // CORRIGIDO: Função movida para fora do componente pai para ser acessível pelo gráfico
   const handleToggleVisibility = (team: string) => {
     setHiddenTeams((prev) => {
       const next = new Set(prev);
@@ -215,7 +214,7 @@ export default function EvolucaoTab() {
                 labels={chartData.labels}
                 selectedTeams={Array.from(selectedTeams)}
                 hiddenTeams={hiddenTeams}
-                onToggleVisibility={handleToggleVisibility} // CORRIGIDO: Passado como prop
+                onToggleVisibility={handleToggleVisibility}
               />
             )}
           </div>
@@ -226,7 +225,7 @@ export default function EvolucaoTab() {
 }
 
 // ============================================================
-// COMPONENTE DO GRÁFICO SVG PURO
+// COMPONENTE DO GRÁFICO SVG PURO COM MÉDIA MÓVEL
 // ============================================================
 
 function EvolutionChart({
@@ -234,7 +233,7 @@ function EvolutionChart({
   labels,
   selectedTeams,
   hiddenTeams,
-  onToggleVisibility, // CORRIGIDO: Recebido via prop
+  onToggleVisibility,
 }: {
   data: ChartDataPoint[];
   labels: string[];
@@ -255,7 +254,7 @@ function EvolutionChart({
   const maxVal = useMemo(() => {
     let max = 0;
     data.forEach((p) => {
-      if (visibleTeams.includes(p.label) && p.value > max) { // CORRIGIDO: usa p.value
+      if (visibleTeams.includes(p.label) && p.value > max) {
         max = p.value;
       }
     });
@@ -272,6 +271,18 @@ function EvolutionChart({
 
   return (
     <div className="w-full overflow-x-auto">
+      {/* Legenda atualizada */}
+      <div className="flex flex-wrap justify-end gap-4 mb-4">
+        <div className="flex items-center gap-2 text-xs text-[#5a5a6e]">
+          <div className="w-6 h-0 border-t-2 border-dashed border-[#5a5a6e]" />
+          Pontos Exatos
+        </div>
+        <div className="flex items-center gap-2 text-xs text-[#5a5a6e]">
+          <div className="w-6 h-0 border-t-2 border-[#5a5a6e]" />
+          Tendência (Média Móvel)
+        </div>
+      </div>
+
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="w-full min-w-[600px] h-auto"
@@ -324,21 +335,45 @@ function EvolutionChart({
 
           if (teamPoints.length === 0) return null;
 
+          // 1. Calcula a Média Móvel (janela de 3 meses)
+          const windowSize = 3;
+          const movingAvgPoints = teamPoints.map((p, i, arr) => {
+            const start = Math.max(0, i - windowSize + 1);
+            const window = arr.slice(start, i + 1);
+            const avg = window.reduce((sum, wp) => sum + wp.value, 0) / window.length;
+            return { ...p, value: Math.round(avg * 10) / 10 };
+          });
+
+          // 2. Path da Linha Original (Pontos exatos - Tracejada e Fina)
           const pathD = teamPoints
             .map((p, i) => {
               const x = xScale(labels.findIndex((l) => l === getMonthName(p.month)));
-              const y = yScale(p.value); // CORRIGIDO: usa p.value
+              const y = yScale(p.value);
+              return `${i === 0 ? "M" : "L"} ${x} ${y}`;
+            })
+            .join(" ");
+
+          // 3. Path da Linha de Tendência (Média Móvel - Cheia e Grossa)
+          const avgPathD = movingAvgPoints
+            .map((p, i) => {
+              const x = xScale(labels.findIndex((l) => l === getMonthName(p.month)));
+              const y = yScale(p.value);
               return `${i === 0 ? "M" : "L"} ${x} ${y}`;
             })
             .join(" ");
 
           return (
             <g key={teamName}>
-              <path d={pathD} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Linha Original (Tracejada) */}
+              <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeOpacity="0.4" strokeDasharray="6 4" strokeLinecap="round" strokeLinejoin="round" />
               
-              {teamPoints.map((p) => {
+              {/* Linha de Tendência (Cheia) */}
+              <path d={avgPathD} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              
+              {/* Pontos de Hover (Agora ancorados na Média Móvel para ficar suave) */}
+              {movingAvgPoints.map((p) => {
                 const x = xScale(labels.findIndex((l) => l === getMonthName(p.month)));
-                const y = yScale(p.value); // CORRIGIDO: usa p.value
+                const y = yScale(p.value);
                 const pointId = `${teamName}-${p.month}`;
                 const isHovered = hoveredPoint === pointId;
 
@@ -394,7 +429,7 @@ function EvolutionChart({
           return (
             <button
               key={teamName}
-              onClick={() => onToggleVisibility(teamName)} // CORRIGIDO: Usa a prop
+              onClick={() => onToggleVisibility(teamName)}
               className={`flex items-center gap-2 text-sm transition-opacity ${isHidden ? "opacity-40" : ""}`}
             >
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
