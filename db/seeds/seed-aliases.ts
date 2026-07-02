@@ -302,6 +302,14 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Daisy",
     ],
   },
+  {
+    canonicalNickname: "UGD KITOZ",
+    canonicalTeam: "UGD LEGENDS",
+    role: "off",
+    knownAliases: [
+      "UGD KITOZ",
+    ],
+  },
 
   // ==========================================
   // UGD OLYMPIQUE
