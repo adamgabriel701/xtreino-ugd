@@ -8,8 +8,9 @@ import MainLayout from "@/layout/MainLayout";
 import { trpc } from "@/providers/trpc";
 import {
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
-  RankBadge, SummaryCards,
+  RankBadge, SummaryCards, SortHeader, // SortHeader importado do xtreino
 } from "@/pages/components/xtreino";
+import { ErrorBoundary, ErrorFallback } from "@/components/ErrorBoundary"; // Importado corretamente
 import MatchResult from "./match/[id]/page";
 
 // ============================================================
@@ -61,12 +62,10 @@ export default function ScrimsHub() {
   const { tab } = useParams<{ tab?: string }>();
   const location = useLocation();
 
-  // Se estiver na rota exata do match, renderiza a tela de resultado
   if (location.pathname.includes("/match/")) {
     return <MatchResult />;
   }
 
-  // Segurança: Se acessou sem tab, redireciona
   if (!tab) {
     return <Navigate to="/scrims/agendados" replace />;
   }
@@ -90,7 +89,7 @@ export default function ScrimsHub() {
     }
 
     return (
-      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f0f5] hover:bg-[#1a1a24]">
+      <Link to={fullPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
@@ -141,51 +140,10 @@ export default function ScrimsHub() {
 }
 
 // ============================================================
-// NOVO: COMPONENTE DE TRATAMENTO DE ERROS
-// ============================================================
-
-import React from "react";
-
-class ErrorBoundary extends React.Component<{ children: React.ReactNode, fallback: React.ReactNode }> {
-  state = { hasError: false, error: null as Error | null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
-function ErrorFallback() {
-  return (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
-      <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-      <h2 className="text-xl font-bold text-red-400 mb-2">Erro ao renderizar esta aba</h2>
-      <p className="text-sm text-red-300/80 max-w-md mx-auto mb-4">
-        Isso geralmente acontece porque uma query do backend falhou ou algum componente importado não foi encontrado. 
-        Abra o console do navegador (F12) para ver os detalhes do erro.
-      </p>
-      <button 
-        onClick={() => window.location.reload()} 
-        className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-sm font-medium transition-colors"
-      >
-        Recarregar Página
-      </button>
-    </div>
-  );
-}
-
-// ============================================================
-// TAB: PARTIDAS AGENDADAS (Desacoplado para não quebrar se o tRPC falhar)
+// TAB: PARTIDAS AGENDADAS
 // ============================================================
 
 function PartidasTab() {
-  // CORREÇÃO: Desestruturado de forma segura para evitar erros se a query falhar
   const queryResult = trpc.unified.listScrims.useQuery();
   
   const isLoading = queryResult.isLoading;
@@ -195,7 +153,6 @@ function PartidasTab() {
 
   if (isLoading) return <LoadingSpinner text="Carregando partidas..." />;
   
-  // NOVO: Se der erro no backend, mostra a mensagem de erro em vez de tela branca
   if (isError) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
@@ -326,7 +283,7 @@ function RankingJogadoresTab() {
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-          <h3 className="font-bold text-[#f0f0f0f5] flex items-center gap-2"><TrendingUp className="w-5 h-5 text-red-400" /> Ranking de Jogadores em Scrims</h3>
+          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2"><TrendingUp className="w-5 h-5 text-red-400" /> Ranking de Jogadores em Scrims</h3>
           <span className="text-xs text-[#5a5a6e]">{sortedPlayers.length} jogadores</span>
         </div>
         <div className="overflow-x-auto">
@@ -435,7 +392,7 @@ function RankingTimesTab() {
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-          <h3 className="font-bold text-[#f0f0f0f5] flex items-center gap-2"><Medal className="w-5 h-5 text-yellow-400" /> Ranking de Times em Scrims</h3>
+          <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2"><Medal className="w-5 h-5 text-yellow-400" /> Ranking de Times em Scrims</h3>
           <span className="text-xs text-[#5a5a6e]">{sortedTeams.length} times</span>
         </div>
         <div className="overflow-x-auto">
@@ -482,21 +439,5 @@ function RankingTimesTab() {
         {sortedTeams.length === 0 && <EmptyState icon={<Shield className="w-12 h-12" />} title="Nenhum time encontrado" subtitle="Tente ajustar os filtros" />}
       </div>
     </div>
-  );
-}
-
-// ============================================================
-// COMPONENTE AUXILIAR
-// ============================================================
-
-function SortHeader({ field, label, currentField, direction, onSort }: {
-  field: string; label: string; currentField: string; direction: "asc" | "desc"; onSort: (field: any) => void;
-}) {
-  const isActive = currentField === field;
-  return (
-    <button onClick={() => onSort(field)} className={`flex items-center justify-center gap-1 text-xs font-medium uppercase transition-colors ${isActive ? "text-[#f0f0f5]" : "text-[#5a5a6e] hover:text-[#8a8a9e]"}`}>
-      {label}
-      {isActive && <span className="text-[10px]">{direction === "desc" ? " ▼" : " ▲"}</span>}
-    </button>
   );
 }
