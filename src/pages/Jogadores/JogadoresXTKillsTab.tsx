@@ -224,7 +224,7 @@ export default function JogadoresXTKillsTab() {
   // NOVO ESTADO: Filtro de X-Treino específico
   const [selectedXtreino, setSelectedXtreino] = useState<number | null>(null);
 
-  // CORREÇÃO: Rota exata baseada no seu router
+  // Busca lista de X-Treinos para popular o Select
   const { data: xtreinosList } = trpc.xtreinos.list.useQuery();
 
   // Query unificada para lista de jogadores
@@ -232,16 +232,24 @@ export default function JogadoresXTKillsTab() {
     search: search || undefined,
   });
 
-  // Query antiga para calcular métricas avançadas do XT
+  // Query antiga para calcular métricas avançadas do XT (Usado quando NENHUM xt específico é selecionado)
   const { data: rawXtreinoStatsData } = trpc.players.rankingStats.useQuery();
   const rawXtStats = (rawXtreinoStatsData ?? []) as XtreinoRawStat[];
 
-  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer
-  const filteredRawXtStats = useMemo(() => {
-    if (!rawXtStats) return [];
-    if (!selectedXtreino) return rawXtStats;
-    return rawXtStats.filter((s) => s.xtreinoId === selectedXtreino);
-  }, [rawXtStats, selectedXtreino]);
+  // NOVA E INFALÍVEL QUERY: Busca os dados LIMPOS direto do X-Treino específico (Usado quando UM xt é selecionado)
+  const { data: specificXtStatsData } = trpc.xtreinos.listPlayerStats.useQuery(
+    { xtreinoId: selectedXtreino! },
+    { enabled: !!selectedXtreino } // Só dispara se um XT for selecionado
+  );
+  
+  // Monta o array de stats que será usado no enriquecimento.
+  // Se tem um XT específico selecionado, usa os dados específicos. Se não, usa os dados gerais antigos.
+  const activeRawXtStats = useMemo(() => {
+    if (selectedXtreino && specificXtStatsData) {
+      return specificXtStatsData as XtreinoRawStat[];
+    }
+    return rawXtStats;
+  }, [rawXtStats, selectedXtreino, specificXtStatsData]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -273,33 +281,39 @@ export default function JogadoresXTKillsTab() {
     return [...new Set(playersList.map((p) => p.teamName).filter(Boolean))].sort();
   }, [playersList]);
 
-  // Enriquecimento com dados do XT (Usando filteredRawXtStats ao invés de rawXtStats)
+  // Enriquecimento com dados do XT
   const enrichedPlayers: EnrichedPlayer[] = useMemo(() => {
     return (filteredPlayers ?? []).map((p) => {
       const aliases = Array.isArray(p.aliases) ? p.aliases : [];
 
-      const sparkline = calcPlayerSparkline(filteredRawXtStats, p.nickname);
-      const streak = calcPlayerStreak(filteredRawXtStats, p.nickname);
+      const sparkline = calcPlayerSparkline(activeRawXtStats, p.nickname);
+      const streak = calcPlayerStreak(activeRawXtStats, p.nickname);
+      
+      // Se for um XT específico, o número de participações é sempre 1 (pois ele jogou apenas 1x naquele XT)
+      const participations = selectedXtreino ? 1 : p.xtreinoMatches;
+      
       const avgPerQuarter = calcAvgPerQuarter(
-        filteredRawXtStats,
+        activeRawXtStats,
         p.nickname,
-        p.xtreinoMatches
+        participations
       );
-      const bestPerQuarter = calcBestPerQuarter(filteredRawXtStats, p.nickname);
-      const bestPerformance = calcBestPerformance(filteredRawXtStats, p.nickname);
+      const bestPerQuarter = calcBestPerQuarter(activeRawXtStats, p.nickname);
+      const bestPerformance = calcBestPerformance(activeRawXtStats, p.nickname);
       const teamContribution = calcTeamContribution(
-        filteredRawXtStats,
+        activeRawXtStats,
         p.nickname,
         p.teamName
       );
-      const trend = calcTrend(filteredRawXtStats, p.nickname);
+      const trend = calcTrend(activeRawXtStats, p.nickname);
 
       const basePlayer: EnrichedPlayer = {
         id: p.id,
         nickname: p.nickname,
         teamName: p.teamName,
-        xtreinoMatches: p.xtreinoMatches,
-        xtreinoKills: p.xtreinoKills,
+        xtreinoMatches: participations,
+        xtreinoKills: selectedXtreino 
+          ? (activeRawXtStats.find(s => s.playerName === p.nickname)?.totalKills ?? 0) 
+          : p.xtreinoKills,
         aliases,
         sparkline,
         streak,
@@ -315,7 +329,7 @@ export default function JogadoresXTKillsTab() {
       basePlayer.badges = calcPlayerBadges(basePlayer);
       return basePlayer;
     });
-  }, [filteredPlayers, filteredRawXtStats]);
+  }, [filteredPlayers, activeRawXtStats, selectedXtreino]);
 
   // Ordenação final no frontend
   const sortedPlayers = useMemo(() => {
@@ -419,7 +433,6 @@ export default function JogadoresXTKillsTab() {
           placeholder="Todos os X-Treinos"
           options={(xtreinosList ?? []).map((xt) => ({ 
             value: xt.id.toString(), 
-            // CORREÇÃO: Utiliza o campo 'name' que vem do schema do banco
             label: `${xt.name || "XT"} #${xt.id} - ${xt.date || "Sem data"}` 
           }))}
           minWidth="240px"

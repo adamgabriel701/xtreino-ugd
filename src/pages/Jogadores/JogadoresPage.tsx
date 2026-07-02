@@ -1,6 +1,6 @@
 import { Navigate, Link } from "react-router-dom";
 import { Users, Dumbbell, BarChart3, Swords } from "lucide-react";
-import JogadoresXTKillsTab from "../components/JogadoresXTKillsTab";
+import JogadoresXTKillsTab from "./JogadoresXTKillsTab";
 import JogadoresTab from "./JogadoresTab";
 
 type SubTabKey = "xtreinos" | "geral" | "scrims";
