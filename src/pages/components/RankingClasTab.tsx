@@ -12,7 +12,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
-import { useXtreinoCalculations, calcKillPoints } from "@/hooks/useXtreinoCalculations";
+import { useXtreinoCalculations, calcKillPoints, calcPosPoints } from "@/hooks/useXtreinoCalculations";
 
 import {
   SummaryCards,
@@ -140,14 +140,16 @@ export default function RankingClasTab() {
   }, [allPlayerStats, selectedMonth]);
 
   // ============================================================
-  // LÓGICA DE AGRUPAMENTO POR CLÃ APRIMORADA
+  // LÓGICA DE AGRUPAMENTO POR CLÃ OTIMIZADA (SEM BUG DE SUBSTRING E SEM LENTIDÃO)
   // ============================================================
   const clanRankingRaw = useMemo(() => {
     const resultsToUse = filteredResults;
     const statsToUse = filteredPlayerStats;
     const clanMap = new Map<string, any>();
 
+    // 1. Processa os resultados dos times (Pontos por Posição)
     resultsToUse.forEach((result) => {
+      // BUSCA EXATA para evitar duplicidade (ex: "UGD" vs "UGD Threat")
       const teamKey = result.teamName.trim().toLowerCase();
       const clanName = lineToClanMap.get(teamKey) || "Lines Solos/Desconhecidas";
 
@@ -166,16 +168,23 @@ export default function RankingClasTab() {
           bestPosition: null,
           sumAllPositions: 0,
           countAllPositions: 0,
-          datesPlayed: new Set<string>(),
+          // NOVO: Mapa para gerar o sparkline de forma rápida (O(n))
+          pointsByDate: new Map<string, number>(),
         });
       }
 
       const clan = clanMap.get(clanName);
-      clan.totalPoints += result.totalPoints || 0;
-      clan.totalPosPoints += result.totalPoints || 0;
+      
+      // Usa a função pura do seu hook para calcular os pontos reais
+      const matchPoints = calcPosPoints(result.q1Pos) + calcPosPoints(result.q2Pos) + calcPosPoints(result.q3Pos);
+      
+      clan.totalPosPoints += matchPoints;
       clan.xtreinosPlayed += 1; 
       clan.lines.add(result.teamName);
-      if (result.date) clan.datesPlayed.add(result.date);
+
+      // Acumula pontos por data para o Sparkline
+      const dateKey = result.date || "unknown";
+      clan.pointsByDate.set(dateKey, (clan.pointsByDate.get(dateKey) || 0) + matchPoints);
 
       const positions = [result.q1Pos, result.q2Pos, result.q3Pos].filter((p): p is number => p !== null && p !== undefined);
       
@@ -192,27 +201,19 @@ export default function RankingClasTab() {
       });
     });
 
+    // 2. Processa as stats dos jogadores (Kills) - BUSCA EXATA
     statsToUse.forEach((stat) => {
-      const statTeamName = stat.teamName.trim().toLowerCase();
-      let matchedClanName: string | null = null;
+      const statTeamKey = stat.teamName.trim().toLowerCase();
+      const matchedClanName = lineToClanMap.get(statTeamKey) || "Lines Solos/Desconhecidas";
 
-      for (const [lineKey, clanName] of lineToClanMap.entries()) {
-        if (statTeamName.includes(lineKey) || lineKey.includes(statTeamName)) {
-          matchedClanName = clanName;
-          break;
-        }
-      }
-
-      if (!matchedClanName) {
-        matchedClanName = "Lines Solos/Desconhecidas";
-      }
-
+      // Só soma se o clã já foi inicializado por algum resultado
       if (clanMap.has(matchedClanName)) {
         const clan = clanMap.get(matchedClanName);
         clan.totalKills += stat.totalKills || 0;
       }
     });
 
+    // 3. Finaliza os cálculos (Médias e Sparkline)
     const finalArray = Array.from(clanMap.values());
     finalArray.forEach(c => {
       c.lines = Array.from(c.lines);
@@ -223,14 +224,15 @@ export default function RankingClasTab() {
         ? Math.round((c.sumAllPositions / c.countAllPositions) * 10) / 10 
         : 0;
 
-      const datesArray = Array.from(c.datesPlayed).sort();
-      c.sparklineData = datesArray.map(date => {
-        return resultsToUse.filter(r => {
-          const lineKey = r.teamName.trim().toLowerCase();
-          const clanName = lineToClanMap.get(lineKey) || "Lines Solos/Desconhecidas";
-          return r.date === date && clanName === c.teamName;
-        }).length;
-      });
+      // GERA O SPARKLINE INSTÂNEO (Sem usar .filter() dentro de um .map())
+      // Ordena as datas e pega apenas os valores acumulados
+      const dateEntries = Array.from(c.pointsByDate.entries()) as [string, number][];
+      c.sparklineData = dateEntries
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, points]) => points);
+      
+      // Limpa o mapa temporário da memória
+      delete c.pointsByDate; 
     });
     
     return finalArray;
