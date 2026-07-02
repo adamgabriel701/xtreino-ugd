@@ -107,6 +107,29 @@ export function seed() {
       }
 
       const totalKills = q1 + q2 + q3;
+      const teamId = resolveTeamAlias(db, teamName);
+
+      // ---------------------------------------------------------
+      // REGRA DO "EMPRESTIMO" / JOGAR POR OUTRA LINE
+      // ---------------------------------------------------------
+      // O jogador SEMPRE recebe suas kills individuais.
+      // Mas só somamos as kills no placar do TIME se o time que 
+      // ele está jogando naquele momento for o time CANÔNICO dele.
+      // ---------------------------------------------------------
+      const playerData = db.select().from(players).where(eq(players.id, playerId)).get();
+      const isPlayingForCanonicalTeam = playerData && teamId && playerData.teamId === teamId;
+
+      if (isPlayingForCanonicalTeam && teamId) {
+        const teamStats = db.select().from(unifiedTeamStats).where(eq(unifiedTeamStats.teamId, teamId)).get();
+        if (teamStats) {
+          db.update(unifiedTeamStats).set({
+            xtreinoKills: teamStats.xtreinoKills + totalKills,
+            updatedAt: new Date(),
+          }).where(eq(unifiedTeamStats.teamId, teamId)).run();
+        }
+      }
+
+      // Atualizar stats INDIVIDUAIS do jogador (independente da line)
       const existing = db.select().from(unifiedPlayerStats).where(eq(unifiedPlayerStats.playerId, playerId)).get();
       if (existing) {
         db.update(unifiedPlayerStats).set({
@@ -130,18 +153,6 @@ export function seed() {
           totalMatches: 1,
           totalKills: totalKills,
         }).run();
-      }
-
-      // Também somar kills no time
-      const teamId = resolveTeamAlias(db, teamName);
-      if (teamId) {
-        const teamStats = db.select().from(unifiedTeamStats).where(eq(unifiedTeamStats.teamId, teamId)).get();
-        if (teamStats) {
-          db.update(unifiedTeamStats).set({
-            xtreinoKills: teamStats.xtreinoKills + totalKills,
-            updatedAt: new Date(),
-          }).where(eq(unifiedTeamStats.teamId, teamId)).run();
-        }
       }
     }
   }
@@ -217,6 +228,7 @@ export function seed() {
       const isTeam1 = player.teamName === scrim.team1Name;
       const playerTeamWon = isTeam1 ? team1RoundWins > team2RoundWins : team2RoundWins > team1RoundWins;
 
+      // Stats INDIVIDUAIS sempre sobem
       const existing = db.select().from(unifiedPlayerStats).where(eq(unifiedPlayerStats.playerId, playerId)).get();
       if (existing) {
         const newScrimKills = existing.scrimKills + pKills;
@@ -301,13 +313,6 @@ export function seed() {
     console.log(`  ❌ "${t}"`);
   }
   console.log("[UNIFY] === END REPORT ===\n");
-
-  // Registrar seed run
-  //const seedName = "unify-v1";
-  //const existingSeed = db.select().from(seedRuns).where(eq(seedRuns.seedName, seedName)).get();
-  //if (!existingSeed) {
-  //  db.insert(seedRuns).values({ seedName }).run();
-  //}
 
   console.log("[UNIFY] Unification completed!");
 }
