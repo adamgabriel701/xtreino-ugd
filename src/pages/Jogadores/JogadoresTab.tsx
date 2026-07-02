@@ -200,6 +200,13 @@ export default function JogadoresTab() {
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<Set<number>>(new Set());
   const [modalPlayer, setModalPlayer] = useState<EnrichedPlayer | null>(null);
+  
+  // NOVO ESTADO: Filtro de X-Treino específico
+  const [selectedXtreino, setSelectedXtreino] = useState<number | null>(null);
+
+  // NOVA QUERY: Busca a lista de X-Treinos disponíveis
+  // ⚠️ ATENÇÃO: Verifique se o nome da rota abaixo está correto para o seu backend
+  const { data: xtreinosList } = trpc.xtreinos.list.useQuery();
 
   // Queries Unificadas - REMOVIDO O SORT BY PARA EVITAR ERRO DE TIPO NO BACKEND
   const { data: playersList, isLoading } = trpc.unified.listPlayers.useQuery({
@@ -210,6 +217,13 @@ export default function JogadoresTab() {
   const { data: rawXtreinoStatsData } = trpc.players.rankingStats.useQuery();
   const rawXtStats = (rawXtreinoStatsData ?? []) as XtreinoRawStat[];
 
+  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer, baseado no X-Treino selecionado
+  const filteredRawXtStats = useMemo(() => {
+    if (!rawXtStats) return [];
+    if (!selectedXtreino) return rawXtStats;
+    return rawXtStats.filter((s) => s.xtreinoId === selectedXtreino);
+  }, [rawXtStats, selectedXtreino]);
+
   const handleSort = (field: SortField) => {
     if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
     else { setSortField(field); setSortDir("desc"); }
@@ -218,11 +232,12 @@ export default function JogadoresTab() {
   const clearFilters = () => {
     setSearch("");
     setSelectedTeam(null);
+    setSelectedXtreino(null); // LIMPA O NOVO FILTRO
     setSelectedForCompare(new Set());
     setCompareMode(false);
   };
 
-  const hasFilters = !!search || !!selectedTeam || compareMode;
+  const hasFilters = !!search || !!selectedTeam || !!selectedXtreino || compareMode;
 
   // Filtra por time no frontend
   const filteredPlayers = useMemo(() => {
@@ -236,7 +251,7 @@ export default function JogadoresTab() {
     return [...new Set(playersList.map((p) => p.teamName).filter(Boolean))].sort();
   }, [playersList]);
 
-  // Enriquecimento com dados do XT antigo
+  // Enriquecimento com dados do XT antigo (Usando filteredRawXtStats ao invés de rawXtStats)
   const enrichedPlayers: EnrichedPlayer[] = useMemo(() => {
     return (filteredPlayers ?? []).map((p) => {
       const aliases = Array.isArray(p.aliases) ? p.aliases : [];
@@ -244,12 +259,12 @@ export default function JogadoresTab() {
       // Procura stats antigos pelo nick atual OU por nicks antigos
       const nicksToSearch = [p.nickname, ...aliases];
 
-      const sparkline = calcPlayerSparkline(rawXtStats, p.nickname);
-      const streak = calcPlayerStreak(rawXtStats, p.nickname);
-      const avgPerQuarter = calcAvgPerQuarter(rawXtStats, p.nickname, p.xtreinoMatches);
-      const bestPerformance = calcBestPerformance(rawXtStats, p.nickname);
-      const teamContribution = calcTeamContribution(rawXtStats, p.nickname, p.teamName);
-      const trend = calcTrend(rawXtStats, p.nickname);
+      const sparkline = calcPlayerSparkline(filteredRawXtStats, p.nickname);
+      const streak = calcPlayerStreak(filteredRawXtStats, p.nickname);
+      const avgPerQuarter = calcAvgPerQuarter(filteredRawXtStats, p.nickname, p.xtreinoMatches);
+      const bestPerformance = calcBestPerformance(filteredRawXtStats, p.nickname);
+      const teamContribution = calcTeamContribution(filteredRawXtStats, p.nickname, p.teamName);
+      const trend = calcTrend(filteredRawXtStats, p.nickname);
 
       const basePlayer: EnrichedPlayer = {
         id: p.id,
@@ -277,7 +292,7 @@ export default function JogadoresTab() {
       basePlayer.badges = calcPlayerBadges(basePlayer);
       return basePlayer;
     });
-  }, [filteredPlayers, rawXtStats]);
+  }, [filteredPlayers, filteredRawXtStats]);
 
   // Ordenação final no frontend (incluindo campos dinâmicos)
   const sortedPlayers = useMemo(() => {
@@ -337,6 +352,22 @@ export default function JogadoresTab() {
           placeholder="Todos os times"
           options={allTeams.map((team) => ({ value: team, label: team }))}
           minWidth="160px"
+        />
+
+        {/* NOVO SELECT FILTER: Escolher X-Treino Específico */}
+        <SelectFilter
+          icon={<History className="w-4 h-4 text-[#5a5a6e]" />}
+          value={selectedXtreino?.toString() ?? ""}
+          onChange={(v) => setSelectedXtreino(v ? Number(v) : null)}
+          placeholder="Todos os X-Treinos"
+          options={(xtreinosList ?? [])
+            .sort((a: any, b: any) => b.id - a.id) // Ordena do mais recente para o mais antigo
+            .map((xt: any) => ({ 
+              value: xt.id.toString(), 
+              // ⚠️ AJUSTE AQUI: Confira se o nome das propriedades vêm como 'id' e 'date', ou se usa outro nome no seu backend
+              label: `XT #${xt.id} - ${xt.date || "Data indisponível"}` 
+            }))}
+          minWidth="220px"
         />
 
         <button
