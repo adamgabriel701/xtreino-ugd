@@ -188,10 +188,13 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "DEATH",
+    canonicalNickname: "death",
     canonicalTeam: "UGD Light",
     role: "off",
-    knownAliases: ["DEATH"],
+    knownAliases: [
+      "DEATH",
+      "death"
+    ],
   },
   {
     canonicalNickname: "I miss her",
@@ -796,6 +799,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "CMF Lyx7",
+      "cmflyx7",
+      "lyx7",
     ],
   },
   {
@@ -1192,6 +1197,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "EME々Akaza",
+      "akaza",
     ],
   },
   {
@@ -1200,6 +1206,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "EME々Lulu",
+      "lulu",
     ],
   },
   {
@@ -1218,6 +1225,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Nofear",
       "Nofear'",
       "Nofear⁷",
+      "nofear",
     ],
   },
   {
@@ -1226,6 +1234,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "EME々Notfear'",
+      "notfear",
     ],
   },
   {
@@ -1234,6 +1243,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "EME々Drz7",
+      "drz7",
     ],
   },
   {
@@ -1242,6 +1252,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "LMF_Boy7",
+      "boy7",
     ],
   },
   {
@@ -1250,6 +1261,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "EME々Swift7",
+      "swift7",
     ],
   },
 
