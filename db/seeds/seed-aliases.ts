@@ -63,21 +63,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "ARISE",
     ],
   },
-  {
-    canonicalNickname: "Santz",
-    canonicalTeam: "UGD Threat",
-    role: "off",
-    knownAliases: [
-      "UGD Neo",
-      "UGD Santz",
-      "UGD Sant",
-      "Sant",
-      "Neo",
-      "Santz",
-      "UGD Santz⁷",
-      "Santz⁷",
-    ],
-  },
 
   // ==========================================
   // UGD LIGHT
@@ -219,7 +204,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Santz",
+    canonicalNickname: "Illusion",
     canonicalTeam: "UGD LEGENDS",
     role: "off",
     knownAliases: [
@@ -232,6 +217,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD Santz⁷",
       "Santz⁷",
       "UGD Illusion",
+      "Illusion",
     ],
   },
   {
