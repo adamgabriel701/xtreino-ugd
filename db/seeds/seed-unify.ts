@@ -1,54 +1,33 @@
 // db/seeds/seed-unify.ts
 import { getDb } from "../../api/queries/connection.js";
-import { players, playerAliases, teamAliases, unifiedPlayerStats, unifiedTeamStats, seedRuns } from "../schema.js";
-import { eq, sql } from "drizzle-orm";
-import { normalizeNickname, normalizeTeamName } from "../utils/normalize.js";
+import { players, playerAliases, teamAliases, unifiedPlayerStats, unifiedTeamStats, seedRuns, teams } from "../schema.js";
+import { eq } from "drizzle-orm";
 import { xtreinosRaw } from "./xtreinos-dados.js";
 import { scrimsRaw } from "./scrims-dados.js";
 // import { campeonatosRaw } from "./campeonatos-dados.js"; // quando tiver
 
 // ============================================================
-// RESOLVER ALIAS → ID
+// RESOLVER ALIAS → ID (Busca 100% Exata)
 // ============================================================
 
 function resolvePlayerAlias(db: ReturnType<typeof getDb>, rawName: string): number | null {
   if (!rawName || rawName.trim() === "") return null;
   
-  const normalized = normalizeNickname(rawName);
-  if (!normalized) return null;
+  const name = rawName.trim();
 
-  // 1. Busca exata no normalizedAlias
-  const exact = db.select()
-    .from(playerAliases)
-    .where(eq(playerAliases.normalizedAlias, normalized))
-    .get();
-  if (exact) return exact.playerId;
-
-  // 2. Busca por contains (para aliases parciais)
-  const contains = db.select()
-    .from(playerAliases)
-    .where(sql`instr(${playerAliases.normalizedAlias}, ${normalized}) > 0`)
-    .all();
-  if (contains.length === 1) return contains[0].playerId;
-  if (contains.length > 1) {
-    // Priorizar o mais curto (mais específico)
-    contains.sort((a, b) => a.normalizedAlias.length - b.normalizedAlias.length);
-    return contains[0].playerId;
-  }
-
-  // 3. Busca reversa: o normalized contém o alias
-  const reverse = db.select()
-    .from(playerAliases)
-    .where(sql`instr(${normalized}, ${playerAliases.normalizedAlias}) > 0`)
-    .all();
-  if (reverse.length === 1) return reverse[0].playerId;
-
-  // 4. Busca no nickname direto do player
+  // 1. Busca exata pelo NOME CANÔNICO do jogador
   const directPlayer = db.select()
     .from(players)
-    .where(eq(sql`lower(replace(replace(nickname, ' ', ''), '⚡', ''))`, normalized))
+    .where(eq(players.nickname, name))
     .get();
   if (directPlayer) return directPlayer.id;
+
+  // 2. Busca exata na tabela de ALIASES
+  const exact = db.select()
+    .from(playerAliases)
+    .where(eq(playerAliases.alias, name))
+    .get();
+  if (exact) return exact.playerId;
 
   return null; // Não resolveu — será reportado como "órfão"
 }
@@ -56,28 +35,23 @@ function resolvePlayerAlias(db: ReturnType<typeof getDb>, rawName: string): numb
 function resolveTeamAlias(db: ReturnType<typeof getDb>, rawName: string): number | null {
   if (!rawName || rawName.trim() === "") return null;
   
-  const normalized = normalizeTeamName(rawName);
-  if (!normalized) return null;
+  const name = rawName.trim();
 
-  // 1. Busca exata
+  // 1. Busca exata pelo NOME CANÔNICO do time
+  const directTeam = db.select()
+    .from(teams)
+    .where(eq(teams.name, name))
+    .get();
+  if (directTeam) return directTeam.id;
+
+  // 2. Busca exata na tabela de ALIASES
   const exact = db.select()
     .from(teamAliases)
-    .where(eq(teamAliases.normalizedAlias, normalized))
+    .where(eq(teamAliases.alias, name))
     .get();
   if (exact) return exact.teamId;
 
-  // 2. Contains
-  const contains = db.select()
-    .from(teamAliases)
-    .where(sql`instr(${teamAliases.normalizedAlias}, ${normalized}) > 0`)
-    .all();
-  if (contains.length === 1) return contains[0].teamId;
-  if (contains.length > 1) {
-    contains.sort((a, b) => a.normalizedAlias.length - b.normalizedAlias.length);
-    return contains[0].teamId;
-  }
-
-  return null;
+  return null; // Não resolveu — será reportado como "órfão"
 }
 
 // ============================================================
@@ -320,11 +294,11 @@ export function seed() {
   console.log("\n[UNIFY] === ORPHAN REPORT ===");
   console.log(`[UNIFY] Orphan players (${orphanPlayers.size}):`);
   for (const p of [...orphanPlayers].sort()) {
-    console.log(`  ❌ "${p}" → normalized: "${normalizeNickname(p)}"`);
+    console.log(`  ❌ "${p}"`);
   }
   console.log(`[UNIFY] Orphan teams (${orphanTeams.size}):`);
   for (const t of [...orphanTeams].sort()) {
-    console.log(`  ❌ "${t}" → normalized: "${normalizeTeamName(t)}"`);
+    console.log(`  ❌ "${t}"`);
   }
   console.log("[UNIFY] === END REPORT ===\n");
 
