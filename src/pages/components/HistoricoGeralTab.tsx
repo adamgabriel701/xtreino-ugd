@@ -14,20 +14,7 @@ import {
   LoadingSpinner,
   EmptyState,
 } from "./xtreino";
-
-// ============================================================
-// TIPOS
-// ============================================================
-
-interface HistoryEvent {
-  id: number;
-  type: "xtreino" | "scrim";
-  date: string;
-  title: string;
-  team1Name: string | null;
-  team2Name: string | null;
-  details: string;
-}
+import type { HistoryEvent } from "@/types/xtreinos";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -37,10 +24,12 @@ export default function HistoricoGeralTab() {
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [limit, setLimit] = useState<number>(50);
 
+  // Requisição movida para o hook do trpc diretamente (poderia estar em um useHistoricoTab se quisesse isolar 100%)
   const { data: historyData, isLoading } = trpc.unified.listGeneralHistory.useQuery({
     limit: limit,
   });
 
+  // Filtro simples de lista
   const filteredHistory = useMemo(() => {
     if (!historyData) return [];
     if (!typeFilter) return historyData;
@@ -57,7 +46,7 @@ export default function HistoricoGeralTab() {
   const groupedByDate = useMemo(() => {
     const groups = new Map<string, HistoryEvent[]>();
     filteredHistory.forEach((event) => {
-      const dayKey = event.date.split("T")[0]; // Garante que pega só a data
+      const dayKey = event.date.split("T")[0];
       if (!groups.has(dayKey)) {
         groups.set(dayKey, []);
       }
@@ -96,7 +85,7 @@ export default function HistoricoGeralTab() {
       {!isLoading && groupedByDate.length > 0 && (
         <div className="space-y-6">
           {groupedByDate.map(([date, events]) => {
-            // Formata a data para exibição (ex: 12 de Outubro de 2023)
+            // Formatação de data mantida aqui por ser exclusiva da UI
             const dateObj = new Date(date + "T00:00:00");
             const formattedDate = dateObj.toLocaleDateString("pt-BR", {
               weekday: "long",
@@ -158,7 +147,7 @@ export default function HistoricoGeralTab() {
 }
 
 // ============================================================
-// COMPONENTES AUXILIARES
+// COMPONENTES AUXILIARES PURAMENTE VISUAIS
 // ============================================================
 
 function EventRow({ event }: { event: HistoryEvent }) {
@@ -167,7 +156,7 @@ function EventRow({ event }: { event: HistoryEvent }) {
   // Define o link de destino baseado no tipo
   const linkTo = isXT 
     ? `/rankings/xtreinos` 
-    : `/rankings/scrims`; // Ajuste se tiver uma rota de detalhes de scrim específica
+    : `/rankings/scrims`;
 
   return (
     <Link

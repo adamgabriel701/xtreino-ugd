@@ -31,7 +31,7 @@ import {
   type SortField,
   getPosColor,
   getRankStyle,
-} from "./xtreino-shared";
+} from "../../hooks/xtreino-shared";
 import { TrendIcon, BadgeIcon } from "./xtreino-shared-components";
 
 interface RankingTableProps {

@@ -33,7 +33,7 @@ import {
   useSortState,
   useCompareState,
   useRankingSort,
-} from "./xtreino-shared";
+} from "../../hooks/xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";

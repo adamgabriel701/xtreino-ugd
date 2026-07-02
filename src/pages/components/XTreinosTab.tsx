@@ -44,7 +44,7 @@ import {
   ExpandableRow,
   ComparisonBar,
 } from "./xtreino";
-import { getPosColor, getPosBg, getRankStyle } from "./xtreino-shared";
+import { getPosColor, getPosBg, getRankStyle } from "../../hooks/xtreino-shared";
 
 // ============================================================
 // TIPOS

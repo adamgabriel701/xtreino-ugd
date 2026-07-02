@@ -17,7 +17,7 @@ import {
   type EnrichedTeam,
   enrichTeam,
   buildTeamRanking,
-} from "./xtreino-shared";
+} from "../../hooks/xtreino-shared";
 
 // ============================================================
 // IDEIA #14: MODO COMPACTO VS DETALHADO
