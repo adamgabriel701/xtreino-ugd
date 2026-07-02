@@ -2,23 +2,23 @@ import { Suspense, lazy, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import ExperienceLayout from './ExperienceLayout';
 import { MouseTrailGlow } from './Effects';
-import { useExperienceData } from './useExperienceData';
+import { useExperienceData } from '../../hooks/useExperienceData';
 
 // Componentes Funcionais
-import { PremiumLoader } from './components/PremiumLoader';
-import { StatsSection } from './components/StatsSection';
-import { FeaturesGridAnimated } from './components/FeaturesGrid';
-import { MantraSection } from './components/MantraSection';
-import { TopPlayersSection } from './components/TopPlayersSection';
-import { TopTeamsSection } from './components/TopTeamsSection';
-import { RenderTimeline } from './components/TimelineSection';
+import { PremiumLoader } from '../../components/Experience/PremiumLoader';
+import { StatsSection } from '../../components/Experience/StatsSection';
+import { FeaturesGridAnimated } from '../../components/Experience/FeaturesGrid';
+import { MantraSection } from '../../components/Experience/MantraSection';
+import { TopPlayersSection } from '../../components/Experience/TopPlayersSection';
+import { TopTeamsSection } from '../../components/Experience/TopTeamsSection';
+import { RenderTimeline } from '../../components/Experience/TimelineSection';
 
 // NOVOS COMPONENTES 100% ESTÁVEIS
-import { SeasonHighlights } from './components/SeasonHighlights';
-import { KillDistribution } from './components/KillDistribution';
-import { SeasonSummary } from './components/SeasonSummary';
-import { FinalCTA } from './components/FinalCTA';
-import { DetailedEventStats } from './components/DetailedEventStats';
+import { SeasonHighlights } from '../../components/Experience/SeasonHighlights';
+import { KillDistribution } from '../../components/Experience/KillDistribution';
+import { SeasonSummary } from '../../components/Experience/SeasonSummary';
+import { FinalCTA } from '../../components/Experience/FinalCTA';
+import { DetailedEventStats } from '../../components/Experience/DetailedEventStats';
 
 const HolographicSphere = lazy(() => import('./HolographicSphere'));
 

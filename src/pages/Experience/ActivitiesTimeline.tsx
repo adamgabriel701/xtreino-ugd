@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Swords, Trophy, Target, Crown } from 'lucide-react';
-import type { RecentActivity } from './useExperienceData'; // Ajuste o import conforme sua estrutura
+import type { RecentActivity } from '../../hooks/useExperienceData'; // Ajuste o import conforme sua estrutura
 
 const typeConfig: Record<string, { bg: string; text: string; icon: typeof Swords }> = {
   xtreino: { bg: 'bg-emerald-500', text: 'text-emerald-400', icon: Swords },

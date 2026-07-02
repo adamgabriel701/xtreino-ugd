@@ -1,6 +1,6 @@
 import { trpc } from "@/providers/trpc";
 import MainLayout from "@/layout/MainLayout";
-import ClanList from "./components/ClanList";
+import ClanList from "@/components/Clans/ClanList";
 import { Outlet } from "react-router"; // Importante para rotas aninhadas
 
 export default function Clans() {

@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import MainLayout from "@/layout/MainLayout";
 import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
-import HeroSection from "./components/HeroSection";
-import StatsBar from "./components/StatsBar";
-import DetailedStats from "./components/DetailedStats";
-import ActiveEvents from "./components/ActiveEvents";
-import Highlights from "./components/Highlights";
-import RankingsPreview from "./components/RankingsPreview";
-import CallToAction from "./components/CallToAction";
+import HeroSection from "../../components/Home/HeroSection";
+import StatsBar from "../../components/Home/StatsBar";
+import DetailedStats from "../../components/Home/DetailedStats";
+import ActiveEvents from "../../components/Home/ActiveEvents";
+import Highlights from "../../components/Home/Highlights";
+import RankingsPreview from "../../components/Home/RankingsPreview";
+import CallToAction from "../../components/Home/CallToAction";
 
 export default function Home() {
   const { data: championships } = trpc.championships.list.useQuery({ status: "ativo" });

@@ -13,9 +13,9 @@ import ScrimsHub from "./pages/Scrims/ScrimsHub";
 import Rankings from "./pages/Rankings";
 
 import Clans from "./pages/Clans";
-import ClanDetail from "./pages/Clans/components/ClanDetail";
-import TeamDetail from "./pages/Clans/components/TeamDetail";
-import PlayerDetail from "./pages/Clans/components/PlayerDetail";
+import ClanDetail from "./components/Clans/ClanDetail";
+import TeamDetail from "./components/Clans/TeamDetail";
+import PlayerDetail from "./components/Clans/PlayerDetail";
 
 import Jogadores from "./pages/Jogadores/page";
 import JogadorDetalhe from "./pages/Jogadores/JogadorDetalhe";
