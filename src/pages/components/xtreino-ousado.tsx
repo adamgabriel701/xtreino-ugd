@@ -1,5 +1,5 @@
 // ============================================================
-// xtreino-ousado.tsx (CORRIGIDO)
+// xtreino-ousado.tsx (CORRIGIDO E OTIMIZADO)
 // ============================================================
 
 import { useState, useMemo } from "react";
@@ -208,7 +208,7 @@ export function MomentosCarousel() {
 }
 
 // ============================================================
-// IDEIA #13: TAB "CROSSFIRE" (Histórico de Confrontos Diretos)
+// IDEIA #13: TAB "CROSSFIRE" (Histórico de Confrontos Diretos - CORRIGIDO)
 // ============================================================
 export function CrossfireTab() {
   const { data: allResults } = trpc.xtreinos.listResults.useQuery();
@@ -241,7 +241,7 @@ export function CrossfireTab() {
           const matchup = map.get(key)!;
           const isATeamA = matchup.teamA === teamA;
 
-          // CORRIGIDO: Garantindo que não seja null com fallback 0
+          // CORREÇÃO TS: Garantindo que não seja null com fallback 0
           const pointsA = statsA.totalPoints ?? 0;
           const pointsB = statsB.totalPoints ?? 0;
 

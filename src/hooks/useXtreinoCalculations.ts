@@ -92,6 +92,7 @@ export interface PlayerAccumulatedStats {
 
 // Stats acumuladas de um time em todos os xtreinos
 export interface TeamAccumulatedStats {
+  top3Count: number;
   teamName: string;
   totalPosPoints: number;
   totalQ1PosPoints: number;
@@ -294,6 +295,7 @@ export function calcTeamAccumulatedStats(
         participations: 1,
         avgPoints: 0,
         xtreinoDates: [result.date],
+        top3Count: 0
       });
     }
   });
