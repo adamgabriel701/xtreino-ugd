@@ -77,6 +77,7 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["UGD OLYMPIQUE", "UGD", "Underground", "active", "Line Olympique da Underground."],
   ["UGD OLYMPIQUE / LEGENDS", "UGD", "Underground", "active", "Line mista Olympique/Legends da Underground."],
   ["UGD Threat + Olympique", "UGD", "Underground", "active", "Line mista Threat/Olympique da Underground."],
+  ["UGD CASUAL", "UGD", "Underground", "active", "Line casual da Underground."],
 
   // FURY
   ["FURY", "FURY", "FURY", "active", "Line principal da FURY."],
@@ -109,11 +110,12 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["K4F", "K4F", "K4F", "active", "Line principal da K4F."],
   ["Dev", "DEV", "Dev", "active", "Line da Dev Esports."],
   ["EmE", "EME", "EmE", "active", "Line principal da EmE."],
-  [" disciple VØID×STRIKE ANGEL", "VOID", "VOID STRIKE", "active", "Line principal da VOID STRIKE."],
+  ["VØID×STRIKE", "VOID", "VOID STRIKE", "active", "Line principal da VOID STRIKE."],
   ["CPF CANCELADO", "CPF", "CPF", "active", "Line principal da CPF."],
   ["CPF VILTRUMITE", "CPF", "CPF", "active", "Line Viltrumite da CPF."],
   ["Λ Ξ T H E R   F P S", "AET", null, "active", "Time avulso Aether FPS."],
   ["EXE", "EXE", null, "active", "Time avulso EXE."],
+  ["RIVERS", "RIV", null, "active", "Time avulso RIVERS."],
 
   // Times avulsos (sem clã)
   ["Misturado", "MIX", null, "active", "Time misto de jogadores de diferentes clãs."],
@@ -147,6 +149,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 25/06", "2026-06-25", "finalizado"],
   ["XTreino Underground - 26/06", "2026-06-26", "finalizado"],
   ["XTreino Underground - 29/06", "2026-06-29", "finalizado"],
+  ["XTreino Underground - 01/07", "2026-07-01", "finalizado"],
 ];
 
 // ============================================================

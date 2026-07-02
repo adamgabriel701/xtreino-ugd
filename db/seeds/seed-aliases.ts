@@ -155,6 +155,51 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD JEM",
     ],
   },
+  {
+    canonicalNickname: "UGD Psycho",
+    canonicalTeam: "UGD LIGHT",
+    role: "off",
+    knownAliases: [
+      "UGD Psycho",
+    ],
+  },
+  {
+    canonicalNickname: "UGD Zann",
+    canonicalTeam: "UGD LIGHT",
+    role: "off",
+    knownAliases: [
+      "UGD Zann",
+    ],
+  },
+  {
+    canonicalNickname: "Kyznpoo",
+    canonicalTeam: "UGD LIGHT",
+    role: "off",
+    knownAliases: [
+      "Kyznpoo",
+    ],
+  },
+  {
+    canonicalNickname: "Glock 5s",
+    canonicalTeam: "UGD LIGHT",
+    role: "off",
+    knownAliases: [
+      "Glock 5s",
+    ],
+  },
+  {
+    canonicalNickname: "DEATH",
+    canonicalTeam: "UGD Light",
+    role: "off",
+    knownAliases: ["DEATH"],
+  },
+  {
+    canonicalNickname: "I miss her",
+    canonicalTeam: "UGD Light",
+    role: "off",
+    knownAliases: ["I miss her"],
+  },
+  
 
   // ==========================================
   // UGD LEGENDS
@@ -183,6 +228,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Santz",
       "UGD Santz⁷",
       "Santz⁷",
+      "UGD Illusion",
     ],
   },
   {
@@ -293,6 +339,42 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: [
       "Striker",
+    ],
+  },
+
+  // ==========================================
+  // UGD CASUAL
+  // ==========================================
+  {
+    canonicalNickname: "UGD DRAKØN",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "UGD DRAKØN",
+    ],
+  },
+  {
+    canonicalNickname: "UGD judas",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "UGD judas",
+    ],
+  },
+  {
+    canonicalNickname: "sean_021",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "sean_021",
+    ],
+  },
+  {
+    canonicalNickname: "UGD Thz⁷",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "UGD Thz⁷",
     ],
   },
 
@@ -1130,6 +1212,38 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Nofear⁷",
     ],
   },
+  {
+    canonicalNickname: "EME々Notfear'",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: [
+      "EME々Notfear'",
+    ],
+  },
+  {
+    canonicalNickname: "EME々Drz7",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: [
+      "EME々Drz7",
+    ],
+  },
+  {
+    canonicalNickname: "LMF_Boy7",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: [
+      "LMF_Boy7",
+    ],
+  },
+  {
+    canonicalNickname: "EME々Swift7",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: [
+      "EME々Swift7",
+    ],
+  },
 
   // ==========================================
   // INF
@@ -1951,28 +2065,10 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: ["BG B7 XIT"],
   },
   {
-    canonicalNickname: "ZK-Gian",
-    canonicalTeam: "UGD LIGHT",
-    role: "off",
-    knownAliases: ["ZK-Gian"],
-  },
-  {
     canonicalNickname: "Asmota",
     canonicalTeam: "FURY ROYAL",
     role: "off",
     knownAliases: ["Asmota"],
-  },
-  {
-    canonicalNickname: "DEATH",
-    canonicalTeam: "UGD Light",
-    role: "off",
-    knownAliases: ["DEATH"],
-  },
-  {
-    canonicalNickname: "I miss her",
-    canonicalTeam: "UGD Light",
-    role: "off",
-    knownAliases: ["I miss her"],
   },
 ];
 
@@ -2004,6 +2100,10 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
       "UGD OLYMPIQUE / LEGENDS",
       "UGD Threat + Olympique",
     ],
+  },
+  {
+    canonicalName: "UGD CASUAL",
+    knownAliases: ["UGD CASUAL"],
   },
   {
     canonicalName: "UGD Royal",
@@ -2140,6 +2240,10 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
   {
     canonicalName: "EXE",
     knownAliases: ["EXE"],
+  },
+  {
+    canonicalName: "RIVERS",
+    knownAliases: ["RIVERS"],
   },
 ];
 
