@@ -37,12 +37,17 @@ export function normalizeNickname(raw: string): string {
     .replace(/[\[\]{}()<>""''""'']/gu, "")
     .replace(/[·•‣▸▶◉●○◆◇★☆♠♣♥♦⊕⊗]/gu, "")
     .replace(/[│┃┆┇┊┋╭╮╯╰]/gu, "")
-    // Remove prefixos/sufixos comuns
-    .replace(/^(UGD_?|GD_?|K4F_?|FURY_?|CMF_?|RED_?|INF_?|LMF_?|VN'?|OFF|REÐ|RE_D|CPF|AET|NTC|RK)\s*/i, "")
+    // Remove caracteres especiais de times (colchetes, chaves japonesas, cruzes)
+    .replace(/[「」『』††™°√cross_discípulo]/gu, "")
+    // ⚠️ REMOVIDO: Remoção automática de prefixos (UGD_, CMF_, etc.)
+    // Isso causava duplicação porque "UGD Xoxoto" virava "xoxoto", 
+    // colidindo com o nick canônico "Xoxoto" e falhando em resolver o alias.
+    // A remoção de prefixos agora é feita EXCLUSIVAMENTE pelo mapeamento manual no seed-aliases.ts
+    // .replace(/^(UGD_?|GD_?|K4F_?|FURY_?|CMF_?|RED_?|INF_?|LMF_?|VN'?|OFF|REÐ|RE_D|CPF|AET|NTC|RK)\s*/i, "")
     // Remove tags de clan entre colchetes
     .replace(/^\[.*?\]\s*/i, "")
     // Remove sufixos comuns
-    .replace(/\s*(FURY|RYL|愛|永|ボ| 몭|⁷|'?|´|`) *$/i, "")
+    .replace(/\s*(FURY|RYL|愛|永|ボ| 몭|'?|´|`) *$/i, "")
     // Remove "DEATH" isolado (jogador que não entrou)
     .replace(/^death$/i, "")
     // Troca Ð→D, Ñ→N, etc
@@ -67,7 +72,7 @@ export function normalizeTeamName(raw: string): string {
     .replace(/[\u{2070}-\u{209F}]/gu, "")
     .replace(/[\u{200B}-\u{200D}]/gu, "")
     .replace(/[\u{FEFF}]/gu, "")
-    .replace(/[⚡✨✧愛♡]/gu, "")
+    .replace(/[⚡✨✧愛♡†™°√cross_discípulo]/gu, "")
     .replace(/[⇆⇋⇌]/gu, "")
     .replace(/[\[\]{}()<>""''""'']/gu, "")
     // Remove variações comuns de nomes de time
