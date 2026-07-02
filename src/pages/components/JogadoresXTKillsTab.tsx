@@ -224,8 +224,7 @@ export default function JogadoresXTKillsTab() {
   // NOVO ESTADO: Filtro de X-Treino específico
   const [selectedXtreino, setSelectedXtreino] = useState<number | null>(null);
 
-  // NOVA QUERY: Busca a lista de X-Treinos disponíveis para o filtro
-  // ⚠️ ATENÇÃO: Verifique se o nome da rota abaixo está correto para o seu backend (ex: xtreino.list, xtreinos.getAll, etc)
+  // CORREÇÃO: Rota exata baseada no seu router
   const { data: xtreinosList } = trpc.xtreinos.list.useQuery();
 
   // Query unificada para lista de jogadores
@@ -237,7 +236,7 @@ export default function JogadoresXTKillsTab() {
   const { data: rawXtreinoStatsData } = trpc.players.rankingStats.useQuery();
   const rawXtStats = (rawXtreinoStatsData ?? []) as XtreinoRawStat[];
 
-  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer, baseado no X-Treino selecionado
+  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer
   const filteredRawXtStats = useMemo(() => {
     if (!rawXtStats) return [];
     if (!selectedXtreino) return rawXtStats;
@@ -418,14 +417,12 @@ export default function JogadoresXTKillsTab() {
           value={selectedXtreino?.toString() ?? ""}
           onChange={(v) => setSelectedXtreino(v ? Number(v) : null)}
           placeholder="Todos os X-Treinos"
-          options={(xtreinosList ?? [])
-            .sort((a: any, b: any) => b.id - a.id) // Ordena do mais recente para o mais antigo
-            .map((xt: any) => ({ 
-              value: xt.id.toString(), 
-              // ⚠️ AJUSTE AQUI: Confira se o nome das propriedades vêm como 'id' e 'date', ou se usa outro nome no seu backend
-              label: `XT #${xt.id} - ${xt.date || "Data indisponível"}` 
-            }))}
-          minWidth="220px"
+          options={(xtreinosList ?? []).map((xt) => ({ 
+            value: xt.id.toString(), 
+            // CORREÇÃO: Utiliza o campo 'name' que vem do schema do banco
+            label: `${xt.name || "XT"} #${xt.id} - ${xt.date || "Sem data"}` 
+          }))}
+          minWidth="240px"
         />
 
         <button

@@ -204,20 +204,19 @@ export default function JogadoresTab() {
   // NOVO ESTADO: Filtro de X-Treino específico
   const [selectedXtreino, setSelectedXtreino] = useState<number | null>(null);
 
-  // NOVA QUERY: Busca a lista de X-Treinos disponíveis
-  // ⚠️ ATENÇÃO: Verifique se o nome da rota abaixo está correto para o seu backend
+  // CORREÇÃO: Rota exata baseada no seu router (listagem principal, não a de schedule)
   const { data: xtreinosList } = trpc.xtreinos.list.useQuery();
 
-  // Queries Unificadas - REMOVIDO O SORT BY PARA EVITAR ERRO DE TIPO NO BACKEND
+  // Queries Unificadas
   const { data: playersList, isLoading } = trpc.unified.listPlayers.useQuery({
     search: search || undefined,
   });
 
-  // Query antiga apenas para calcular métricas avançadas do XT (Sparkline, Streak, Q1/Q2/Q3)
+  // Query antiga apenas para calcular métricas avançadas do XT
   const { data: rawXtreinoStatsData } = trpc.players.rankingStats.useQuery();
   const rawXtStats = (rawXtreinoStatsData ?? []) as XtreinoRawStat[];
 
-  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer, baseado no X-Treino selecionado
+  // NOVO FILTRO: Filtra os dados brutos antes de enriquecer
   const filteredRawXtStats = useMemo(() => {
     if (!rawXtStats) return [];
     if (!selectedXtreino) return rawXtStats;
@@ -251,12 +250,11 @@ export default function JogadoresTab() {
     return [...new Set(playersList.map((p) => p.teamName).filter(Boolean))].sort();
   }, [playersList]);
 
-  // Enriquecimento com dados do XT antigo (Usando filteredRawXtStats ao invés de rawXtStats)
+  // Enriquecimento com dados do XT antigo
   const enrichedPlayers: EnrichedPlayer[] = useMemo(() => {
     return (filteredPlayers ?? []).map((p) => {
       const aliases = Array.isArray(p.aliases) ? p.aliases : [];
       
-      // Procura stats antigos pelo nick atual OU por nicks antigos
       const nicksToSearch = [p.nickname, ...aliases];
 
       const sparkline = calcPlayerSparkline(filteredRawXtStats, p.nickname);
@@ -281,7 +279,7 @@ export default function JogadoresTab() {
         aliases,
         sparkline,
         streak,
-        badges: [], // Calculado abaixo
+        badges: [],
         avgPerQuarter,
         bestPerformance,
         teamContribution,
@@ -294,10 +292,9 @@ export default function JogadoresTab() {
     });
   }, [filteredPlayers, filteredRawXtStats]);
 
-  // Ordenação final no frontend (incluindo campos dinâmicos)
+  // Ordenação final no frontend
   const sortedPlayers = useMemo(() => {
     return [...enrichedPlayers].sort((a, b) => {
-      // CORREÇÃO: 'as unknown as Record' para evitar erro 2352 do TS
       const aVal = (a as unknown as Record<string, unknown>)[sortField] ?? 0;
       const bVal = (b as unknown as Record<string, unknown>)[sortField] ?? 0;
       const aNum = typeof aVal === 'number' ? aVal : 0;
@@ -329,7 +326,6 @@ export default function JogadoresTab() {
     });
   };
 
-  // Dados do modal
   const avgXT = (p: EnrichedPlayer) => p.xtreinoMatches > 0 ? Math.round((p.xtreinoKills / p.xtreinoMatches) * 10) / 10 : 0;
 
   if (isLoading) return <LoadingSpinner text="Carregando ranking unificado..." />;
@@ -360,14 +356,12 @@ export default function JogadoresTab() {
           value={selectedXtreino?.toString() ?? ""}
           onChange={(v) => setSelectedXtreino(v ? Number(v) : null)}
           placeholder="Todos os X-Treinos"
-          options={(xtreinosList ?? [])
-            .sort((a: any, b: any) => b.id - a.id) // Ordena do mais recente para o mais antigo
-            .map((xt: any) => ({ 
-              value: xt.id.toString(), 
-              // ⚠️ AJUSTE AQUI: Confira se o nome das propriedades vêm como 'id' e 'date', ou se usa outro nome no seu backend
-              label: `XT #${xt.id} - ${xt.date || "Data indisponível"}` 
-            }))}
-          minWidth="220px"
+          options={(xtreinosList ?? []).map((xt) => ({ 
+            value: xt.id.toString(), 
+            // CORREÇÃO: O campo no seu DB se chama 'date' e possui 'name'
+            label: `${xt.name || "XT"} #${xt.id} - ${xt.date || "Sem data"}` 
+          }))}
+          minWidth="240px"
         />
 
         <button
