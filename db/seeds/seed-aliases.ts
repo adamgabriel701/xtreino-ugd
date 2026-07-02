@@ -1230,7 +1230,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   },
   {
     canonicalNickname: "EME々Notfear'",
-    canonicalTeam: "EME",
+    canonicalTeam: "EmE",
     role: "off",
     knownAliases: [
       "EME々Notfear'",
@@ -1238,8 +1238,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "EME々Drz7",
-    canonicalTeam: "EME",
+    canonicalNickname: "EE々Drz7",
+    canonicalTeam: "EmE",
     role: "off",
     knownAliases: [
       "EME々Drz7",
@@ -1248,7 +1248,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   },
   {
     canonicalNickname: "LMF_Boy7",
-    canonicalTeam: "EME",
+    canonicalTeam: "EmE",
     role: "off",
     knownAliases: [
       "LMF_Boy7",
@@ -1257,7 +1257,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   },
   {
     canonicalNickname: "EME々Swift7",
-    canonicalTeam: "EME",
+    canonicalTeam: "EmE",
     role: "off",
     knownAliases: [
       "EME々Swift7",
