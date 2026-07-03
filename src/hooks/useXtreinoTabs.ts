@@ -1,13 +1,14 @@
 // hooks/useXtreinoTabs.ts
 import { useState, useMemo, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
-import { calcPlayerAccumulatedStats, type XtreinoPlayerStat } from "./useXtreinoCalculations";
+import { type XtreinoPlayerStat } from "./useXtreinoCalculations";
 import { buildDuelData, TEAM_COLORS } from "@/utils/xtreino";
 import { getMonthName, enrichTeam, buildTeamRanking, useSortState, useCompareState, usePlayersByName, useRankingSort, mergePlayersById, calcPointsVsPrevMonth, groupPlayersByTeam, getWeekKey, getWeekDates, calcAvgPosition, calcTeamBadges } from "@/hooks/xtreino-shared";
 import type { PlayerFullStats, ChartDataPoint, H2HMode, HistoryEvent } from "@/types/xtreinos";
 import type { EnrichedTeam, MergedPlayer } from "@/hooks/xtreino-shared"; // <-- Importa do lugar certo
 import { calcPosPoints, calcKillPoints, useXtreinoCalculations } from "./useXtreinoCalculations";
 import type { EnrichedScrimPlayer, EnrichedScrimTeam } from "@/types/scrims";
+import { calcPlayerAccumulatedStats } from "@/utils/xtreinoCalculations";
 
 // --- HOOK DO DUOLO ---
 export function useDueloTab() {

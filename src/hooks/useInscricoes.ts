@@ -1,115 +1,112 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import type { InscricaoEquipe, XtreinoEvento, SeedXtreinoData } from "@/types/inscricoes";
-
-const API_BASE = "/api/trpc";
-
-async function trpcFetch<T>(path: string, input?: unknown): Promise<T> {
-  const url = input !== undefined
-    ? `${API_BASE}/${path}?input=${encodeURIComponent(JSON.stringify({ json: input }))}`
-    : `${API_BASE}/${path}`;
-  const res = await fetch(url, { headers: { "Content-Type": "application/json" } });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: { message: "Erro desconhecido" } }));
-    throw new Error(err.error?.message || `HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  return (data.result?.data?.json ?? data) as T;
-}
-
-async function trpcMutate<T>(path: string, input: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}/${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: { json: input } }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: { message: "Erro desconhecido" } }));
-    throw new Error(err.error?.message || `HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  return (data.result?.data?.json ?? data) as T;
-}
+import { trpc } from "@/providers/trpc";
+// Ajuste este import para o caminho real onde estão os types InscricaoEquipe, etc. 
+// Ex: import type { InscricaoEquipe, XtreinoEvento, SeedXtreinoData } from "@/types/inscricoes";
+import type { InscricaoEquipe, XtreinoEvento, SeedXtreinoData } from "@/types/inscricoes"; 
 
 export function useInscricoes(xtreinoId: number) {
   const [xtreino, setXtreino] = useState<XtreinoEvento | null>(null);
   const [inscricoes, setInscricoes] = useState<InscricaoEquipe[]>([]);
   const [fixedTeams, setFixedTeams] = useState<string[]>([]);
   const [allTeams, setAllTeams] = useState<Array<{ id: number; name: string; tag: string }>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
 
-  const loadData = useCallback(async () => {
-    if (!xtreinoId) return;
-    setIsLoading(true);
-    try {
-      const xt = await trpcFetch<XtreinoEvento>("xtreinoInscricoes.getXtreino", { id: xtreinoId });
-      const ins = await trpcFetch<InscricaoEquipe[]>("xtreinoInscricoes.listByXtreino", { xtreinoId });
-      const ft = await trpcFetch<string[]>("xtreinoInscricoes.getFixedTeams");
-      const at = await trpcFetch<Array<{ id: number; name: string; tag: string }>>("xtreinoInscricoes.getAllTeams");
+  const utils = trpc.useUtils();
 
-      setXtreino(xt);
-      setInscricoes(ins ?? []);
-      setFixedTeams(ft ?? []);
-      setAllTeams(at ?? []);
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao carregar dados");
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (!xtreinoId) return;
+    let isMounted = true;
+
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [xt, ins, ft, at] = await Promise.all([
+          utils.xtreinoInscricoes.getXtreino.fetch({ id: xtreinoId }),
+          utils.xtreinoInscricoes.listByXtreino.fetch({ xtreinoId }),
+          utils.xtreinoInscricoes.getFixedTeams.fetch(),
+          utils.xtreinoInscricoes.getAllTeams.fetch(),
+        ]);
+
+        if (isMounted) {
+          setXtreino(xt);
+          setInscricoes(ins ?? []);
+          setFixedTeams(ft ?? []);
+          setAllTeams(at ?? []);
+        }
+      } catch (err: any) {
+        if (isMounted) toast.error(err.message || "Erro ao carregar dados");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
     }
-  }, [xtreinoId]);
+
+    loadData();
+    return () => { isMounted = false; };
+  }, [xtreinoId, utils]);
+
+  const handleInvalidate = useCallback(async () => {
+    await Promise.all([
+      utils.xtreinoInscricoes.getXtreino.invalidate({ id: xtreinoId }),
+      utils.xtreinoInscricoes.listByXtreino.invalidate({ xtreinoId }),
+      utils.xtreinoInscricoes.getFixedTeams.invalidate(),
+    ]);
+  }, [xtreinoId, utils]);
 
   const register = useCallback(async (data: { teamName: string; players: string[]; isReserve: boolean }) => {
     setIsPending(true);
     try {
-      await trpcMutate<{ success: boolean; id: number }>("xtreinoInscricoes.register", { ...data, xtreinoId });
+      // CORREÇÃO: Usar mutateAsync no tRPC v11+
+      await utils.xtreinoInscricoes.register.mutateAsync({ ...data, xtreinoId });
       toast.success("Time inscrito com sucesso!");
-      await loadData();
+      await handleInvalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao inscrever time");
     } finally {
       setIsPending(false);
     }
-  }, [xtreinoId, loadData]);
+  }, [xtreinoId, utils, handleInvalidate]);
 
   const cancel = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.cancel", { xtreinoId, teamName });
+      await utils.xtreinoInscricoes.cancel.mutateAsync({ xtreinoId, teamName });
       toast.success("Inscrição cancelada!");
-      await loadData();
+      await handleInvalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao cancelar");
     } finally {
       setIsPending(false);
     }
-  }, [xtreinoId, loadData]);
+  }, [xtreinoId, utils, handleInvalidate]);
 
   const reactivate = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.reactivate", { xtreinoId, teamName });
+      await utils.xtreinoInscricoes.reactivate.mutateAsync({ xtreinoId, teamName });
       toast.success("Inscrição reativada!");
-      await loadData();
+      await handleInvalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao reativar");
     } finally {
       setIsPending(false);
     }
-  }, [xtreinoId, loadData]);
+  }, [xtreinoId, utils, handleInvalidate]);
 
   const remove = useCallback(async (teamName: string) => {
     setIsPending(true);
     try {
-      await trpcMutate<{ success: boolean }>("xtreinoInscricoes.unregister", { xtreinoId, teamName });
+      await utils.xtreinoInscricoes.unregister.mutateAsync({ xtreinoId, teamName });
       toast.success("Time removido!");
-      await loadData();
+      await handleInvalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao remover");
     } finally {
       setIsPending(false);
     }
-  }, [xtreinoId, loadData]);
+  }, [xtreinoId, utils, handleInvalidate]);
 
   const fixedSet = useMemo(() => new Set(fixedTeams.map(t => t.toLowerCase())), [fixedTeams]);
 
@@ -123,7 +120,6 @@ export function useInscricoes(xtreinoId: number) {
     [inscricoes]
   );
 
-  // Gerar mensagem WhatsApp
   const generateWhatsAppMessage = useCallback(() => {
     if (!xtreino) return "";
     const dateParts = xtreino.date.split("-");
@@ -172,7 +168,7 @@ export function useInscricoes(xtreinoId: number) {
 FIXO 📌
 TEMPORÁRIO 🎫
 
-${teamsList}
+ ${teamsList}
 \`Regras:\`
 
 🚨 SEM AUXÍLIO DE MIRA
@@ -190,7 +186,6 @@ _em caso de uso dessas armas será penalizado em -40 pontos_
 Grupo do Whatsapp: ${xtreino.whatsappLink || "https://chat.whatsapp.com/Ks4fDFnA7eBHk9ULHuHyzm"}`;
   }, [xtreino, confirmedTeams, cancelledTeams, fixedSet]);
 
-  // Gerar mensagem de inscrições
   const generateInscricoesMessage = useCallback(() => {
     return `📝INSCRIÇÕES:
 
@@ -205,48 +200,23 @@ RESERVAS:
 @todos`;
   }, []);
 
-  // Gerar seed TypeScript
   const generateSeed = useCallback((): SeedXtreinoData | null => {
     if (!xtreino) return null;
-
-    const colocacoes: Array<[string, number, number, number]> = confirmedTeams.map(team => [
-      team.teamName,
-      0, // Q1
-      0, // Q2
-      0, // Q3
-    ]);
-
+    const colocacoes: Array<[string, number, number, number]> = confirmedTeams.map(team => [team.teamName, 0, 0, 0]);
     const jogadores: Array<[string, string, number, number, number]> = [];
     for (const team of confirmedTeams) {
       for (const player of team.players) {
         jogadores.push([team.teamName, player, 0, 0, 0]);
       }
     }
-
-    return {
-      id: xtreino.id,
-      date: xtreino.date,
-      colocacoes,
-      jogadores,
-    };
+    return { id: xtreino.id, date: xtreino.date, colocacoes, jogadores };
   }, [xtreino, confirmedTeams]);
 
   return {
-    xtreino,
-    inscricoes,
-    fixedTeams,
-    allTeams,
-    confirmedTeams,
-    cancelledTeams,
-    isLoading,
-    isPending,
-    loadData,
-    register,
-    cancel,
-    reactivate,
-    remove,
-    generateWhatsAppMessage,
-    generateInscricoesMessage,
-    generateSeed,
+    xtreino, inscricoes, fixedTeams, allTeams,
+    confirmedTeams, cancelledTeams,
+    isLoading, isPending,
+    register, cancel, reactivate, remove,
+    generateWhatsAppMessage, generateInscricoesMessage, generateSeed,
   };
 }

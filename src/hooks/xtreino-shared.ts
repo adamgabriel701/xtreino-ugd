@@ -1,8 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  POSITION_POINTS,
-  KILL_POINTS,
-} from "@/hooks/useXtreinoCalculations";
+import { XTREINO_POSITION_POINTS as POSITION_POINTS, XTREINO_KILL_POINTS as KILL_POINTS } from "@/constants/gameRules";
 
 // ============================================================
 // TIPOS
