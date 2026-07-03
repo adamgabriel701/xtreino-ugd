@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import type { RecentActivity, UpcomingEvent } from "@/types/experience";
-import type { TeamRankingStats } from "@/hooks/useXtreinoCalculations";
+import type { TeamRankingStats } from "@/hooks/xtreinos/useXtreinoCalculations";
 
 function parseDateString(dateStr: string): Date | null {
   if (!dateStr) return null;

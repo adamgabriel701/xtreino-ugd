@@ -1,7 +1,7 @@
 // DueloTab.tsx
 import { Swords, Calendar, Trophy, BarChart3 } from "lucide-react";
-import { FilterBar, SelectFilter, LoadingSpinner, EmptyState } from "../components/Xtreinos/ui";
-import { getPosColor } from "../hooks/xtreino-shared";
+import { FilterBar, SelectFilter, LoadingSpinner, EmptyState } from "../components/shared";
+import { getPosColor } from "../hooks/xtreinos/xtreino-shared";
 import { useDueloTab } from "@/hooks/useXtreinoTabs";
 import type { TeamDuelData } from "@/types/xtreinos";
 

@@ -4,21 +4,20 @@ import Home from "./pages/Home/page";
 import Campeonatos from "./pages/Campeonatos";
 
 // Landing Pages (NOVAS)
-import XTreinosLanding from "./pages/Xtreinos/LandingPage"; 
-import ScrimsLanding from "./pages/Scrims/LandingPage"; 
+import XTreinosLanding from "./pages/Xtreinos/page"; 
+import ScrimsLanding from "./pages/Scrims/page"; 
 
 // Páginas Internas
-import XTreinos from "./pages/XTreinos"; 
-import ScrimsHub from "./pages/Scrims/ScrimsHub"; 
+import ScrimsHub from "./pages/Scrims/hub/page"; 
 import Rankings from "./pages/Rankings";
 
-import Clans from "./pages/Clans";
-import ClanDetail from "./components/Clans/ClanDetail";
-import TeamDetail from "./components/Clans/TeamDetail";
-import PlayerDetail from "./components/Clans/PlayerDetail";
+import Clans from "./pages/Clans/page";
+import ClanDetail from "./components/clans/ClanDetail";
+import TeamDetail from "./components/clans/TeamDetail";
+import PlayerDetail from "./components/clans/PlayerDetail";
 
-import Jogadores from "./pages/Jogadores/page";
-import JogadorDetalhe from "./pages/Jogadores/JogadorDetalhe";
+import Jogadores from "./pages/Jogadores/novo/page";
+import JogadorDetalhe from "./pages/Jogadores/[id]/page";
 
 import Inscricoes from "./pages/Inscricoes";
 import Salinhas from "./pages/Salinhas";

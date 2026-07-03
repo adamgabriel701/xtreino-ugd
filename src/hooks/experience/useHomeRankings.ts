@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import { calculatePlayerBadges } from "@/constants/gameRules";
 import type { TopPlayer, TopTeam } from "@/types/experience";
-import type { TeamRankingStats, PlayerAccumulatedStats } from "@/hooks/useXtreinoCalculations";
+import type { TeamRankingStats, PlayerAccumulatedStats } from "@/hooks/xtreinos/useXtreinoCalculations";
 
 function calcPlayerSparkline(rawStats: Array<{ playerName: string; date: string; totalKills: number }>, playerName: string): number[] {
   const playerStats = rawStats.filter((s) => s.playerName === playerName).sort((a, b) => a.date.localeCompare(b.date));

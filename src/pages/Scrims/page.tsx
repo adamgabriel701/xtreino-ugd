@@ -1,187 +1,123 @@
-"use client";
+import { Link } from "react-router-dom";
+import { 
+  Swords, Users, Target, ArrowRight, Shield, Calendar, 
+  Crosshair, TrendingUp, BarChart3 
+} from "lucide-react";
+import MainLayout from "@/components/layout/MainLayout";
 
-import { useState } from "react";
-import { Swords, Calendar, Trophy, Target, BarChart3, Users, Plus } from "lucide-react";
-import MainLayout from "@/layout/MainLayout";
-import { trpc } from "@/providers/trpc";
-import type { TabType, ScrimItem, ScrimMode } from "../../types/scrims";
-import { useScrimData } from "../../hooks/useScrimData";
-import { AgendadosTab } from "../../components/Scrims/tabs/AgendadosTab";
-import { ScrimDetailModal } from "../../components/Scrims/modals/ScrimDetailModal";
-import { ScrimFormModal } from "../../components/Scrims/modals/ScrimFormModal";
-
-const TAB_CONFIG = [
-  { id: "agendados" as TabType, label: "Agendados", icon: Calendar },
-  { id: "historico-times" as TabType, label: "Histórico — Times", icon: Trophy },
-  { id: "historico-jogadores" as TabType, label: "Histórico — Jogadores", icon: Target },
+const MODES = [
+  { 
+    id: "br", 
+    title: "Battle Royale (BR)", 
+    icon: <Target className="w-6 h-6 text-blue-400" />, 
+    color: "border-blue-500/20 hover:border-blue-500/50",
+    bgColor: "bg-blue-500/10",
+    desc: "Partidas no modo clássico de Sobrevivência. Pontuação dinâmica baseada na posição final da queda (1º lugar = 15pts, 2º = 12pts...) somado às kills realizadas.",
+    link: "/scrims/agendados"
+  },
+  { 
+    id: "mme", 
+    title: "Mata-Mata em Equipe (MME)", 
+    icon: <Users className="w-6 h-6 text-orange-400" />, 
+    color: "border-orange-500/20 hover:border-orange-500/50",
+    bgColor: "bg-orange-500/10",
+    desc: "Sistema de confronto direto em séries (Melhor de 3, 5, 7...). O time que vencer mais rounds ganha a scrim. Foco extremo em mira, coordenada e团队战术.",
+    link: "/scrims/agendados"
+  },
 ];
 
-const MODE_CONFIG = [
-  { id: "all" as const, label: "Todos", icon: BarChart3 },
-  { id: "br" as const, label: "BR", icon: Target },
-  { id: "mme" as const, label: "MME", icon: Users },
+const QUICK_LINKS = [
+  { to: "/scrims/agendados", label: "Partidas Agendadas", icon: <Calendar className="w-4 h-4" /> },
+  { to: "/scrims/ranking-jogadores", label: "Ranking Jogadores", icon: <Crosshair className="w-4 h-4" /> },
+  { to: "/scrims/ranking-times", label: "Ranking Times", icon: <Shield className="w-4 h-4" /> },
+  { to: "/scrims/agendados", label: "Ver Hub Completo", icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
-export default function ScrimsPage() {
-  const [tab, setTab] = useState<TabType>("agendados");
-  const [selectedDate, setSelectedDate] = useState<string>("all");
-  const [selectedMode, setSelectedMode] = useState<ScrimMode | "all">("all");
-  const [selectedScrim, setSelectedScrim] = useState<ScrimItem | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const { refetch: refetchScrims } = trpc.unified.listScrims.useQuery();
-
-  const {
-    scrimsList,
-    availableDates,
-    scrimDetails,
-    isLoading,
-  } = useScrimData(selectedDate, selectedMode);
-
-  // Filtra a lista principal pelo modo selecionado (se necessário)
-  const filteredScrimsList = scrimsList.filter((scrim) => {
-    if (selectedMode === "all") return true;
-    return scrim.mode?.toLowerCase() === selectedMode;
-  });
-
-  const titleMap: Record<TabType, string> = {
-    "agendados": "Scrims Agendados",
-    "historico-times": "Histórico — Times",
-    "historico-jogadores": "Histórico — Jogadores",
-  };
-
-  const subtitleMap: Record<ScrimMode | "all", string> = {
-    all: "Todos os modos",
-    br: "Battle Royale",
-    mme: "Mata-Mata em Equipe",
-  };
-
+export default function ScrimsLanding() {
   return (
     <MainLayout>
-      {/* Header */}
-      <header className="bg-[#12121a] border-b border-[#2a2a3a]">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Swords className="w-8 h-8 text-emerald-400" aria-hidden="true" />
-                <h1 className="text-3xl md:text-4xl font-extrabold text-[#f0f0f5]">Scrims</h1>
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 pb-16">
+        {/* Hero Header */}
+        <div className="bg-[#12121a] border-b border-[#2a2a3a] -mx-4 lg:-mx-8 px-4 lg:px-8 py-16 mb-10">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20">
+                <Swords className="w-8 h-8 text-red-400" />
               </div>
-              <p className="text-[#8a8a9e]">{titleMap[tab]}</p>
-              <p className="text-xs text-[#5a5a6e] mt-1">{subtitleMap[selectedMode]}</p>
+              <span className="text-xs font-bold uppercase tracking-widest text-red-400 bg-red-500/10 px-3 py-1 rounded-full">Centro de Treinos</span>
             </div>
-
-            <div className="flex items-center gap-3">
-              {tab === "agendados" && (
-                <button
-                  onClick={() => setIsFormOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
-                >
-                  <Plus className="w-4 h-4" aria-hidden="true" />
-                  Novo Scrim
-                </button>
-              )}
-
-              <div role="group" aria-label="Filtrar por modo de jogo" className="flex items-center gap-2 bg-[#1a1a24] rounded-xl p-1.5 border border-[#2a2a3a]">
-                {MODE_CONFIG.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => { setSelectedMode(id); setSelectedDate("all"); }}
-                    aria-pressed={selectedMode === id}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
-                      selectedMode === id ? "bg-emerald-500 text-white" : "text-[#8a8a9e] hover:text-[#f0f0f5]"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" aria-hidden="true" />
-                    {label}
-                  </button>
-                ))}
-              </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-[#f0f0f5] mb-4 leading-tight">
+              Scrims <span className="text-red-400">Hub</span>
+            </h1>
+            <p className="text-lg text-[#8a8a9e] leading-relaxed mb-8">
+              O centro de organização de todas as partidas de treino (Scrims) da comunidade. 
+              Agende partidas entre times, acompanhe resultados em tempo real e suba no ranking 
+              através de duas modalidades distintas: <span className="text-[#f0f0f5] font-semibold">BR</span> e{" "}
+              <span className="text-[#f0f0f5] font-semibold">MME</span>.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link 
+                to="/scrims/agendados" 
+                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+              >
+                Ver Partidas <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link 
+                to="/scrims/novo" 
+                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium bg-[#1a1a24] text-[#f0f0f5] border border-[#2a2a3a] hover:bg-[#2a2a3a] transition-all"
+              >
+                Agendar Nova Scrim
+              </Link>
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Content */}
-      <main className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8">
-        {/* Tabs */}
-        <div role="tablist" className="flex flex-wrap gap-2 mb-6">
-          {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={tab === id}
-              onClick={() => { setTab(id); setSelectedDate("all"); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
-                tab === id ? "bg-emerald-500 text-white" : "bg-[#1a1a24] text-[#8a8a9e] hover:text-[#f0f0f5] border border-[#2a2a3a]"
-              }`}
-            >
-              <Icon className="w-4 h-4" aria-hidden="true" />
-              {label}
-            </button>
-          ))}
+        {/* Modalidades */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-extrabold text-[#f0f0f5] mb-6 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-red-400" /> Modalidades Disponíveis
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {MODES.map((mode) => (
+              <Link 
+                key={mode.id} 
+                to={mode.link}
+                className={`relative bg-[#12121a] border ${mode.color} rounded-2xl p-6 transition-all group overflow-hidden`}
+              >
+                <div className="relative z-10">
+                  <div className={`mb-4 p-3 w-fit rounded-xl ${mode.bgColor} transition-transform group-hover:scale-110`}>
+                    {mode.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-[#f0f0f5] mb-2 flex items-center justify-between">
+                    {mode.title}
+                    <ArrowRight className="w-5 h-5 text-[#5a5a6e] group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </h3>
+                  <p className="text-sm text-[#8a8a9e] leading-relaxed">{mode.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Info Banner */}
-        {selectedMode !== "all" && (
-          <div className="mb-6 bg-[#1a1a24] border border-[#2a2a3a] rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${selectedMode === "br" ? "bg-blue-500/10" : "bg-orange-500/10"}`}>
-                {selectedMode === "br" ? <Target className="w-4 h-4 text-blue-400" /> : <Users className="w-4 h-4 text-orange-400" />}
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-[#f0f0f5]">{selectedMode === "br" ? "Battle Royale (BR)" : "Mata-Mata em Equipe (MME)"}</h2>
-                <p className="text-xs text-[#5a5a6e] mt-1">
-                  {selectedMode === "br" ? "Sistema de pontuação por posição nas quedas. 1º lugar = 15pts, 2º = 12pts, 3º = 10pts..." : "Sistema baseado em rounds ganhos. Melhor de 3, 5, 7... O tempo que fizer mais rounds vence a série."}
-                </p>
-              </div>
-            </div>
+        {/* Acesso Rápido */}
+        <div className="bg-[#1a1a24] rounded-2xl border border-[#2a2a3a] p-6">
+          <h3 className="text-lg font-bold text-[#f0f0f5] mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-red-400" /> Navegação Rápida
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {QUICK_LINKS.map((link) => (
+              <Link 
+                key={link.to} 
+                to={link.to} 
+                className="flex items-center gap-3 p-4 bg-[#12121a] border border-[#2a2a3a] rounded-xl hover:border-red-500/30 hover:bg-[#12121a]/80 transition-all group"
+              >
+                <div className="text-[#5a5a6e] group-hover:text-red-400 transition-colors">{link.icon}</div>
+                <span className="text-sm font-medium text-[#8a8a9e] group-hover:text-[#f0f0f5] transition-colors">{link.label}</span>
+              </Link>
+            ))}
           </div>
-        )}
-
-        {/* Tab Content */}
-        {isLoading ? (
-          <div className="flex items-center justify-center min-h-[40vh] text-[#5a5a6e]">
-            <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mr-3" />
-            Carregando dados de Scrims...
-          </div>
-        ) : (
-          <>
-            {tab === "agendados" && (
-              <AgendadosTab scrimsList={filteredScrimsList} onScrimClick={setSelectedScrim} />
-            )}
-
-            {tab === "historico-times" && (
-              <div className="text-center py-16 text-[#5a5a6e]">
-                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Histórico de Times via Scrim Detail</p>
-                <p className="text-sm mt-1">Clique em um scrim agendado para ver as estatísticas detalhadas das equipes.</p>
-              </div>
-            )}
-
-            {tab === "historico-jogadores" && (
-              <div className="text-center py-16 text-[#5a5a6e]">
-                <Target className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Histórico de Jogadores via Scrim Detail</p>
-                <p className="text-sm mt-1">Clique em um scrim agendado para analisar as estatísticas individuais dos jogadores.</p>
-              </div>
-            )}
-          </>
-        )}
-      </main>
-
-      {/* Modais */}
-      <ScrimDetailModal scrim={selectedScrim} isOpen={!!selectedScrim} onClose={() => setSelectedScrim(null)} />
-      
-      <ScrimFormModal 
-        isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)} 
-        defaultMode={selectedMode === "all" ? "br" : selectedMode} 
-        onSuccess={() => {
-          refetchScrims();
-          setIsFormOpen(false);
-        }} 
-      />
+        </div>
+      </div>
     </MainLayout>
   );
 }

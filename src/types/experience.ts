@@ -1,5 +1,5 @@
 // src/types/experience.ts
-import type { UpcomingEvent } from "@/components/Experience/UpcomingEvents";
+import type { UpcomingEvent } from "@/components/experience/UpcomingEvents";
 
 export interface ExperienceStats {
   totalXtreinos: number;

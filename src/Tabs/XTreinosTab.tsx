@@ -9,8 +9,8 @@ import {
 import {
   Sparkline, BadgeIcon, TrendIcon, RankBadge, SummaryCards, SortHeader,
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner, PodiumCard, ExpandableRow, ComparisonBar,
-} from "../components/Xtreinos/ui";
-import { getPosColor, getPosBg, getRankStyle } from "../hooks/xtreino-shared"; 
+} from "../components/shared";
+import { getPosColor, getPosBg, getRankStyle } from "../hooks/xtreinos/xtreino-shared"; 
 import { POSITION_POINTS, KILL_POINTS } from "@/hooks/useXtreinoCalculations";
 import { useXTreinosTab } from "@/hooks/useXtreinoTabs"; 
 

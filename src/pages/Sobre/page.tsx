@@ -1,12 +1,12 @@
-import MainLayout from "@/layout/MainLayout";
-import HeroSection from "../../components/Sobre/HeroSection";
-import StatsSection from "../../components/Sobre/StatsSection";
-import HistoryTimeline from "../../components/Sobre/HistoryTimeline";
-import ValuesGrid from "../../components/Sobre/ValuesGrid";
-import ObjectivesGrid from "../../components/Sobre/ObjectivesGrid";
-import TeamSection from "../../components/Sobre/TeamSection";
-import PartnersGrid from "../../components/Sobre/PartnersGrid";
-import CallToAction from "../../components/Sobre/CallToAction";
+import MainLayout from "@/components/layout/MainLayout";
+import HeroSection from "../../components/sobre/HeroSection";
+import StatsSection from "../../components/sobre/StatsSection";
+import HistoryTimeline from "../../components/sobre/HistoryTimeline";
+import ValuesGrid from "../../components/sobre/ValuesGrid";
+import ObjectivesGrid from "../../components/sobre/ObjectivesGrid";
+import TeamSection from "../../components/sobre/TeamSection";
+import PartnersGrid from "../../components/sobre/PartnersGrid";
+import CallToAction from "../../components/sobre/CallToAction";
 
 export default function Sobre() {
   return (

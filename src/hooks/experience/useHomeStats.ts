@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import type { ExperienceStats, DetailedEventStats } from "@/types/experience";
-import type { TeamRankingStats } from "@/hooks/useXtreinoCalculations"; // Importando o tipo real
+import type { TeamRankingStats } from "@/hooks/xtreinos/useXtreinoCalculations"; // Importando o tipo real
 
 export function useHomeStats(teamRanking?: TeamRankingStats[]) {
   const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);

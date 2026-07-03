@@ -1,6 +1,6 @@
 // src/hooks/useExperienceData.ts
 import { trpc } from "@/providers/trpc";
-import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
+import { useXtreinoCalculations } from "@/hooks/xtreinos/useXtreinoCalculations";
 import { useHomeStats } from "@/hooks/experience/useHomeStats";
 import { useHomeRankings } from "@/hooks/experience/useHomeRankings";
 import { useHomeActivities } from "@/hooks/experience/useHomeActivities";

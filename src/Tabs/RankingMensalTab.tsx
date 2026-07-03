@@ -16,8 +16,8 @@ import {
   LoadingSpinner,
   ComparisonBar,
   PodiumCard,
-} from "../components/Xtreinos/ui";
-import { getMonthName, type SortField } from "../hooks/xtreino-shared";
+} from "../components/shared";
+import { getMonthName, type SortField } from "../hooks/xtreinos/xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";

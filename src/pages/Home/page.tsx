@@ -1,35 +1,34 @@
-import { useMemo } from "react";
+import MainLayout from "@/components/layout/MainLayout";
+import HeroSection from "@/components/home/HeroSection";
+import StatsBar from "@/components/home/StatsBar";
+import DetailedStats from "@/components/home/DetailedStats";
+import ActiveEvents from "@/components/home/ActiveEvents";
+import Highlights from "@/components/home/Highlights";
+import RankingsPreview from "@/components/home/RankingsPreview";
+import CallToAction from "@/components/home/CallToAction";
+import { useHomeData } from "@/hooks/useHomeData";
 import { trpc } from "@/providers/trpc";
-import MainLayout from "@/layout/MainLayout";
-import { useXtreinoCalculations } from "@/hooks/useXtreinoCalculations";
-import HeroSection from "../../components/Home/HeroSection";
-import StatsBar from "../../components/Home/StatsBar";
-import DetailedStats from "../../components/Home/DetailedStats";
-import ActiveEvents from "../../components/Home/ActiveEvents";
-import Highlights from "../../components/Home/Highlights";
-import RankingsPreview from "../../components/Home/RankingsPreview";
-import CallToAction from "../../components/Home/CallToAction";
 
 export default function Home() {
-  const { data: championships } = trpc.championships.list.useQuery({ status: "ativo" });
-  const { data: xtreinosList } = trpc.xtreinos.list.useQuery({ status: "aberto" });
-  const { data: teamsList } = trpc.teams.list.useQuery();
-  const { data: playersList } = trpc.players.list.useQuery();
-  const { data: settings } = trpc.settings.get.useQuery();
+  const {
+    championships,
+    xtreinosList,
+    teamsList,
+    playersList,
+    settings,
+    xtreinoStats,
+    championshipStats,
+    scrimStats,
+    xtreinoRealStats,
+    scrimRealStats,
+    upcomingEvents,
+    recentActivities,
+    topXtreinoPlayers,
+    xtreinoRankingFallback,
+    scrimRankingFallback,
+  } = useHomeData();
 
-  const { data: allXtreinos } = trpc.xtreinos.list.useQuery(undefined);
-  const { data: allChampionships } = trpc.championships.list.useQuery(undefined);
-  const { data: allScrims } = trpc.scrims.list.useQuery(undefined);
-  const { data: allResults } = trpc.xtreinos.listResults.useQuery();
-  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
-  
-  const { data: scrimTeamAllTime } = trpc.scrims.teamResultsAllTimeBR.useQuery();
-
-  const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
-    results: allResults ?? [],
-    playerStats: allPlayerStats ?? [],
-  });
-
+  // ✅ Lógica de mutação isolada (geralmente fica no header, mas ok aqui por enquanto)
   const utils = trpc.useUtils();
   const recalculateMutation = trpc.rankings.recalculate.useMutation({
     onSuccess: () => {
@@ -37,115 +36,6 @@ export default function Home() {
       utils.rankings.players.invalidate();
     },
   });
-
-  const xtreinoStats = {
-    total: allXtreinos?.length ?? 0,
-    abertos: allXtreinos?.filter((x) => x.status === "aberto" || !x.status).length ?? 0,
-    emAndamento: allXtreinos?.filter((x) => x.status === "em_andamento").length ?? 0,
-    fechados: allXtreinos?.filter((x) => x.status === "fechado").length ?? 0,
-  };
-
-  const championshipStats = {
-    total: allChampionships?.length ?? 0,
-    ativos: allChampionships?.filter((c) => c.status === "ativo" || !c.status).length ?? 0,
-    inscricoes: allChampionships?.filter((c) => c.status === "inscricoes").length ?? 0,
-    encerrados: allChampionships?.filter((c) => c.status === "encerrado").length ?? 0,
-  };
-
-  const scrimStats = {
-    total: allScrims?.length ?? 0,
-    agendados: allScrims?.filter((s) => s.status === "agendado" || !s.status).length ?? 0,
-    emAndamento: allScrims?.filter((s) => s.status === "em_andamento").length ?? 0,
-    finalizados: allScrims?.filter((s) => s.status === "finalizado").length ?? 0,
-  };
-
-  const xtreinoRealStats = useMemo(() => {
-    if (!teamRanking || teamRanking.length === 0) return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalXtreinos: 0 };
-    return {
-      totalTeams: teamRanking.length,
-      totalKills: teamRanking.reduce((acc, t) => acc + t.totalKills, 0),
-      totalPoints: teamRanking.reduce((acc, t) => acc + t.totalPoints, 0),
-      totalXtreinos: teamRanking.reduce((acc, t) => acc + t.xtreinosPlayed, 0),
-    };
-  }, [teamRanking]);
-
-  const scrimRealStats = useMemo(() => {
-    if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) return { totalTeams: 0, totalKills: 0, totalPoints: 0, totalScrims: 0 };
-    return {
-      totalTeams: scrimTeamAllTime.length,
-      totalKills: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalKills || 0), 0),
-      totalPoints: scrimTeamAllTime.reduce((acc, t) => acc + (t.totalPoints || 0), 0),
-      totalScrims: scrimTeamAllTime.reduce((acc, t) => acc + (t.matches || 0), 0),
-    };
-  }, [scrimTeamAllTime]);
-
-  const upcomingEvents = useMemo(() => {
-    return [
-      ...(allXtreinos?.map((x) => ({ id: x.id, name: x.name, date: x.date || "Data não definida", type: "xtreino" as const, modality: x.modality || "", status: x.status || "aberto" })) || []),
-      ...(allChampionships?.map((c) => ({ id: c.id + 10000, name: c.name, date: c.startDate || "Data não definida", type: "championship" as const, modality: c.modality || "", status: c.status || "ativo" })) || []),
-      ...(allScrims?.map((s) => ({ id: s.id + 20000, name: s.name, date: s.date || "Data não definida", type: "scrim" as const, modality: s.modality || "", status: s.status || "agendado" })) || []),
-    ].filter((e) => e.status !== "encerrado" && e.status !== "fechado" && e.status !== "finalizado")
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 5);
-  }, [allXtreinos, allChampionships, allScrims]);
-
-  const recentActivities = useMemo(() => {
-    const activities: Array<{ id: number; text: string; time: string; type: "match" | "result" | "registration" | "ranking" }> = [];
-    if (teamRanking && teamRanking.length > 0) {
-      const recentXtreinos = new Map<string, { date: string; teamName: string; totalPoints: number }>();
-      for (const team of teamRanking.slice(0, 5)) {
-        for (const xt of team.xtreinos.slice(-1)) {
-          const key = `${xt.date}-${team.teamName}`;
-          if (!recentXtreinos.has(key)) recentXtreinos.set(key, { date: xt.date, teamName: team.teamName, totalPoints: xt.totalPoints });
-        }
-      }
-      Array.from(recentXtreinos.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3).forEach((xt) => {
-        activities.push({ id: activities.length + 1, text: `"${xt.teamName}" marcou ${xt.totalPoints} pts`, time: xt.date, type: "result" });
-      });
-    }
-    if (allChampionships && allChampionships.length > 0) {
-      allChampionships.slice(-2).forEach((champ) => {
-        activities.push({
-          id: activities.length + 1,
-          text: `Camp. "${champ.name}" ${champ.status === "ativo" ? "iniciado" : champ.status === "inscricoes" ? "com inscrições abertas" : "encerrado"}`,
-          time: champ.startDate || "Recente",
-          type: champ.status === "encerrado" ? "result" : "registration",
-        });
-      });
-    }
-    return activities.slice(0, 5);
-  }, [teamRanking, allChampionships]);
-
-  const topXtreinoPlayers = useMemo(() => {
-    if (!teamPlayersGrouped || teamPlayersGrouped.size === 0) return [];
-    const allPlayers: Array<{ playerName: string; totalKills: number; participations: number; avgKills: number; teamName: string }> = [];
-    for (const [teamName, players] of teamPlayersGrouped.entries()) {
-      for (const player of players) allPlayers.push({ ...player, teamName });
-    }
-    const playerMap = new Map<string, typeof allPlayers[0]>();
-    for (const p of allPlayers) {
-      const key = p.playerName.trim().toLowerCase();
-      if (playerMap.has(key)) {
-        const existing = playerMap.get(key)!;
-        existing.totalKills += p.totalKills;
-        existing.participations += p.participations;
-        existing.avgKills = Number((existing.totalKills / existing.participations).toFixed(1));
-      } else {
-        playerMap.set(key, { ...p });
-      }
-    }
-    return Array.from(playerMap.values()).sort((a, b) => b.totalKills - a.totalKills).slice(0, 3).map((p) => ({ name: p.playerName, entityName: p.playerName, points: p.totalKills, kills: p.totalKills, wins: p.participations }));
-  }, [teamPlayersGrouped]);
-
-  const xtreinoRankingFallback = useMemo(() => {
-    if (!teamRanking || teamRanking.length === 0) return [];
-    return teamRanking.map((t, i) => ({ id: i + 1, entityName: t.teamName, points: t.totalPoints, kills: t.totalKills, wins: t.top1Count })).sort((a, b) => b.points - a.points);
-  }, [teamRanking]);
-
-  const scrimRankingFallback = useMemo(() => {
-    if (!scrimTeamAllTime || scrimTeamAllTime.length === 0) return [];
-    return scrimTeamAllTime.map((t, i) => ({ id: i + 1, entityName: t.teamName, points: t.totalPoints || 0, kills: t.totalKills || 0, wins: t.wins || 0 })).sort((a, b) => b.points - a.points);
-  }, [scrimTeamAllTime]);
 
   return (
     <MainLayout>
@@ -202,7 +92,7 @@ export default function Home() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3a3a4e; }
         @keyframes pulse-glow {
           0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.1); }
-          50% { box-shadow: 0 0 40px rgba(16,185,129,0.2); }
+          50% { box 0 0 40px rgba(16,185,129,0.2); }
         }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
       `}</style>
@@ -221,7 +111,13 @@ export default function Home() {
       </section>
 
       <HeroSection orgName={settings?.orgName ?? "Underground"} />
-      <StatsBar teams={teamsList?.length ?? 0} players={playersList?.length ?? 0} xtreinos={xtreinoStats} championships={championshipStats} />
+      
+      <StatsBar 
+        teams={teamsList?.length ?? 0} 
+        players={playersList?.length ?? 0} 
+        xtreinos={xtreinoStats} 
+        championships={championshipStats} 
+      />
       
       <DetailedStats 
         xtreinoStats={xtreinoStats} 
@@ -231,7 +127,10 @@ export default function Home() {
         scrimRealStats={scrimRealStats} 
       />
 
-      <ActiveEvents championships={championships} xtreinosList={xtreinosList} />
+      <ActiveEvents 
+        championships={championships} 
+        xtreinosList={xtreinosList} 
+      />
       
       <Highlights 
         topPlayers={topXtreinoPlayers} 

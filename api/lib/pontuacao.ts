@@ -1,5 +1,5 @@
 // pontuacao.ts
-import { POSITION_POINTS, calcPosPoints } from '../../src/hooks/useXtreinoCalculations';
+import { POSITION_POINTS, calcPosPoints } from '../../src/hooks/xtreinos/useXtreinoCalculations';
 
 export { POSITION_POINTS as PONTOS_POR_POSICAO };
 export const getPontosPosicao = calcPosPoints;
