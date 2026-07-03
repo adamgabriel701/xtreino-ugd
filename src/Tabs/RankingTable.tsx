@@ -32,7 +32,7 @@ import {
   getPosColor,
   getRankStyle,
 } from "@/hooks/xtreinos/xtreino-shared";
-import { TrendIcon, BadgeIcon } from "./xtreino-shared-components";
+import { TrendIcon, BadgeIcon } from "@/features/xtreinos/tabs/xtreino-shared-components";
 import { getPlayerBadges } from "@/utils/xtreino"; // NOVO
 import React from "react";
 

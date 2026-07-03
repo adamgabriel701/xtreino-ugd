@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { TrendingUp, Eye, EyeOff } from "lucide-react";
 import { FilterBar, SearchInput, LoadingSpinner, EmptyState } from "@/components/shared";
 import { getMonthName } from "@/hooks/xtreinos/xtreino-shared";
-import { useEvolucaoTab } from "@/hooks/useXtreinoTabs";
+import { useEvolucaoTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { ChartDataPoint } from "@/types/xtreinos";
 
 export default function EvolucaoTab() {

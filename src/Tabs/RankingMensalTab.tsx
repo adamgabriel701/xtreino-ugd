@@ -18,11 +18,11 @@ import {
   PodiumCard,
 } from "@/components/shared";
 import { getMonthName, type SortField } from "@/hooks/xtreinos/xtreino-shared";
-import { buildSummaryCards } from "./xtreino-shared-components";
-import { RankingTable } from "./RankingTable";
-import { RankingLegend } from "./RankingLegend";
-import { useCompactMode } from "./xtreino-ousado";
-import { useRankingMensalTab } from "@/hooks/useXtreinoTabs";
+import { buildSummaryCards } from "@/features/xtreinos/tabs/xtreino-shared-components";
+import { RankingTable } from "@/features/xtreinos/tabs/RankingTable";
+import { RankingLegend } from "@/features/xtreinos/tabs/RankingLegend";
+import { useCompactMode } from "@/features/xtreinos/tabs/xtreino-ousado";
+import { useRankingMensalTab } from "@/hooks/xtreinos/useXtreinoTabs";
 
 // ============================================================
 // COMPONENTE PRINCIPAL

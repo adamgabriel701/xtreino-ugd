@@ -2,7 +2,7 @@
 import { Swords, Calendar, Trophy, BarChart3 } from "lucide-react";
 import { FilterBar, SelectFilter, LoadingSpinner, EmptyState } from "@/components/shared";
 import { getPosColor } from "@/hooks/xtreinos/xtreino-shared";
-import { useDueloTab } from "@/hooks/useXtreinoTabs";
+import { useDueloTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { TeamDuelData } from "@/types/xtreinos";
 
 export default function DueloTab() {
