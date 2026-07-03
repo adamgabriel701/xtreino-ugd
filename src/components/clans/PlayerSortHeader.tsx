@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { PlayerSortField, PlayerSortDir } from "../../types/clans";
+import type { PlayerSortField, PlayerSortDir } from "@/types/clans";
 
 interface PlayerSortHeaderProps {
   field: PlayerSortField;

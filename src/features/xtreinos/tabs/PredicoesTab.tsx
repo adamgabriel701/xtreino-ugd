@@ -14,7 +14,7 @@ import {
   SearchInput,
   LoadingSpinner,
   EmptyState,
-} from "../../../components/shared";
+} from "@/components/shared";
 import { usePredicoesTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { PredictionReason } from "@/hooks/xtreinos/useXtreinoTabs";
 

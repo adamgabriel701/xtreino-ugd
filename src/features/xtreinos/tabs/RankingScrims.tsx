@@ -20,7 +20,7 @@ import {
   LoadingSpinner,
   RankBadge,
   SummaryCards,
-} from "../../../components/shared";
+} from "@/components/shared";
 import { useScrimPlayersRankingTab, useScrimTeamsRankingTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { ScrimRankTabKey } from "@/types/scrims";
 
@@ -144,7 +144,7 @@ function ScrimPlayersRankingTab() {
     <div className="space-y-6">
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar jogador ou time..." minWidth="260px" />
-        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((t) => ({ value: t, label: t }))} minWidth="160px" />
+        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((t: any) => ({ value: String(t), label: String(t) }))} minWidth="160px" />
       </FilterBar>
 
       {uiSummaryCards.length > 0 && <SummaryCards cards={uiSummaryCards} columns={4} />}

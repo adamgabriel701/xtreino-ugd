@@ -1,5 +1,5 @@
 import { Swords, Trophy, TrendingUp, type LucideIcon } from 'lucide-react';
-import type { RecentActivity } from '../../hooks/useExperienceData';
+import type { RecentActivity } from '@/types/experience';
 
 const iconMap: Record<string, { icon: LucideIcon; color: string }> = {
   xtreino: { icon: Swords, color: "text-emerald-400" },

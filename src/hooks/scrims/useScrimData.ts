@@ -1,7 +1,7 @@
 // src/app/scrims/hooks/useScrimData.ts
 import { useMemo } from "react";
 import { trpc } from "@/providers/trpc";
-import type { ScrimMode } from "../../types/scrims";
+import type { ScrimMode } from "@/types/scrims";
 
 export function useScrimData(selectedDate: string, selectedMode: ScrimMode | "all" = "all") {
   const isAllTime = selectedDate === "all";

@@ -24,14 +24,14 @@ import {
   SortHeader,
   Sparkline,
   EmptyState,
-} from "../components/shared";
+} from "@/components/shared";
 import {
   type EnrichedTeam,
   type MergedPlayer,
   type SortField,
   getPosColor,
   getRankStyle,
-} from "../hooks/xtreinos/xtreino-shared";
+} from "@/hooks/xtreinos/xtreino-shared";
 import { TrendIcon, BadgeIcon } from "./xtreino-shared-components";
 import { getPlayerBadges } from "@/utils/xtreino"; // NOVO
 import React from "react";

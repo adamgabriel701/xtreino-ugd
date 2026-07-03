@@ -1,6 +1,6 @@
 import { Users, UserCircle, Dumbbell, Trophy } from "lucide-react";
 import StatCard from "./StatCard";
-import type { LucideIcon } from "../../types/home";
+import type { LucideIcon } from "@/types/home";
 
 interface StatsBarProps {
   teams: number;

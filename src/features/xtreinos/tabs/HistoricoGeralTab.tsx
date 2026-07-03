@@ -11,7 +11,7 @@ import {
   SelectFilter,
   LoadingSpinner,
   EmptyState,
-} from "../../../components/shared";
+} from "@/components/shared";
 import { useHistoricoGeralTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { HistoryEvent } from "@/types/xtreinos";
 

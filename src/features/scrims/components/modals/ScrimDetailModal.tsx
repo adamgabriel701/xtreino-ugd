@@ -1,8 +1,8 @@
 "use client";
 
 import { X, Calendar, Clock, Swords, Trophy, Target, Users, BarChart3 } from "lucide-react";
-import type { ScrimItem } from "../../../../types/scrims";
-import { formatDate } from "../../../../utils/formatters";
+import type { ScrimItem } from "@/types/scrims";
+import { formatDate } from "@/utils/formatters";
 
 interface ScrimDetailModalProps {
   scrim: ScrimItem | null;

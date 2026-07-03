@@ -17,14 +17,14 @@ import {
   LoadingSpinner,
   ComparisonBar,
   PodiumCard,
-} from "../../../components/shared";
-import { getMonthName } from "../../../hooks/xtreinos/xtreino-shared";
+} from "@/components/shared";
+import { getMonthName } from "@/hooks/xtreinos/xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
 import { useCompactMode } from "./xtreino-ousado";
 import { useRankingClasTab } from "@/hooks/xtreinos/useXtreinoTabs";
-import type { SortField } from "../../../hooks/xtreinos/xtreino-shared";
+import type { SortField } from "@/hooks/xtreinos/xtreino-shared";
 
 // ============================================================
 // COMPONENTE PRINCIPAL

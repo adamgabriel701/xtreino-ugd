@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Target, Zap, Calendar, Flame, TrendingUp } from 'lucide-react';
-import type { TopPlayer } from '../../hooks/useExperienceData';
+import type { TopPlayer } from '@/hooks/useExperienceData';
 
 function SparklineSVG({ data, width = 120, height = 30, color = "#10b981" }: { data: number[]; width?: number; height?: number; color?: string }) {
   if (data.length < 2) return <div className="text-xs text-[#5a5a6e]">—</div>;

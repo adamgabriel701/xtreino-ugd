@@ -1,5 +1,5 @@
 import { UserCircle, Target, Trophy, Crown, Medal, Star } from "lucide-react";
-import type { LucideIcon } from "../../types/home";
+import type { LucideIcon } from "@/types/home";
 
 export default function FeaturedPlayerCard({ player, rank }: { player: { name?: string; entityName?: string; points: number; kills?: number; wins?: number }; rank: number }) {
   const rankColors = ["text-yellow-400", "text-gray-300", "text-amber-600"];

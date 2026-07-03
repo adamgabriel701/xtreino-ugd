@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { createRouter, publicQuery, adminQuery } from "../middleware.js";
-import { getDb } from "../queries/connection.js";
+import { createRouter, publicQuery, adminQuery } from "@api/middleware.js";
+import { getDb } from "@api/queries/connection.js";
 import {
   rankings,
   teams,
@@ -11,9 +11,9 @@ import {
   campeonatoPlayerStats,
   scrimResults,
   scrimPlayerStats,
-} from "../../db/schema.js";
+} from "@db/schema.js";
 import { eq, desc, and } from "drizzle-orm";
-import { verifyToken } from "../lib/auth.js";
+import { verifyToken } from "@api/lib/auth.js";
 
 export const rankingsRouter = createRouter({
   teams: publicQuery

@@ -1,5 +1,5 @@
 import { Crown, Target, RotateCcw, Trophy } from "lucide-react";
-import type { EnrichedPlayerItem } from "../../types/clans";
+import type { EnrichedPlayerItem } from "@/types/clans";
 
 interface PlayerCardMobileProps {
   player: EnrichedPlayerItem;

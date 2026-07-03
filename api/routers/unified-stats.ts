@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { createRouter, publicQuery, adminQuery } from "../middleware.js";
-import { getDb } from "../queries/connection.js";
+import { createRouter, publicQuery, adminQuery } from "@api/middleware.js";
+import { getDb } from "@api/queries/connection.js";
 import {
   players,
   teams,
@@ -16,9 +16,9 @@ import {
   unifiedTeamStats,
   playerAliases,
   teamAliases,
-} from "../../db/schema.js";
+} from "@db/schema.js";
 import { eq, desc, and, sql, inArray } from "drizzle-orm";
-import { verifyToken } from "../lib/auth.js";
+import { verifyToken } from "@api/lib/auth.js";
 
 export const unifiedRouter = createRouter({
   // ============================================================

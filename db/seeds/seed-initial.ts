@@ -3,11 +3,11 @@
 // ⚠️ JOGADORES NÃO SÃO MAIS CRIADOS AQUI!
 // O sistema de unificação (seed-aliases.ts) cuida disso agora.
 
-import { getDb } from "../../api/queries/connection.js";
-import { admins, settings, clans, teams, seedRuns, xtreinos } from "../schema.js";
+import { getDb } from "@api/queries/connection.js";
+import { admins, settings, clans, teams, seedRuns, xtreinos } from "@db/schema.js";
 import { eq } from "drizzle-orm";
 import { hashSync } from "bcryptjs";
-import { WHATSAPP_TEMPLATE } from "../seeds-backup/whatsapp-template.js";
+import { WHATSAPP_TEMPLATE } from "@db/seeds-backup/whatsapp-template.js";
 
 // ============================================================
 // HELPERS

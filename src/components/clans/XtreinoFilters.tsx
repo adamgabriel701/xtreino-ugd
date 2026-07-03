@@ -1,5 +1,5 @@
 import { Filter, Calendar, Clock } from "lucide-react";
-import { formatMonthBR, formatDateBR } from "../../utils/date";
+import { formatMonthBR, formatDateBR } from "@/utils/date";
 
 interface XtreinoFiltersProps {
   selectedMonth: string;

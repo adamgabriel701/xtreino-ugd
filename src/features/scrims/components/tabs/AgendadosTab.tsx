@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Calendar, Clock, Swords, Eye, Target, Users, CalendarX } from "lucide-react";
-import { type ScrimItem, STATUS_COLORS, STATUS_LABELS } from "../../../../types/scrims";
-import { EmptyState } from "../shared/EmptyState";
+import { type ScrimItem, STATUS_COLORS, STATUS_LABELS } from "@/types/scrims";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface AgendadosTabProps {
   scrimsList?: ScrimItem[];

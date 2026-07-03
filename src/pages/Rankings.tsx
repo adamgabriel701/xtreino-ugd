@@ -15,21 +15,21 @@ import {
   History,
 } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
-import XTreinosTab from "../features/xtreinos/tabs/XTreinosTab";
+import XTreinosTab from "@/features/xtreinos/tabs/XTreinosTab";
 import JogadoresPage from "./Jogadores/page"; 
-import RankingGeralTab from "../features/xtreinos/tabs/RankingGeralTab";
-import RankingMensalTab from "../features/xtreinos/tabs/RankingMensalTab";
-import RankingSemanalTab from "../features/xtreinos/tabs/RankingSemanalTab";
-import RankingClasTab from "../features/xtreinos/tabs/RankingClasTab";
-import DueloTab from "../features/xtreinos/tabs/DueloTab";
-import HeadToHeadTab from "../features/xtreinos/tabs/HeadToHeadTab";
-import EvolucaoTab from "../features/xtreinos/tabs/EvolucaoTab";
-import HistoricoGeralTab from "../features/xtreinos/tabs/HistoricoGeralTab";
+import RankingGeralTab from "@/features/xtreinos/tabs/RankingGeralTab";
+import RankingMensalTab from "@/features/xtreinos/tabs/RankingMensalTab";
+import RankingSemanalTab from "@/features/xtreinos/tabs/RankingSemanalTab";
+import RankingClasTab from "@/features/xtreinos/tabs/RankingClasTab";
+import DueloTab from "@/features/xtreinos/tabs/DueloTab";
+import HeadToHeadTab from "@/features/xtreinos/tabs/HeadToHeadTab";
+import EvolucaoTab from "@/features/xtreinos/tabs/EvolucaoTab";
+import HistoricoGeralTab from "@/features/xtreinos/tabs/HistoricoGeralTab";
 import {
   PredicoesTab,
   MomentosCarousel,
   CrossfireTab,
-} from "../features/xtreinos/tabs/xtreino-ousado";
+} from "@/features/xtreinos/tabs/xtreino-ousado";
 
 // ============================================================
 // TIPOS

@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Crown, Clock, Zap, Trophy, Swords, Dumbbell, Calendar, Medal, Activity, TrendingUp, Users, ChevronRight } from "lucide-react";
 import FeaturedPlayerCard from "./FeaturedPlayerCard";
-import type { LucideIcon } from "../../types/home";
+import type { LucideIcon } from "@/types/home";
 
 export default function Highlights({
   topPlayers,

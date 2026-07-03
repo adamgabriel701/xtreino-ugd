@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {
   EmptyState,
-} from "../../../components/shared";
+} from "@/components/shared";
 import {
   usePredicoesOusadoTab,
   useMomentosCarousel,

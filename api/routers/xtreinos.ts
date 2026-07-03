@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { createRouter, publicQuery, adminQuery } from "../middleware.js";
-import { getDb } from "../queries/connection.js";
+import { createRouter, publicQuery, adminQuery } from "@api/middleware.js";
+import { getDb } from "@api/queries/connection.js";
 import {
   xtreinos,
   xtreinoTeams,
@@ -9,10 +9,10 @@ import {
   xtreinoSchedule,
   teams,
   settings,
-} from "../../db/schema.js";
+} from "@db/schema.js";
 import { eq, desc, and, sql, isNull } from "drizzle-orm";
-import { verifyToken } from "../lib/auth.js";
-import { calcularPontosXtreino } from "../lib/pontuacao.js";
+import { verifyToken } from "@api/lib/auth.js";
+import { calcularPontosXtreino } from "@api/lib/pontuacao.js";
 
 export const xtreinosRouter = createRouter({
   // ============================================================

@@ -8,7 +8,7 @@ import {
   Sparkline, BadgeIcon, TrendIcon, RankBadge, SummaryCards, SortHeader,
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
   PreviousNicksTooltip, PodiumCard, ComparisonBar,
-} from "../../../components/shared";
+} from "@/components/shared";
 import { useXtreinoFilters } from "@/hooks/xtreinos/useXtreinoFilters";
 
 // ============================================================
@@ -68,7 +68,7 @@ export default function JogadoresTab() {
   };
 
   const enrichedPlayers: EnrichedPlayer[] = useMemo(() => {
-    return (playersList ?? []).map((p) => {
+    return (playersList ?? []).map((p: any) => {
       const raw = enrichPlayer(p);
       const currentTotalKills = raw.specificXtKills + (p.scrimKills || 0);
       const basePlayer: EnrichedPlayer = {
@@ -117,8 +117,8 @@ export default function JogadoresTab() {
     <div className={`space-y-6 ${comparisonPlayers.length >= 2 ? "pb-48" : ""}`}>
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar jogador, time ou nick antigo..." minWidth="260px" />
-        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((team) => ({ value: team, label: team }))} minWidth="160px" />
-        <SelectFilter icon={<History className="w-4 h-4 text-[#5a5a6e]" />} value={selectedXtreino?.toString() ?? ""} onChange={(v) => setSelectedXtreino(v ? Number(v) : null)} placeholder="Todos os X-Treinos" options={(xtreinosList ?? []).map((xt) => ({ value: xt.id.toString(), label: `${xt.name || "XT"} #${xt.id} - ${xt.date || "Sem data"}` }))} minWidth="240px" />
+        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((team: any) => ({ value: String(team), label: String(team) }))} minWidth="160px" />
+        <SelectFilter icon={<History className="w-4 h-4 text-[#5a5a6e]" />} value={selectedXtreino?.toString() ?? ""} onChange={(v) => setSelectedXtreino(v ? Number(v) : null)} placeholder="Todos os X-Treinos" options={(xtreinosList ?? []).map((xt: any) => ({ value: String(xt.id), label: `${xt.name || "XT"} #${xt.id} - ${xt.date || "Sem data"}` }))} minWidth="240px" />
         <button onClick={() => { setCompareMode((m) => !m); toggleClearCompare(); }} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${compareMode ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"}`}>
           <BarChart2 className="w-4 h-4 inline mr-1.5" /> Comparar
         </button>

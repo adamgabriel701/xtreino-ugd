@@ -5,7 +5,7 @@ import { appRouter } from "./router.js";
 import { createContext } from "./context.js";
 import { env } from "./lib/env.js";
 import { getDb } from "./queries/connection.js";
-import { runSeedIfNeeded, clearSeedRuns, resetAllSeedRuns } from "../db/seed-runner.js";
+import { runSeedIfNeeded, clearSeedRuns, resetAllSeedRuns } from "@db/seed-runner.js";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -21,7 +21,7 @@ import {
   seedAllScrims,
   seedAliases, // 🆕 Cria jogadores canônicos e mapeia variações de nick
   seedUnify,   // 🆕 Calcula estatísticas unificadas cruzando os dados
-} from "../db/seed.js";
+} from "@db/seed.js";
 
 console.log("[BOOT] Starting server...");
 
@@ -71,8 +71,8 @@ app.get("/health", (c) => c.json({ status: "ok", time: Date.now() }));
       }
 
       // Importa as funções do banco
-      const { inscreverEquipe } = await import("../db/inscricoes.js");
-      const { xtreinos } = await import("../db/schema.js");
+      const { inscreverEquipe } = await import("@db/inscricoes.js");
+      const { xtreinos } = await import("@db/schema.js");
       const { eq, sql } = await import("drizzle-orm");
 
       const db = getDb();

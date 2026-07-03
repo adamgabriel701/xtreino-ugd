@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import type { LucideIcon } from "../../types/home";
+import type { LucideIcon } from "@/types/home";
 
 function useAnimatedCounter(target: number, duration = 1200) {
   const [count, setCount] = useState(0);

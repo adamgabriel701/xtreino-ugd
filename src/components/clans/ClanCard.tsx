@@ -1,5 +1,5 @@
 import { Shield, Layers, Users, Star, ChevronRight } from "lucide-react";
-import type { ClanWithStats } from "../../types/clans";
+import type { ClanWithStats } from "@/types/clans";
 
 interface ClanCardProps {
   clan: ClanWithStats;

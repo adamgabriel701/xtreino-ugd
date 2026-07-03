@@ -1,8 +1,8 @@
 // db/seeds/seed-aliases.ts
-import { getDb } from "../../api/queries/connection.js";
-import { players, teams, playerAliases, teamAliases, seedRuns } from "../schema.js";
+import { getDb } from "@api/queries/connection.js";
+import { players, teams, playerAliases, teamAliases, seedRuns } from "@db/schema.js";
 import { eq } from "drizzle-orm";
-import { normalizeNickname, normalizeTeamName } from "../utils/normalize.js";
+import { normalizeNickname, normalizeTeamName } from "@db/utils/normalize.js";
 
 // ============================================================
 // MAPEAMENTO MANUAL: nickname canonical → lista de aliases conhecidos

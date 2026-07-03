@@ -30,7 +30,7 @@ import type { ScrimsTabKey, TabConfig, EnrichedScrimPlayer, EnrichedScrimTeam } 
 import { TABS } from "@/features/scrims/constants"; // ✅ Importando do arquivo .tsx
 
 // ✅ Import relativo simples para a página de resultado
-import MatchResult from "../match/[id]/page";
+import MatchResult from "@/pages/Scrims/match/[id]/page";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -169,7 +169,7 @@ function PartidasTab() {
             </h3>
           </div>
           <div className="divide-y divide-[#2a2a3a] max-h-[500px] overflow-y-auto">
-            {scrimsList.slice(0, 20).map((scrim) => (
+            {scrimsList.slice(0, 20).map((scrim: any) => (
               <Link to={`/scrims/match/${scrim.id}`} key={scrim.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#1a1a24] transition-colors group">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
@@ -237,7 +237,7 @@ function RankingJogadoresTab() {
 
   const allTeams = useMemo(() => {
     if (!playersList) return [];
-    return [...new Set(playersList.map((p) => p.teamName).filter(Boolean))].sort();
+    return [...new Set(playersList.map((p: any) => p.teamName).filter(Boolean))].sort();
   }, [playersList]);
 
   const summaryCards = [
@@ -254,7 +254,7 @@ function RankingJogadoresTab() {
     <div className="space-y-6">
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar jogador ou time..." minWidth="260px" />
-        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((t) => ({ value: t, label: t }))} minWidth="160px" />
+        <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((t: any) => ({ value: String(t), label: String(t) }))} minWidth="160px" />
       </FilterBar>
 
       {summaryCards.length > 0 && <SummaryCards cards={summaryCards} columns={4} />}

@@ -2,15 +2,15 @@
 
 import { useMemo } from "react";
 import { BarChart3, Target, ChevronRight, Users, Zap, Crosshair, Shield, Award } from "lucide-react";
-import { ScrimTable } from "../shared/ScrimTable";
-import { DateFilter } from "../shared/DateFilter";
-import { EmptyState } from "../shared/EmptyState";
-import { HistorySummary } from "../shared/HistorySummary";
+import { ScrimTable } from "@/components/shared/ScrimTable";
+import { DateFilter } from "@/components/shared/DateFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { HistorySummary } from "@/components/shared/HistorySummary";
 import type {
   PlayerStat,
   PlayerAllTime,
   EnrichedPlayerRow,
-} from "../../../../types/scrims";
+} from "@/types/scrims";
 
 interface HistoricoJogadoresTabProps {
   selectedDate: string;

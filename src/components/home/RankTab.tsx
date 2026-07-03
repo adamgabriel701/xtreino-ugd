@@ -1,4 +1,4 @@
-import type { LucideIcon } from "../../types/home";
+import type { LucideIcon } from "@/types/home";
 
 export default function RankTab({ active, onClick, label, icon: Icon }: { active: boolean; onClick: () => void; label: string; icon: LucideIcon }) {
   return (

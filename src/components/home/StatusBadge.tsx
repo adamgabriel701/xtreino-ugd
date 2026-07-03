@@ -1,5 +1,5 @@
 import { Radio, AlertCircle, Clock, Timer, Calendar } from "lucide-react";
-import type { StatusConfig } from "../../types/home";
+import type { StatusConfig } from "@/types/home";
 
 export default function StatusBadge({ status, type }: { status: string; type: "champ" | "xtreino" | "scrim" }) {
   const champConfigs: Record<string, StatusConfig> = {

@@ -4,7 +4,7 @@ import { TrendingUp, UserCircle, Eye, RefreshCw, Loader2, Dumbbell, Trophy, Swor
 import { trpc } from "@/providers/trpc";
 import RankTab from "./RankTab";
 import RankList from "./RankList";
-import type { LucideIcon, RankCategory } from "../../types/home";
+import type { LucideIcon, RankCategory } from "@/types/home";
 
 interface RankingsPreviewProps {
   onRecalculate: () => void;

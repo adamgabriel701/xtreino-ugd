@@ -1,7 +1,7 @@
 // DueloTab.tsx
 import { Swords, Calendar, Trophy, BarChart3 } from "lucide-react";
-import { FilterBar, SelectFilter, LoadingSpinner, EmptyState } from "../../../components/shared";
-import { getPosColor } from "../../../hooks/xtreinos/xtreino-shared";
+import { FilterBar, SelectFilter, LoadingSpinner, EmptyState } from "@/components/shared";
+import { getPosColor } from "@/hooks/xtreinos/xtreino-shared";
 import { useDueloTab } from "@/hooks/xtreinos/useXtreinoTabs";
 import type { TeamDuelData } from "@/types/xtreinos";
 
@@ -15,8 +15,8 @@ export default function DueloTab() {
     <div className="space-y-6">
       <FilterBar hasFilters={hasFilters} onClear={handleClear}>
         <SelectFilter icon={<Calendar className="w-4 h-4 text-[#5a5a6e]" />} value={selectedXtId} onChange={handleXtChange} placeholder="Selecione um X-Treino" options={xtOptions} minWidth="220px" />
-        <SelectFilter icon={<Trophy className="w-4 h-4 text-yellow-400" />} value={teamAName} onChange={setTeamAName} placeholder="Time A" options={availableTeams.map((t) => ({ value: t, label: t }))} disabled={!selectedXtId} minWidth="160px" />
-        <SelectFilter icon={<Trophy className="w-4 h-4 text-gray-300" />} value={teamBName} onChange={setTeamBName} placeholder="Time B" options={availableTeams.filter((t) => t !== teamAName).map((t) => ({ value: t, label: t }))} disabled={!selectedXtId || !teamAName} minWidth="160px" />
+        <SelectFilter icon={<Trophy className="w-4 h-4 text-yellow-400" />} value={teamAName} onChange={setTeamAName} placeholder="Time A" options={availableTeams.map((t: any) => ({ value: String(t), label: String(t) }))} disabled={!selectedXtId} minWidth="160px" />
+        <SelectFilter icon={<Trophy className="w-4 h-4 text-gray-300" />} value={teamBName} onChange={setTeamBName} placeholder="Time B" options={availableTeams.filter((t: any) => t !== teamAName).map((t: any) => ({ value: String(t), label: String(t) }))} disabled={!selectedXtId || !teamAName} minWidth="160px" />
       </FilterBar>
 
       {isLoading && <LoadingSpinner text="Carregando dados do duelo..." />}

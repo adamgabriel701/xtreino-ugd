@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Swords, Calendar, Trophy, Target, BarChart3, Users, Plus } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import { trpc } from "@/providers/trpc";
-import type { TabType, ScrimItem, ScrimMode } from "../../../types/scrims";
-import { useScrimData } from "../../../hooks/scrims/useScrimData";
-import { AgendadosTab } from "../../../features/scrims/components/tabs/AgendadosTab";
-import { ScrimDetailModal } from "../../../features/scrims/components/modals/ScrimDetailModal";
-import { ScrimFormModal } from "../../../features/scrims/components/modals/ScrimFormModal";
+import type { TabType, ScrimItem, ScrimMode } from "@/types/scrims";
+import { useScrimData } from "@/hooks/scrims/useScrimData";
+import { AgendadosTab } from "@/features/scrims/components/tabs/AgendadosTab";
+import { ScrimDetailModal } from "@/features/scrims/components/modals/ScrimDetailModal";
+import { ScrimFormModal } from "@/features/scrims/components/modals/ScrimFormModal";
 
 const TAB_CONFIG = [
   { id: "agendados" as TabType, label: "Agendados", icon: Calendar },

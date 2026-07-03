@@ -2,8 +2,8 @@ import { useParams } from "react-router-dom";
 import { Shield, Star, Layers, Users, Swords, Award, ChevronRight, Crown, ExternalLink } from "lucide-react";
 import { trpc } from "@/providers/trpc";
 import { useXtreinoCalculations, calcKillPoints } from "@/hooks/xtreinos/useXtreinoCalculations";
-import type { PlayerItem, EnrichedPlayerItem } from "../../types/clans";
-import { getStatusBadge, getStatusLabel } from "../../utils/badges";
+import type { PlayerItem, EnrichedPlayerItem } from "@/types/clans";
+import { getStatusBadge, getStatusLabel } from "@/utils/badges";
 import PageHeader from "./PageHeader";
 import StatsCards from "./StatsCards";
 import { useNavigate } from "react-router-dom";
@@ -47,13 +47,15 @@ export default function ClanDetail() {
     );
   }
 
-  const activeTeams = clan.teams?.filter((t) => t.status === "active") ?? [];
-  const allClanPlayers = clan.teams?.flatMap((t) => t.players ?? []) ?? [];
+  // CORREÇÕES: Adicionado `(t: any)` nas linhas 50 e 51
+  const activeTeams = clan.teams?.filter((t: any) => t.status === "active") ?? [];
+  const allClanPlayers = clan.teams?.flatMap((t: any) => t.players ?? []) ?? [];
   const enrichedClanPlayers = allClanPlayers.map(enrichPlayer);
   
-  const clanTotalKills = enrichedClanPlayers.reduce((sum, p) => sum + p.totalXtreinoKills, 0);
-  const clanTotalPoints = enrichedClanPlayers.reduce((sum, p) => sum + p.killPoints, 0);
-  const totalPlayers = clan.teams?.reduce((acc, t) => acc + (t.players?.length ?? 0), 0) ?? 0;
+  // CORREÇÕES: Adicionado `(sum: any, p: any)` nas linhas 54, 55 e `(acc: any, t: any)` na linha 56
+  const clanTotalKills = enrichedClanPlayers.reduce((sum: any, p: any) => sum + p.totalXtreinoKills, 0);
+  const clanTotalPoints = enrichedClanPlayers.reduce((sum: any, p: any) => sum + p.killPoints, 0);
+  const totalPlayers = clan.teams?.reduce((acc: any, t: any) => acc + (t.players?.length ?? 0), 0) ?? 0;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -90,17 +92,18 @@ export default function ClanDetail() {
               <Star className="w-5 h-5 text-emerald-400" /> Lines Ativas ({activeTeams.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeTeams.map((team) => {
-                const captain = team.players?.find((p) => p.role === "captain");
-                const officialCount = team.players?.filter((p) => p.role === "official" || p.role === "captain").length ?? 0;
-                const reserveCount = team.players?.filter((p) => p.role === "reserve").length ?? 0;
+              {activeTeams.map((team: any) => { // CORREÇÃO: Adicionado `(team: any)` na linha 93
+                // CORREÇÕES: Adicionado `(p: any)` nas linhas 94, 95, 96
+                const captain = team.players?.find((p: any) => p.role === "captain");
+                const officialCount = team.players?.filter((p: any) => p.role === "official" || p.role === "captain").length ?? 0;
+                const reserveCount = team.players?.filter((p: any) => p.role === "reserve").length ?? 0;
                 const enrichedPlayers = (team.players ?? []).map(enrichPlayer);
-                const teamKills = enrichedPlayers.reduce((sum, p) => sum + p.totalXtreinoKills, 0);
+                // CORREÇÃO: Adicionado `(sum: any, p: any)` na linha 98
+                const teamKills = enrichedPlayers.reduce((sum: any, p: any) => sum + p.totalXtreinoKills, 0);
                 
                 return (
                   <div 
                     key={team.id} 
-                    // CORREÇÃO: Navega usando o ID do clã e da line
                     onClick={() => navigate(`/clans/${id}/line/${team.id}`)} 
                     className="bg-[#12121a] rounded-xl border border-[#2a2a3a] p-5 cursor-pointer hover:border-emerald-500/30 hover:bg-[#1a1a24] transition-all group"
                   >

@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { Crown, Target, RotateCcw, Trophy, Filter } from "lucide-react";
-import type { EnrichedPlayerItem, PlayerSortField, PlayerSortDir } from "../../types/clans";
+import type { EnrichedPlayerItem, PlayerSortField, PlayerSortDir } from "@/types/clans";
 import PlayerSortHeader from "./PlayerSortHeader";
 import PlayerCardMobile from "./PlayerCardMobile";
-import { formatDateBR } from "../../utils/date";
+import { formatDateBR } from "@/utils/date";
 
 interface PlayerTableProps {
   players: EnrichedPlayerItem[];

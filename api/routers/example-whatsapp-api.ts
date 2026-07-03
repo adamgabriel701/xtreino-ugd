@@ -3,15 +3,15 @@
 // Coloque isso na sua API/route do painel admin
 // ============================================================
 
-import { getDb } from "../queries/connection.js";
-import { settings, xtreinos, teams } from "../../db/schema.js";
+import { getDb } from "@api/queries/connection.js";
+import { settings, xtreinos, teams } from "@db/schema.js";
 import { eq } from "drizzle-orm";
 import { 
   WHATSAPP_TEMPLATE, 
   formatTeamsList, 
   parseFixedTeams,
   fillEmptySlots 
-} from "../../db/seeds/whatsapp-template.js";
+} from "@db/seeds/whatsapp-template.js";
 
 /**
  * Gera a mensagem completa do WhatsApp para um xtreino

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { RankBadge } from "./RankBadge";
-import { getRankStyle } from "../../../../utils/formatters";
+import { getRankStyle } from "@/utils/formatters";
 
 interface Column<T> {
   key: string;

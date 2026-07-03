@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Shield, Search, Filter, Layers, Users, Star } from "lucide-react";
-import type { ClanItem, ClanWithStats, StatsSummary } from "../../types/clans";
+import type { ClanItem, ClanWithStats, StatsSummary } from "@/types/clans";
 import ClanCard from "./ClanCard";
 import StatsCards from "./StatsCards";
 

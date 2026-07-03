@@ -9,7 +9,7 @@ import {
 import {
   Sparkline, BadgeIcon, TrendIcon, RankBadge, SummaryCards, SortHeader,
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner, PodiumCard, ExpandableRow, ComparisonBar,
-} from "../../../components/shared";
+} from "@/components/shared";
 import { getPosColor, getPosBg, getRankStyle } from "@/hooks/xtreinos/xtreino-shared"; 
 import { XTREINO_POSITION_POINTS as POSITION_POINTS, XTREINO_KILL_POINTS as KILL_POINTS } from "@/constants/gameRules";
 import { useXTreinosTab } from "@/hooks/xtreinos/useXtreinoTabs"; 

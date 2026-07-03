@@ -13,7 +13,7 @@ export function useAboutStats() {
   });
 
   // Calcula os totais com fallback para 0 (enquanto carrega)
-  const xtreinosRealizados = playersData?.reduce((sum, p) => sum + (p.xtreinoParticipations ?? 0), 0) ?? 0;
+  const xtreinosRealizados = playersData?.reduce((sum: any, p: any) => sum + (p.xtreinoParticipations ?? 0), 0) ?? 0;
   const equipesAtivas = teamsData?.length ?? 0;
   const jogadoresRegistrados = playersData?.length ?? 0;
   const campeonatosRealizados = championshipsData?.length ?? 0;

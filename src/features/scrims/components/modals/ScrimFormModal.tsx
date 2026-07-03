@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
-import type { ScrimMode } from "../../../../types/scrims";
+import type { ScrimMode } from "@/types/scrims";
 
 interface ScrimFormModalProps {
   isOpen: boolean;

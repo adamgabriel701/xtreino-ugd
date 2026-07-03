@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 import { BarChart3, Target, Trophy, ChevronRight, Zap, Users } from "lucide-react";
-import { ScrimTable } from "../shared/ScrimTable";
-import { DateFilter } from "../shared/DateFilter";
-import { EmptyState } from "../shared/EmptyState";
-import { HistorySummary } from "../shared/HistorySummary";
+import { ScrimTable } from "@/components/shared/ScrimTable";
+import { DateFilter } from "@/components/shared/DateFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { HistorySummary } from "@/components/shared/HistorySummary";
 import type {
   TeamResult,
   TeamAllTimeBR,
@@ -14,7 +14,7 @@ import type {
   EnrichedTeamRowBR,
   EnrichedTeamRowMME,
   ScrimMode,
-} from "../../../../types/scrims";
+} from "@/types/scrims";
 
 interface HistoricoTimesTabProps {
   selectedDate: string;
