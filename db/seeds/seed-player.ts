@@ -2,8 +2,8 @@
 // Seed unificado: trata todos os nicks (antigos/atuais) como a mesma pessoa
 // O master é o nick atual. Todos os outros são merged (somem da listagem, stats vão pro master).
 
-import { getDb } from "@api/queries/connection.js";
-import { playerMerges, players } from "@db/schema.js";
+import { getDb } from "../../api/queries/connection.js";
+import { playerMerges, players } from "../schema.js";
 import { eq } from "drizzle-orm";
 
 function getPlayerIdByNick(db: ReturnType<typeof getDb>, nickname: string): number | null {

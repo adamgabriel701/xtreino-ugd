@@ -2,10 +2,10 @@
 // 🚀 SEED GENÉRICO — NUNCA mais edite este arquivo!
 // Ele lê os dados de xtreinos-dados.ts e insere no banco automaticamente.
 
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../../api/queries/connection.js";
 import { eq, and } from "drizzle-orm";
 import { xtreinos, xtreinoResults, xtreinoPlayerStats } from "@db/schema.js";
-import { calcularPontosXtreino } from "@api/lib/pontuacao.js";
+import { calcularPontosXtreino } from "../../api/lib/pontuacao.js";
 import { xtreinosRaw } from "./xtreinos-dados.js";
 //import { xtreinosRawNovo } from "./xtreinos-dados-novo.js"; // 🆕
 

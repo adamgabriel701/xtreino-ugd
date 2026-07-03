@@ -2,8 +2,8 @@
 // 🚀 SEED GENÉRICO — NUNCA mais edite este arquivo!
 // Ele lê os dados de scrims-dados.ts, calcula os totais e insere no banco.
 
-import { getDb } from "@api/queries/connection.js";
-import { scrims, scrimResults, scrimResultRounds, scrimPlayerStats, scrimPlayerStatRounds } from "@db/schema.js";
+import { getDb } from "../../api/queries/connection.js";
+import { scrims, scrimResults, scrimResultRounds, scrimPlayerStats, scrimPlayerStatRounds } from "../schema.js";
 import { eq, inArray } from "drizzle-orm";
 import { scrimsRaw } from "./scrims-dados.js";
 

@@ -1,10 +1,10 @@
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../../api/queries/connection.js";
 import { eq, and } from "drizzle-orm";
 import {
   xtreinoResults,
   xtreinoPlayerStats,
-} from "@db/schema.js";
-import { calcularPontosXtreino } from "@api/lib/pontuacao.js";
+} from "../schema.js";
+import { calcularPontosXtreino } from "../../api/lib/pontuacao.js";
 
 /**
  * Seed de dados do XTREINO da Underground

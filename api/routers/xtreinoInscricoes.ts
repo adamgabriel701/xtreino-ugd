@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { createRouter, publicQuery, adminQuery } from "@api/middleware.js";
-import { verifyToken } from "@api/lib/auth.js";
+import { createRouter, publicQuery, adminQuery } from "../../api/middleware.js";
+import { verifyToken } from "../../api/lib/auth.js";
 import {
   listXtreinoEvents,
   getXtreinoEvent,
@@ -13,9 +13,9 @@ import {
   getInscricoesPorXtreino,
   getResumoInscricoes,
   migrarEventosHistoricos,
-} from "@db/inscricoes.js";
-import { getDb } from "@api/queries/connection.js";
-import { settings, xtreinos, xtreinoTeams, teams } from "@db/schema.js";
+} from "../../db/inscricoes.js";
+import { getDb } from "../../api/queries/connection.js";
+import { settings, xtreinos, xtreinoTeams, teams } from "../../db/schema.js";
 import { eq, and, sql } from "drizzle-orm";
 
 // ============================================================

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { eq, sql } from "drizzle-orm";
-import { getDb } from "@api/queries/connection.js";
-import { xtreinos, xtreinoTeams, xtreinoPlayers } from "@db/schema.js";
-import { inscreverEquipe } from "@db/inscricoes.js";
+import { getDb } from "../../api/queries/connection.js";
+import { xtreinos, xtreinoTeams, xtreinoPlayers } from "../../db/schema.js";
+import { inscreverEquipe } from "../../db/inscricoes.js";
 
 // Cria uma mini-app do Hono só para o webhook
 const webhookApp = new Hono();

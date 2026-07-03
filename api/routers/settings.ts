@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { createRouter, publicQuery, adminQuery } from "@api/middleware.js";
-import { getDb } from "@api/queries/connection.js";
-import { settings } from "@db/schema.js";
+import { createRouter, publicQuery, adminQuery } from "../../api/middleware.js";
+import { getDb } from "../../api/queries/connection.js";
+import { settings } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
-import { verifyToken } from "@api/lib/auth.js";
+import { verifyToken } from "../../api/lib/auth.js";
 
 export const settingsRouter = createRouter({
   // ============================================================

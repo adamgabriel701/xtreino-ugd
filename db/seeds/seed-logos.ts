@@ -1,4 +1,4 @@
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../../api/queries/connection.js";
 import { teams } from "@db/schema.js";
 import { eq } from "drizzle-orm";
 

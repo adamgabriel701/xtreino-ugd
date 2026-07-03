@@ -1,4 +1,4 @@
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../../api/queries/connection.js";
 import { admins, settings } from "@db/schema.js";
 import { eq } from "drizzle-orm";
 import { hashSync } from "bcryptjs";

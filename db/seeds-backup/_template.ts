@@ -1,4 +1,4 @@
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../../api/queries/connection.js";
 import { eq } from "drizzle-orm";
 // import { championships, xtreinos, teams, players } from "@db/schema.js";
 

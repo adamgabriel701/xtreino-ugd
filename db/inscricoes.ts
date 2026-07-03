@@ -1,4 +1,4 @@
-import { getDb } from "@api/queries/connection.js";
+import { getDb } from "../api/queries/connection.js";
 import { eq, and, sql } from "drizzle-orm";
 import {
   xtreinos,

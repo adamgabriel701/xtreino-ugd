@@ -1,6 +1,6 @@
 // db/seeds/seed-unify.ts
-import { getDb } from "@api/queries/connection.js";
-import { players, playerAliases, teamAliases, unifiedPlayerStats, unifiedTeamStats, seedRuns, teams } from "@db/schema.js";
+import { getDb } from "../../api/queries/connection.js";
+import { players, playerAliases, teamAliases, unifiedPlayerStats, unifiedTeamStats, seedRuns, teams } from "../schema.js";
 import { eq } from "drizzle-orm";
 import { xtreinosRaw } from "./xtreinos-dados.js";
 import { scrimsRaw } from "./scrims-dados.js";
