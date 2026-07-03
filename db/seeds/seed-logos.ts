@@ -1,5 +1,5 @@
 import { getDb } from "../../api/queries/connection.js";
-import { teams } from "@db/schema.js";
+import { teams } from "../schema.js";
 import { eq } from "drizzle-orm";
 
 const LOGO_EXT = ".jpg";

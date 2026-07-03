@@ -3,6 +3,7 @@ import { trpc } from "@/providers/trpc";
 import { useXtreinoCalculations, calcPosPoints, calcKillPoints } from "@/hooks/xtreinos/useXtreinoCalculations";
 import { useSortState, useCompareState, usePlayersByName, useRankingSort, mergePlayersById, enrichTeam, calcPointsVsPrevMonth, groupPlayersByTeam, getWeekKey, getWeekDates } from "@/hooks/xtreinos/xtreino-shared";
 import type { EnrichedTeam, MergedPlayer } from "@/hooks/xtreinos/xtreino-shared";
+import { buildTeamRanking } from "@/hooks/xtreinos/xtreino-shared";
 
 // --- FUNÇÃO AUXILIAR LOCAL ---
 function adaptClanToEnrichedTeam(clanSum: any): EnrichedTeam {
@@ -94,7 +95,7 @@ export function useRankingMensalTab() {
   const filteredResults = useMemo(() => { if (!selectedMonth || !allResults) return []; return allResults.filter((r) => r.date?.startsWith(selectedMonth)); }, [allResults, selectedMonth]);
   const filteredPlayerStats = useMemo(() => { if (!selectedMonth || !allPlayerStats) return []; return allPlayerStats.filter((s) => s.date?.startsWith(selectedMonth)); }, [allPlayerStats, selectedMonth]);
   
-  const monthTeamRanking = useMemo((): any[] => { const { buildTeamRanking } = require("@/hooks/xtreino-shared"); return buildTeamRanking(filteredResults, filteredPlayerStats as any); }, [filteredResults, filteredPlayerStats]);
+    const monthTeamRanking = useMemo((): any[] => { return buildTeamRanking(filteredResults, filteredPlayerStats as any); }, [filteredResults, filteredPlayerStats]);
 
   const previousMonthStr = useMemo(() => {
     if (!selectedMonth || selectedMonth.length < 7) return "";
@@ -104,7 +105,7 @@ export function useRankingMensalTab() {
 
   const prevMonthResults = useMemo(() => { if (!previousMonthStr || !allResults) return []; return allResults.filter((r) => r.date?.startsWith(previousMonthStr)); }, [allResults, previousMonthStr]);
   const prevMonthPlayerStats = useMemo(() => { if (!previousMonthStr || !allPlayerStats) return []; return allPlayerStats.filter((s) => s.date?.startsWith(previousMonthStr)); }, [allPlayerStats, previousMonthStr]);
-  const prevMonthTeamRanking = useMemo(() => { const { buildTeamRanking } = require("@/hooks/xtreino-shared"); return buildTeamRanking(prevMonthResults, prevMonthPlayerStats as any); }, [prevMonthResults, prevMonthPlayerStats]);
+  const prevMonthTeamRanking = useMemo(() => { return buildTeamRanking(prevMonthResults, prevMonthPlayerStats as any); }, [prevMonthResults, prevMonthPlayerStats]);
   const pointsDeltaMap = useMemo(() => calcPointsVsPrevMonth(monthTeamRanking, prevMonthTeamRanking), [monthTeamRanking, prevMonthTeamRanking]);
 
   const enrichedRanking = useMemo(() => monthTeamRanking.map((t) => enrichTeam(t, "mensal", pointsDeltaMap.get(t.teamName.trim().toLowerCase()) ?? null)), [monthTeamRanking, pointsDeltaMap]);
@@ -164,7 +165,7 @@ export function useRankingSemanalTab() {
   const filteredResults = useMemo(() => { if (!selectedWeek || !allResults) return []; return allResults.filter((r) => getWeekKey(r.date) === selectedWeek); }, [allResults, selectedWeek]);
   const filteredPlayerStats = useMemo(() => { if (!selectedWeek || !allPlayerStats) return []; return allPlayerStats.filter((s) => getWeekKey(s.date) === selectedWeek); }, [allPlayerStats, selectedWeek]);
 
-  const weekTeamRanking = useMemo((): any[] => { const { buildTeamRanking } = require("@/hooks/xtreino-shared"); return buildTeamRanking(filteredResults, filteredPlayerStats as any); }, [filteredResults, filteredPlayerStats]);
+  const weekTeamRanking = useMemo((): any[] => { return buildTeamRanking(filteredResults, filteredPlayerStats as any); }, [filteredResults, filteredPlayerStats]);
   const enrichedRanking = useMemo(() => weekTeamRanking.map((t) => enrichTeam(t, "semanal")), [weekTeamRanking]);
   
   const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
