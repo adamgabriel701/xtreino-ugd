@@ -10,8 +10,8 @@ import {
   Sparkline, BadgeIcon, TrendIcon, RankBadge, SummaryCards, SortHeader,
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner, PodiumCard, ExpandableRow, ComparisonBar,
 } from "../../../components/shared";
-import { getPosColor, getPosBg, getRankStyle } from "../../../hooks/xtreinos/xtreino-shared"; 
-import { POSITION_POINTS, KILL_POINTS } from "@/hooks/xtreinos/useXtreinoCalculations";
+import { getPosColor, getPosBg, getRankStyle } from "@/hooks/xtreinos/xtreino-shared"; 
+import { XTREINO_POSITION_POINTS as POSITION_POINTS, XTREINO_KILL_POINTS as KILL_POINTS } from "@/constants/gameRules";
 import { useXTreinosTab } from "@/hooks/xtreinos/useXtreinoTabs"; 
 
 // ============================================================
