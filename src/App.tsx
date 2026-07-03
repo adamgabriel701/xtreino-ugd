@@ -16,7 +16,7 @@ import ClanDetail from "./components/clans/ClanDetail";
 import TeamDetail from "./components/clans/TeamDetail";
 import PlayerDetail from "./components/clans/PlayerDetail";
 
-import Jogadores from "./pages/Jogadores/novo/page";
+import Jogadores from "./pages/Jogadores/page";
 import JogadorDetalhe from "./pages/Jogadores/[id]/page";
 
 import Inscricoes from "./pages/Inscricoes";
