@@ -9,7 +9,7 @@ import { trpc } from "@/providers/trpc";
 import {
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
   RankBadge, SummaryCards, SortHeader, // SortHeader importado do xtreino
-} from "@/pages/components/xtreino";
+} from "@/components/Xtreinos/ui";
 import { ErrorBoundary, ErrorFallback } from "@/components/ErrorBoundary"; // Importado corretamente
 import MatchResult from "./match/[id]/page";
 

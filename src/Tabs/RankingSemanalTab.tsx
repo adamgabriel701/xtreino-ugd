@@ -2,7 +2,6 @@
 // RankingSemanalTab.tsx
 // ============================================================
 
-import { useState, useMemo, useEffect } from "react";
 import {
   Calendar,
   TrendingUp,
@@ -10,8 +9,6 @@ import {
   Minimize2,
   Maximize2,
 } from "lucide-react";
-import { trpc } from "@/providers/trpc";
-
 import {
   SummaryCards,
   FilterBar,
@@ -19,142 +16,27 @@ import {
   LoadingSpinner,
   ComparisonBar,
   PodiumCard,
-} from "./xtreino";
-import {
-  type MergedPlayer,
-  type SortField,
-  getWeekLabel,
-  getWeekKey,
-  getWeekDates,
-  enrichTeam,
-  buildTeamRanking,
-  groupPlayersByTeam,
-  mergePlayersById,
-  usePlayersByName,
-  useSortState,
-  useCompareState,
-  useRankingSort,
-} from "../../hooks/xtreino-shared";
+} from "../components/Xtreinos/ui";
+import { getWeekLabel, type SortField } from "../hooks/xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
 import { useCompactMode } from "./xtreino-ousado";
+import { useRankingSemanalTab } from "@/hooks/useXtreinoTabs";
 
+// ============================================================
+// COMPONENTE PRINCIPAL
+// ============================================================
 export default function RankingSemanalTab() {
-  const { sortBy, sortDir, handleSort } = useSortState();
-  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-  const [selectedWeek, setSelectedWeek] = useState("");
   const {
-    compareMode,
-    setCompareMode,
-    selected: selectedForCompare,
-    toggle: toggleCompare,
-    clear: clearCompare,
-  } = useCompareState();
-  const [search, setSearch] = useState("");
-  
-  // Ideia #14: Modo Compacto
+    isLoading, sortBy, sortDir, handleSort, search, setSearch, selectedWeek, setSelectedWeek,
+    compareMode, setCompareMode, selectedForCompare, toggleCompare, clearCompare, expandedTeam, setExpandedTeam,
+    availableWeeks, filteredResults, finalRanking, top3, comparisonTeams, totalXtreinosUnicos,
+    teamNameToIdMap, getTeamPlayers, weekTeamRanking, weekDates, clearFilters, hasFilters,
+  } = useRankingSemanalTab();
+
   const { isCompact, toggle: toggleCompact } = useCompactMode();
-
-  const { data: allResults } = trpc.xtreinos.listResults.useQuery();
-  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
-  const { data: playersList } = trpc.players.list.useQuery();
-
-  const isLoading = !allResults || !allPlayerStats;
-  const playersByName = usePlayersByName(playersList);
-
-  const availableWeeks = useMemo(() => {
-    if (!allResults) return [];
-    const weeks = new Set<string>();
-    allResults.forEach((r) => {
-      if (r.date) weeks.add(getWeekKey(r.date));
-    });
-    return Array.from(weeks).sort().reverse();
-  }, [allResults]);
-
-  useEffect(() => {
-    if (availableWeeks.length > 0 && !selectedWeek) {
-      setSelectedWeek(availableWeeks[0]);
-    }
-  }, [availableWeeks, selectedWeek]);
-
-  const filteredResults = useMemo(() => {
-    if (!selectedWeek || !allResults) return [];
-    return allResults.filter((r) => getWeekKey(r.date) === selectedWeek);
-  }, [allResults, selectedWeek]);
-
-  const filteredPlayerStats = useMemo(() => {
-    if (!selectedWeek || !allPlayerStats) return [];
-    return allPlayerStats.filter((s) => getWeekKey(s.date) === selectedWeek);
-  }, [allPlayerStats, selectedWeek]);
-
-  const weekTeamRanking = useMemo(
-    () => buildTeamRanking(filteredResults, filteredPlayerStats as any),
-    [filteredResults, filteredPlayerStats]
-  );
-
-  const enrichedRanking = useMemo(
-    () => weekTeamRanking.map((t) => enrichTeam(t, "semanal")),
-    [weekTeamRanking]
-  );
-
-  const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
-
-  const finalRanking = useMemo(() => {
-    if (!search.trim()) return sorted;
-    const q = search.toLowerCase();
-    return sorted.filter((t) => t.teamName.toLowerCase().includes(q));
-  }, [sorted, search]);
-
-  const weekTeamPlayers = useMemo(
-    () => groupPlayersByTeam(filteredPlayerStats as any),
-    [filteredPlayerStats]
-  );
-
-  const getTeamPlayers = (teamName: string): MergedPlayer[] => {
-    const rawPlayers = weekTeamPlayers.get(teamName.trim().toLowerCase()) ?? [];
-    return mergePlayersById(rawPlayers, playersByName);
-  };
-
-  const top3 = useMemo(
-    () => (finalRanking.length >= 3 ? finalRanking.slice(0, 3) : []),
-    [finalRanking]
-  );
-
-  const comparisonTeams = useMemo(
-    () => sorted.filter((t) => selectedForCompare.has(t.teamName)),
-    [sorted, selectedForCompare]
-  );
-
-  const totalXtreinosUnicos = useMemo(() => {
-    const ids = new Set<number>();
-    filteredResults.forEach((r) => ids.add(r.xtreinoId));
-    return ids.size;
-  }, [filteredResults]);
-
-  const weekDates = selectedWeek ? getWeekDates(selectedWeek) : null;
-
-  const clearFilters = () => {
-    setSearch("");
-    setSelectedWeek(availableWeeks[0] ?? "");
-    clearCompare();
-  };
-
-  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(weekTeamRanking, totalXtreinosUnicos);
-
-  // NOVO: Buscar lista de times para poder gerar os links
-  const { data: teamsList } = trpc.teams.list.useQuery();
-
-  // NOVO: Mapa Nome do Time -> ID do Time e ID do Clã
-  const teamNameToIdMap = useMemo(() => {
-    const map = new Map<string, { teamId: number; clanId: number | null }>();
-    if (!teamsList) return map;
-    for (const team of teamsList) {
-      map.set(team.name.trim().toLowerCase(), { teamId: team.id, clanId: team.clanId ?? null });
-    }
-    return map;
-  }, [teamsList]);
 
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
@@ -180,12 +62,7 @@ export default function RankingSemanalTab() {
       </div>
 
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Buscar equipe..."
-          minWidth="200px"
-        />
+        <SearchInput value={search} onChange={setSearch} placeholder="Buscar equipe..." minWidth="200px" />
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#5a5a6e]" />
           <select
@@ -206,9 +83,7 @@ export default function RankingSemanalTab() {
         <button
           onClick={toggleCompact}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-            isCompact
-              ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
-              : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
+            isCompact ? "bg-purple-500/10 border-purple-500/30 text-purple-400" : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
           }`}
         >
           {isCompact ? <Maximize2 className="w-4 h-4 inline mr-1.5" /> : <Minimize2 className="w-4 h-4 inline mr-1.5" />}
@@ -216,14 +91,9 @@ export default function RankingSemanalTab() {
         </button>
 
         <button
-          onClick={() => {
-            setCompareMode((m) => !m);
-            clearCompare();
-          }}
+          onClick={() => { setCompareMode((m) => !m); clearCompare(); }}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-            compareMode
-              ? "bg-green-500/10 border-green-500/30 text-green-400"
-              : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
+            compareMode ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"
           }`}
         >
           <BarChart2 className="w-4 h-4 inline mr-1.5" /> Comparar
@@ -271,7 +141,7 @@ export default function RankingSemanalTab() {
           subtitle={weekDates ? `${weekDates.start} — ${weekDates.end}` : undefined}
           flameThreshold={3}
           teamNameToIdMap={new Map(Array.from(teamNameToIdMap.entries()).map(([k, v]) => [k, v.teamId]))}
-          clanNameToIdMap={undefined} // Não precisa de mapa de clãs aqui
+          clanNameToIdMap={undefined}
         />
       )}
 

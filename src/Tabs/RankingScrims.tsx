@@ -1,4 +1,3 @@
-import { useState, useMemo } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import {
   Swords,
@@ -13,7 +12,6 @@ import {
   Award,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
-import { trpc } from "@/providers/trpc";
 import {
   FilterBar,
   SearchInput,
@@ -22,13 +20,26 @@ import {
   LoadingSpinner,
   RankBadge,
   SummaryCards,
-} from "./xtreino";
+} from "../components/Xtreinos/ui";
+import { useScrimPlayersRankingTab, useScrimTeamsRankingTab } from "@/hooks/useXtreinoTabs";
+import type { ScrimRankTabKey } from "@/types/scrims";
 
 // ============================================================
-// TIPOS
+// TRADUTOR DE ÍCONES (Evita JSX no Hook)
 // ============================================================
+const IconMap: Record<string, React.FC<{ className?: string }>> = {
+  users: Users,
+  target: Target,
+  crosshair: Crosshair,
+  award: Award,
+  shield: Shield,
+  trophy: Trophy,
+  barChart3: BarChart3,
+};
 
-type ScrimRankTabKey = "jogadores" | "times";
+// ============================================================
+// CONFIGURAÇÃO DAS ABAS
+// ============================================================
 
 interface TabConfig {
   key: ScrimRankTabKey;
@@ -36,36 +47,6 @@ interface TabConfig {
   icon: React.ReactNode;
   description: string;
 }
-
-// CORREÇÃO: Removido 'playerName' e adicionado 'nickname' para bater com o Backend
-interface EnrichedScrimPlayer {
-  nickname: string;
-  teamName: string;
-  scrimKills: number;
-  scrimAssists: number;
-  scrimDeaths: number;
-  scrimDamage: number;
-  scrimMvps: number;
-  scrimKdRatio: number;
-  scrimWins: number;
-  scrimLosses: number;
-  totalMatches: number;
-}
-
-// CORREÇÃO: Tipagem flexível para times, pois o backend retorna 'name' e não 'teamName'
-interface EnrichedScrimTeam {
-  name: string;
-  tag: string;
-  scrimKills: number;
-  scrimWins: number;
-  scrimLosses: number;
-  scrimMatches: number;
-  winRate: number;
-}
-
-// ============================================================
-// CONFIGURACAO DAS ABAS
-// ============================================================
 
 const TABS: TabConfig[] = [
   { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Ranking unificado de jogadores em Scrims (MME)" },
@@ -132,58 +113,30 @@ export default function RankingScrims() {
 }
 
 // ============================================================
-// TAB: RANKING DE JOGADORES
+// TAB: RANKING DE JOGADORES (PURAMENTE VISUAL)
+// ============================================================
+
+// ============================================================
+// TAB: RANKING DE JOGADORES (PURAMENTE VISUAL)
 // ============================================================
 
 function ScrimPlayersRankingTab() {
-  const [search, setSearch] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<"scrimKills" | "scrimMvps" | "scrimKdRatio" | "totalMatches">("scrimKills");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const {
+    isLoading, search, setSearch, selectedTeam, setSelectedTeam,
+    sortField, sortDir, handleSort, clearFilters, hasFilters,
+    sortedPlayers, allTeams, summaryCards,
+  } = useScrimPlayersRankingTab();
 
-  const { data: playersList, isLoading } = trpc.unified.listPlayers.useQuery();
-
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
-    else { setSortField(field); setSortDir("desc"); }
-  };
-
-  const clearFilters = () => { setSearch(""); setSelectedTeam(null); };
-  const hasFilters = !!search || !!selectedTeam;
-
-  // CORREÇÃO: Removido o 'as EnrichedScrimPlayer' e convertido usando 'unknown' para evitar erro 2352
-  const filteredPlayers = useMemo(() => {
-    if (!playersList) return [];
-    let list = playersList as unknown as EnrichedScrimPlayer[];
-    if (selectedTeam) list = list.filter((p) => p.teamName === selectedTeam);
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter((p) => p.nickname.toLowerCase().includes(q) || (p.teamName?.toLowerCase() ?? "").includes(q));
-    }
-    return list;
-  }, [playersList, selectedTeam, search]);
-
-  const sortedPlayers = useMemo(() => {
-    return [...filteredPlayers].sort((a, b) => {
-      const aVal = (a as unknown as Record<string, unknown>)[sortField] ?? 0;
-      const bVal = (b as unknown as Record<string, unknown>)[sortField] ?? 0;
-      const aNum = typeof aVal === 'number' ? aVal : 0;
-      const bNum = typeof bVal === 'number' ? bVal : 0;
-      return sortDir === "desc" ? bNum - aNum : aNum - bNum;
-    });
-  }, [filteredPlayers, sortField, sortDir]);
-
-  const allTeams = useMemo(() => {
-    if (!playersList) return [];
-    return [...new Set(playersList.map((p) => p.teamName).filter(Boolean))].sort();
-  }, [playersList]);
-
-  const summaryCards = [
-    { icon: <Users className="w-4 h-4 text-red-400" />, label: "Jogadores", value: sortedPlayers.length },
-    { icon: <Target className="w-4 h-4 text-red-400" />, label: "Total Kills", value: sortedPlayers.reduce((s, p) => s + (p.scrimKills || 0), 0), valueColor: "text-red-400" },
-    { icon: <Crosshair className="w-4 h-4 text-orange-400" />, label: "Total Assists", value: sortedPlayers.reduce((s, p) => s + (p.scrimAssists || 0), 0), valueColor: "text-orange-400" },
-    { icon: <Award className="w-4 h-4 text-yellow-400" />, label: "Total MVPs", value: sortedPlayers.reduce((s, p) => s + (p.scrimMvps || 0), 0), valueColor: "text-yellow-400" },
-  ];
+  // Traduz as strings para os componentes visuais corretos do SummaryCards
+  const uiSummaryCards = summaryCards.map((card) => {
+    const IconComponent = IconMap[card.iconId];
+    return {
+      icon: IconComponent ? <><IconComponent className={`w-4 h-4 ${card.valueColor || "text-red-400"}`} /><div className="w-4 h-4" /></> : null,
+      label: card.label,
+      value: card.value,
+      valueColor: card.valueColor,
+    };
+  });
 
   if (isLoading) return <LoadingSpinner text="Carregando ranking de scrims..." />;
 
@@ -194,7 +147,7 @@ function ScrimPlayersRankingTab() {
         <SelectFilter icon={<Shield className="w-4 h-4 text-[#5a5a6e]" />} value={selectedTeam ?? ""} onChange={(v) => setSelectedTeam(v || null)} placeholder="Todos os times" options={allTeams.map((t) => ({ value: t, label: t }))} minWidth="160px" />
       </FilterBar>
 
-      {summaryCards.length > 0 && <SummaryCards cards={summaryCards} columns={4} />}
+      {uiSummaryCards.length > 0 && <SummaryCards cards={uiSummaryCards} columns={4} />}
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
@@ -249,56 +202,25 @@ function ScrimPlayersRankingTab() {
 }
 
 // ============================================================
-// TAB: RANKING DE TIMES
+// TAB: RANKING DE TIMES (PURAMENTE VISUAL)
 // ============================================================
 
 function ScrimTeamsRankingTab() {
-  const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<"scrimKills" | "scrimWins" | "scrimMatches">("scrimWins");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const {
+    isLoading, search, setSearch, sortField, sortDir, handleSort, clearFilters, hasFilters,
+    sortedTeams, summaryCards,
+  } = useScrimTeamsRankingTab();
 
-  const { data: teamsList, isLoading } = trpc.unified.listTeams.useQuery();
-
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
-    else { setSortField(field); setSortDir("desc"); }
-  };
-
-  const clearFilters = () => { setSearch(""); };
-  const hasFilters = !!search;
-
-  // CORREÇÃO: Mapeado corretamente usando 'name' e 'tag', e convertido com 'unknown'
-  const filteredTeams = useMemo(() => {
-    if (!teamsList) return [];
-    return (teamsList as unknown as Array<Record<string, any>>)
-      .filter(t => (t.scrimMatches ?? 0) > 0)
-      .map(t => ({
-        name: t.name,
-        tag: t.tag,
-        scrimKills: t.scrimKills ?? 0,
-        scrimWins: t.scrimWins ?? 0,
-        scrimLosses: t.scrimLosses ?? 0,
-        scrimMatches: t.scrimMatches ?? 0,
-        winRate: (t.scrimMatches ?? 0) > 0 ? Math.round(((t.scrimWins ?? 0) / (t.scrimMatches ?? 0)) * 1000) / 10 : 0,
-      })) as EnrichedScrimTeam[];
-  }, [teamsList]);
-
-  const sortedTeams = useMemo(() => {
-    return [...filteredTeams].sort((a, b) => {
-      const aVal = (a as unknown as Record<string, unknown>)[sortField] ?? 0;
-      const bVal = (b as unknown as Record<string, unknown>)[sortField] ?? 0;
-      const aNum = typeof aVal === 'number' ? aVal : 0;
-      const bNum = typeof bVal === 'number' ? bVal : 0;
-      return sortDir === "desc" ? bNum - aNum : aNum - bNum;
-    });
-  }, [filteredTeams, sortField, sortDir]);
-
-  const summaryCards = [
-    { icon: <Shield className="w-4 h-4 text-red-400" />, label: "Times", value: sortedTeams.length },
-    { icon: <Target className="w-4 h-4 text-red-400" />, label: "Total Kills", value: sortedTeams.reduce((s, t) => s + (t.scrimKills || 0), 0), valueColor: "text-red-400" },
-    { icon: <Trophy className="w-4 h-4 text-yellow-400" />, label: "Vitórias", value: sortedTeams.reduce((s, t) => s + (t.scrimWins || 0), 0), valueColor: "text-yellow-400" },
-    { icon: <BarChart3 className="w-4 h-4 text-blue-400" />, label: "Partidas", value: sortedTeams.reduce((s, t) => s + (t.scrimMatches || 0), 0) },
-  ];
+  // Traduz as strings para os componentes visuais corretos do SummaryCards
+  const uiSummaryCards = summaryCards.map((card) => {
+    const IconComponent = IconMap[card.iconId];
+    return {
+      icon: IconComponent ? <><IconComponent className={`w-4 h-4 ${card.valueColor || "text-red-400"}`} /><div className="w-4 h-4" /></> : null,
+      label: card.label,
+      value: card.value,
+      valueColor: card.valueColor,
+    };
+  });
 
   if (isLoading) return <LoadingSpinner text="Carregando ranking de times..." />;
 
@@ -308,7 +230,7 @@ function ScrimTeamsRankingTab() {
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar time ou tag..." minWidth="260px" />
       </FilterBar>
 
-      {summaryCards.length > 0 && <SummaryCards cards={summaryCards} columns={4} />}
+      {uiSummaryCards.length > 0 && <SummaryCards cards={uiSummaryCards} columns={4} />}
 
       <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">

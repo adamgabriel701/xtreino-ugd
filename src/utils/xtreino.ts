@@ -39,3 +39,23 @@ export function buildDuelData(
 export const TEAM_COLORS = [
   "#4ade80", "#f87171", "#60a5fa", "#facc15", "#c084fc",
 ];
+
+// --- BADGES DE JOGADORES ---
+export const PLAYER_BADGE_THRESHOLDS = [
+  { label: "100 Kills", check: (k: number) => k >= 100 },
+  { label: "300 Kills", check: (k: number) => k >= 300 },
+  { label: "5 XTs", check: (p: number) => p >= 5 },
+  { label: "10 XTs", check: (p: number) => p >= 10 },
+  { label: "Sniper", check: (avg: number) => avg >= 8 },
+  { label: "Elite", check: (avg: number) => avg >= 12 },
+];
+
+export function getPlayerBadges(totalKills: number, participations: number, avgKills: number): string[] {
+  return PLAYER_BADGE_THRESHOLDS
+    .filter((b) => {
+      if (b.label.includes("Kills")) return b.check(totalKills);
+      if (b.label.includes("XTs")) return b.check(participations);
+      return b.check(avgKills);
+    })
+    .map((b) => b.label);
+}

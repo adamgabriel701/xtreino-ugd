@@ -1,5 +1,3 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import {
   Swords,
   Dumbbell,
@@ -7,57 +5,31 @@ import {
   ArrowRight,
   Filter,
 } from "lucide-react";
-import { trpc } from "@/providers/trpc";
+import { Link } from "react-router-dom";
 import {
   FilterBar,
   SelectFilter,
   LoadingSpinner,
   EmptyState,
-} from "./xtreino";
+} from "../components/Xtreinos/ui";
+import { useHistoricoGeralTab } from "@/hooks/useXtreinoTabs";
 import type { HistoryEvent } from "@/types/xtreinos";
 
 // ============================================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE PRINCIPAL (PURAMENTE VISUAL)
 // ============================================================
 
 export default function HistoricoGeralTab() {
-  const [typeFilter, setTypeFilter] = useState<string>("");
-  const [limit, setLimit] = useState<number>(50);
-
-  // Requisição movida para o hook do trpc diretamente (poderia estar em um useHistoricoTab se quisesse isolar 100%)
-  const { data: historyData, isLoading } = trpc.unified.listGeneralHistory.useQuery({
-    limit: limit,
-  });
-
-  // Filtro simples de lista
-  const filteredHistory = useMemo(() => {
-    if (!historyData) return [];
-    if (!typeFilter) return historyData;
-    return historyData.filter((event) => event.type === typeFilter);
-  }, [historyData, typeFilter]);
-
-  const handleClear = () => {
-    setTypeFilter("");
-  };
-
-  const hasFilters = !!typeFilter;
-
-  // Agrupa os eventos por data (formato YYYY-MM-DD)
-  const groupedByDate = useMemo(() => {
-    const groups = new Map<string, HistoryEvent[]>();
-    filteredHistory.forEach((event) => {
-      const dayKey = event.date.split("T")[0];
-      if (!groups.has(dayKey)) {
-        groups.set(dayKey, []);
-      }
-      groups.get(dayKey)!.push(event);
-    });
-    return Array.from(groups.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [filteredHistory]);
-
-  const loadMore = () => {
-    setLimit((prev) => prev + 50);
-  };
+  const {
+    isLoading,
+    typeFilter,
+    setTypeFilter,
+    filteredHistory,
+    groupedByDate,
+    loadMore,
+    handleClear,
+    hasFilters,
+  } = useHistoricoGeralTab();
 
   return (
     <div className="space-y-6">
@@ -85,7 +57,6 @@ export default function HistoricoGeralTab() {
       {!isLoading && groupedByDate.length > 0 && (
         <div className="space-y-6">
           {groupedByDate.map(([date, events]) => {
-            // Formatação de data mantida aqui por ser exclusiva da UI
             const dateObj = new Date(date + "T00:00:00");
             const formattedDate = dateObj.toLocaleDateString("pt-BR", {
               weekday: "long",
@@ -152,11 +123,7 @@ export default function HistoricoGeralTab() {
 
 function EventRow({ event }: { event: HistoryEvent }) {
   const isXT = event.type === "xtreino";
-  
-  // Define o link de destino baseado no tipo
-  const linkTo = isXT 
-    ? `/rankings/xtreinos` 
-    : `/rankings/scrims`;
+  const linkTo = isXT ? "/rankings/xtreinos" : "/rankings/scrims";
 
   return (
     <Link
@@ -164,7 +131,6 @@ function EventRow({ event }: { event: HistoryEvent }) {
       className="flex items-center justify-between px-6 py-4 hover:bg-[#1a1a24] transition-colors group"
     >
       <div className="flex items-center gap-4">
-        {/* Ícone do Tipo */}
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
           isXT 
             ? "bg-blue-500/10 group-hover:bg-blue-500/20" 
@@ -177,13 +143,10 @@ function EventRow({ event }: { event: HistoryEvent }) {
           )}
         </div>
 
-        {/* Informações Principais */}
         <div>
           <div className="flex items-center gap-2">
             <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${
-              isXT 
-                ? "bg-blue-500/10 text-blue-400" 
-                : "bg-red-500/10 text-red-400"
+              isXT ? "bg-blue-500/10 text-blue-400" : "bg-red-500/10 text-red-400"
             }`}>
               {isXT ? "XT" : "SCRIM"}
             </span>
@@ -192,7 +155,6 @@ function EventRow({ event }: { event: HistoryEvent }) {
             </h4>
           </div>
           
-          {/* Subtítulo (Times no Scrim) */}
           {event.team1Name && event.team2Name && (
             <p className="text-xs text-[#5a5a6e] mt-0.5">
               {event.team1Name} <span className="text-[#2a2a3a] mx-1">vs</span> {event.team2Name}
@@ -201,7 +163,6 @@ function EventRow({ event }: { event: HistoryEvent }) {
         </div>
       </div>
 
-      {/* Lado Direito (Detalhes / Seta) */}
       <div className="flex items-center gap-3">
         {!event.team1Name && (
           <span className="text-xs text-[#5a5a6e] hidden sm:block">

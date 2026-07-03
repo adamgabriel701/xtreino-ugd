@@ -1,8 +1,8 @@
 // EvolucaoTab.tsx
 import { useState, useMemo } from "react";
 import { TrendingUp, Eye, EyeOff } from "lucide-react";
-import { FilterBar, SearchInput, LoadingSpinner, EmptyState } from "./xtreino";
-import { getMonthName } from "../../hooks/xtreino-shared";
+import { FilterBar, SearchInput, LoadingSpinner, EmptyState } from "../components/Xtreinos/ui";
+import { getMonthName } from "../hooks/xtreino-shared";
 import { useEvolucaoTab } from "@/hooks/useXtreinoTabs";
 import type { ChartDataPoint } from "@/types/xtreinos";
 

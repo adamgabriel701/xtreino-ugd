@@ -9,8 +9,8 @@ import {
   BarChart3,
   Award,
 } from "lucide-react";
-import { Sparkline } from "../ui/Sparkline";
-import { BadgeIcon } from "../ui/BadgeIcon";
+import { Sparkline } from "../../../components/Xtreinos/ui/Sparkline";
+import { BadgeIcon } from "../../../components/Xtreinos/ui/BadgeIcon";
 
 interface PlayerHistoryItem {
   date: string;

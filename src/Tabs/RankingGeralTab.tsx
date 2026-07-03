@@ -2,18 +2,12 @@
 // RankingGeralTab.tsx
 // ============================================================
 
-import { useState, useMemo } from "react";
 import {
   TrendingUp,
   BarChart2,
   Minimize2,
   Maximize2,
 } from "lucide-react";
-import { trpc } from "@/providers/trpc";
-import {
-  useXtreinoCalculations,
-} from "@/hooks/useXtreinoCalculations";
-
 import {
   SummaryCards,
   FilterBar,
@@ -21,104 +15,27 @@ import {
   LoadingSpinner,
   ComparisonBar,
   PodiumCard,
-} from "./xtreino";
-import {
-  type EnrichedTeam,
-  type MergedPlayer,
-  type SortField,
-  enrichTeam,
-  mergePlayersById,
-  usePlayersByName,
-  useSortState,
-  useCompareState,
-  useRankingSort,
-} from "../../hooks/xtreino-shared";
+} from "../components/Xtreinos/ui";
+import type { SortField } from "../hooks/xtreino-shared";
 import { buildSummaryCards } from "./xtreino-shared-components";
 import { RankingTable } from "./RankingTable";
 import { RankingLegend } from "./RankingLegend";
 import { useCompactMode } from "./xtreino-ousado";
+import { useRankingGeralTab } from "@/hooks/useXtreinoTabs";
 
+// ============================================================
+// COMPONENTE PRINCIPAL
+// ============================================================
 export default function RankingGeralTab() {
-  const { sortBy, sortDir, handleSort } = useSortState();
-  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const {
-    compareMode,
-    setCompareMode,
-    selected: selectedForCompare,
-    toggle: toggleCompare,
-    clear: clearCompare,
-  } = useCompareState();
-  const [search, setSearch] = useState("");
-  
-  // Ideia #14: Modo Compacto
+    isLoading, sortBy, sortDir, handleSort, search, setSearch,
+    compareMode, setCompareMode, selectedForCompare, toggleCompare, clearCompare, expandedTeam, setExpandedTeam,
+    finalRanking, top3, comparisonTeams, totalXtreinosUnicos, getTeamPlayers, teamRanking, teamNameToIdMap,
+    clearFilters, hasFilters,
+  } = useRankingGeralTab();
+
   const { isCompact, toggle: toggleCompact } = useCompactMode();
-
-  const { data: allResults } = trpc.xtreinos.listResults.useQuery();
-  const { data: allPlayerStats } = trpc.xtreinos.listPlayerStats.useQuery();
-  const { data: playersList } = trpc.players.list.useQuery();
-
-  const { teamRanking, teamPlayersGrouped } = useXtreinoCalculations({
-    results: allResults ?? [],
-    playerStats: allPlayerStats ?? [],
-  });
-
-  const isLoading = !allResults || !allPlayerStats;
-  const playersByName = usePlayersByName(playersList);
-
-  const totalXtreinosUnicos = useMemo(() => {
-    const uniqueXtreinoIds = new Set<number>();
-    allResults?.forEach((r) => uniqueXtreinoIds.add(r.xtreinoId));
-    return uniqueXtreinoIds.size;
-  }, [allResults]);
-
-  const enrichedRanking: EnrichedTeam[] = useMemo(() => {
-    return teamRanking.map((team) => enrichTeam(team, "geral"));
-  }, [teamRanking]);
-
-  const sorted = useRankingSort(enrichedRanking, sortBy, sortDir);
-
-  const finalRanking = useMemo(() => {
-    if (!search.trim()) return sorted;
-    const q = search.toLowerCase();
-    return sorted.filter((t) => t.teamName.toLowerCase().includes(q));
-  }, [sorted, search]);
-
-  const getTeamPlayers = (teamName: string): MergedPlayer[] => {
-    const teamKey = teamName.trim().toLowerCase();
-    const players = teamPlayersGrouped.get(teamKey) ?? [];
-    return mergePlayersById(players, playersByName);
-  };
-
-  const top3 = useMemo(
-    () => (finalRanking.length >= 3 ? finalRanking.slice(0, 3) : []),
-    [finalRanking]
-  );
-
-  const comparisonTeams = useMemo(
-    () => sorted.filter((t) => selectedForCompare.has(t.teamName)),
-    [sorted, selectedForCompare]
-  );
-
-  const clearFilters = () => {
-    setSearch("");
-    clearCompare();
-  };
-
-  const hasFilters = search.trim().length > 0 || sortBy !== "total" || compareMode || isCompact;
   const summaryCards = buildSummaryCards(teamRanking, totalXtreinosUnicos);
-
-  // NOVO: Buscar lista de times para poder gerar os links
-  const { data: teamsList } = trpc.teams.list.useQuery();
-
-  // NOVO: Mapa Nome do Time -> ID do Time e ID do Clã
-  const teamNameToIdMap = useMemo(() => {
-    const map = new Map<string, { teamId: number; clanId: number | null }>();
-    if (!teamsList) return map;
-    for (const team of teamsList) {
-      map.set(team.name.trim().toLowerCase(), { teamId: team.id, clanId: team.clanId ?? null });
-    }
-    return map;
-  }, [teamsList]);
 
   return (
     <div className={`space-y-6 ${comparisonTeams.length >= 2 ? "pb-48" : ""}`}>
@@ -216,7 +133,7 @@ export default function RankingGeralTab() {
           title="Ranking Geral — Historico Completo"
           flameThreshold={10}
           teamNameToIdMap={new Map(Array.from(teamNameToIdMap.entries()).map(([k, v]) => [k, v.teamId]))}
-          clanNameToIdMap={undefined} // Não precisa de mapa de clãs aqui
+          clanNameToIdMap={undefined}
         />
       )}
 

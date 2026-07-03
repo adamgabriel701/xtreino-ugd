@@ -1,8 +1,8 @@
 // ============================================================
-// RankingTable.tsx — Tabela reutilizável (Atualizado com Modo Compacto e Links)
+// RankingTable.tsx — Tabela reutilizável (Puramente Visual)
 // ============================================================
 
-import { Link } from "react-router-dom"; // NOVO
+import { Link } from "react-router-dom";
 import {
   Crown,
   Target,
@@ -24,15 +24,17 @@ import {
   SortHeader,
   Sparkline,
   EmptyState,
-} from "./xtreino";
+} from "../components/Xtreinos/ui";
 import {
   type EnrichedTeam,
   type MergedPlayer,
   type SortField,
   getPosColor,
   getRankStyle,
-} from "../../hooks/xtreino-shared";
+} from "../hooks/xtreino-shared";
 import { TrendIcon, BadgeIcon } from "./xtreino-shared-components";
+import { getPlayerBadges } from "@/utils/xtreino"; // NOVO
+import React from "react";
 
 interface RankingTableProps {
   isCompact?: boolean;
@@ -50,7 +52,7 @@ interface RankingTableProps {
   subtitle?: string;
   flameThreshold?: number;
   clanNameToIdMap?: Map<string, number>;
-  teamNameToIdMap?: Map<string, number>; // NOVO: Mapa de IDs para Lines
+  teamNameToIdMap?: Map<string, number>;
 }
 
 export function RankingTable({
@@ -69,7 +71,7 @@ export function RankingTable({
   subtitle,
   flameThreshold = 10,
   clanNameToIdMap,
-  teamNameToIdMap, // NOVO
+  teamNameToIdMap,
 }: RankingTableProps) {
   
   const baseCols = 6;
@@ -110,12 +112,8 @@ export function RankingTable({
                   <span className="text-xs font-medium text-[#5a5a6e]">#</span>
                 </th>
               )}
-              <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase w-14">
-                #
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-[#5a5a6e] uppercase">
-                Equipe
-              </th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-[#5a5a6e] uppercase w-14">#</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#5a5a6e] uppercase">Equipe</th>
               <th className="px-4 py-3 text-center">
                 <SortHeader field="xtreinos" label="X-Treinos" currentField={sortBy} direction={sortDir} onSort={onSort} />
               </th>
@@ -155,65 +153,37 @@ export function RankingTable({
               const rowKey = team.teamName;
               const isExpanded = expandedTeam === rowKey;
               const teamPlayers = getTeamPlayers(team.teamName);
-              const clanId = clanNameToIdMap?.get(team.teamName.trim().toLowerCase());
 
               return (
-                <>
+                <React.Fragment key={rowKey}>
                   <tr
-                    key={rowKey}
                     className={`${getRankStyle(index)} hover:bg-[#1a1a24]/50 transition-colors cursor-pointer`}
                     onClick={() => onToggleExpand(isExpanded ? null : rowKey)}
                   >
                     {compareMode && (
                       <td className="px-3 py-3 text-center">
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleCompare(team.teamName);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); onToggleCompare(team.teamName); }}
                           className="text-[#5a5a6e] hover:text-green-400 transition-colors"
                         >
-                          {selectedForCompare.has(team.teamName) ? (
-                            <CheckSquare className="w-4 h-4 text-green-400" />
-                          ) : (
-                            <Square className="w-4 h-4" />
-                          )}
+                          {selectedForCompare.has(team.teamName) ? <CheckSquare className="w-4 h-4 text-green-400" /> : <Square className="w-4 h-4" />}
                         </button>
                       </td>
                     )}
-                    <td className="px-4 py-3 text-center">
-                      <RankBadge index={index} />
-                    </td>
+                    <td className="px-4 py-3 text-center"><RankBadge index={index} /></td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          {/* LINK INTELIGENTE: PRIORIZA CLÃ, DEPOIS LINE */}
                           {clanNameToIdMap?.get(team.teamName.trim().toLowerCase()) ? (
-                            <Link
-                              to={`/clans/${clanNameToIdMap.get(team.teamName.trim().toLowerCase())}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors"
-                            >
-                              {team.teamName}
-                            </Link>
+                            <Link to={`/clans/${clanNameToIdMap.get(team.teamName.trim().toLowerCase())}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors">{team.teamName}</Link>
                           ) : teamNameToIdMap?.get(team.teamName.trim().toLowerCase()) ? (
-                            <Link
-                              to={`/clans/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}/line/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors"
-                            >
-                              {team.teamName}
-                            </Link>
+                            <Link to={`/clans/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}/line/${teamNameToIdMap.get(team.teamName.trim().toLowerCase())}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-[#f0f0f5] hover:text-emerald-400 transition-colors">{team.teamName}</Link>
                           ) : (
-                            <span className="text-sm font-bold text-[#f0f0f5]">
-                              {team.teamName}
-                            </span>
+                            <span className="text-sm font-bold text-[#f0f0f5]">{team.teamName}</span>
                           )}
                           
                           {team.pointsVsPrevMonth !== null && team.pointsVsPrevMonth !== 0 && (
-                            <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                              team.pointsVsPrevMonth > 0 ? "text-green-400 bg-green-500/10" : "text-red-400 bg-red-500/10"
-                            }`}>
+                            <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${team.pointsVsPrevMonth > 0 ? "text-green-400 bg-green-500/10" : "text-red-400 bg-red-500/10"}`}>
                               {team.pointsVsPrevMonth > 0 ? "↑" : "↓"} {Math.abs(team.pointsVsPrevMonth)} pts
                             </span>
                           )}
@@ -226,9 +196,7 @@ export function RankingTable({
                                 <BadgeIcon badge={badge} /> {badge}
                               </span>
                             ))}
-                            {team.badges.length > 2 && (
-                              <span className="text-[10px] text-[#5a5a6e]">+{team.badges.length - 2}</span>
-                            )}
+                            {team.badges.length > 2 && <span className="text-[10px] text-[#5a5a6e]">+{team.badges.length - 2}</span>}
                           </div>
                         )}
                       </div>
@@ -256,9 +224,7 @@ export function RankingTable({
                         </span>
                       </td>
                     )}
-                    <td className="px-4 py-3 text-center text-sm text-[#8a8a9e]">
-                      {team.avgPosition > 0 ? team.avgPosition : "-"}
-                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-[#8a8a9e]">{team.avgPosition > 0 ? team.avgPosition : "-"}</td>
                     {!isCompact && (
                       <td className="px-4 py-3 text-center">
                         <div className="flex flex-col items-center gap-1">
@@ -272,9 +238,7 @@ export function RankingTable({
                         <span className="text-sm font-bold text-yellow-400">{team.totalPosPoints}</span>
                       </td>
                     )}
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-sm text-[#8a8a9e]">{team.totalKills}</span>
-                    </td>
+                    <td className="px-4 py-3 text-center"><span className="text-sm text-[#8a8a9e]">{team.totalKills}</span></td>
                     {!isCompact && (
                       <td className="px-4 py-3 text-center bg-red-500/5">
                         <span className="text-sm font-bold text-red-400">{team.totalKillPoints}</span>
@@ -295,7 +259,7 @@ export function RankingTable({
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -309,14 +273,16 @@ export function RankingTable({
   );
 }
 
+// ============================================================
+// SUB-COMPONENTES PURAMENTE VISUAIS
+// ============================================================
+
 function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: MergedPlayer[] }) {
   return (
     <div className="ml-4 space-y-4">
       {team.badges.length > 0 && (
         <div>
-          <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2">
-            <Award className="w-3 h-3" /> Conquistas do Time
-          </h4>
+          <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2"><Award className="w-3 h-3" /> Conquistas do Time</h4>
           <div className="flex flex-wrap gap-2">
             {team.badges.map((badge) => (
               <span key={badge} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#1a1a24] border border-[#2a2a3a] text-xs text-[#8a8a9e]">
@@ -336,9 +302,7 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
 
       {team.sparkline.length > 1 && (
         <div>
-          <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2">
-            <TrendingUp className="w-3 h-3" /> Evolucao do Time
-          </h4>
+          <h4 className="text-xs font-medium text-[#5a5a6e] mb-2 flex items-center gap-2"><TrendingUp className="w-3 h-3" /> Evolucao do Time</h4>
           <div className="bg-[#1a1a24] rounded-lg border border-[#2a2a3a] p-3">
             <Sparkline data={team.sparkline} width={300} height={40} />
           </div>
@@ -346,9 +310,7 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
       )}
 
       <div>
-        <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2">
-          <Calendar className="w-3 h-3" /> Historico de X-Treinos ({team.xtreinos.length})
-        </h4>
+        <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2"><Calendar className="w-3 h-3" /> Historico de X-Treinos ({team.xtreinos.length})</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -381,9 +343,7 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
 
       {players.length > 0 && (
         <div>
-          <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2">
-            <Users className="w-3 h-3" /> Jogadores ({players.length})
-          </h4>
+          <h4 className="text-xs font-medium text-[#5a5a6e] mb-3 flex items-center gap-2"><Users className="w-3 h-3" /> Jogadores ({players.length})</h4>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -401,14 +361,8 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
               </thead>
               <tbody className="divide-y divide-[#2a2a3a]/50">
                 {players.map((player, idx) => {
-                  const playerBadges: string[] = [];
-                  if (player.totalKills >= 100) playerBadges.push("100 Kills");
-                  if (player.totalKills >= 300) playerBadges.push("300 Kills");
-                  if (player.participations >= 5) playerBadges.push("5 XTs");
-                  if (player.participations >= 10) playerBadges.push("10 XTs");
-                  if (player.avgKills >= 8) playerBadges.push("Sniper");
-                  if (player.avgKills >= 12) playerBadges.push("Elite");
-
+                  // Lógica de cálculo extraída para o utils
+                  const playerBadges = getPlayerBadges(player.totalKills, player.participations, player.avgKills);
                   const playerTrend: "up" | "down" | "same" = player.avgKills >= 7 ? "up" : player.avgKills < 4 ? "down" : "same";
 
                   return (
@@ -417,18 +371,10 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
                       <td className="px-3 py-2">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                              <Target className="w-3 h-3 text-green-400" />
-                            </div>
+                            <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center"><Target className="w-3 h-3 text-green-400" /></div>
                             <div className="flex flex-col">
-                              {/* LINK NO NOME DO JOGADOR */}
                               {player.id > 0 ? (
-                                <Link
-                                  to={`/jogador/${player.id}`}
-                                  className="text-sm font-medium text-[#f0f0f5] hover:text-emerald-400 transition-colors"
-                                >
-                                  {player.nickname}
-                                </Link>
+                                <Link to={`/jogador/${player.id}`} className="text-sm font-medium text-[#f0f0f5] hover:text-emerald-400 transition-colors">{player.nickname}</Link>
                               ) : (
                                 <span className="text-sm font-medium text-[#f0f0f5]">{player.nickname}</span>
                               )}
@@ -473,9 +419,7 @@ function ExpandedTeamContent({ team, players }: { team: EnrichedTeam; players: M
                           <TrendIcon trend={playerTrend} />
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-center text-green-400 font-bold bg-green-500/5">
-                        {player.totalKills}
-                      </td>
+                      <td className="px-3 py-2 text-center text-green-400 font-bold bg-green-500/5">{player.totalKills}</td>
                     </tr>
                   );
                 })}

@@ -8,7 +8,7 @@ import {
   Sparkline, BadgeIcon, TrendIcon, RankBadge, SummaryCards, SortHeader,
   FilterBar, SearchInput, SelectFilter, EmptyState, LoadingSpinner,
   PreviousNicksTooltip, PodiumCard, ComparisonBar,
-} from "../components/xtreino";
+} from "../../components/Xtreinos/ui";
 import { useXtreinoFilters } from "@/hooks/useXtreinoFilters";
 
 // ============================================================

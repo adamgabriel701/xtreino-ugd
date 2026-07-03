@@ -2,7 +2,7 @@ import {
   Dumbbell,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
-import XTreinosTab from "./components/XTreinosTab";
+import XTreinosTab from "../Tabs/XTreinosTab";
 
 export default function XTreinos() {
   return (

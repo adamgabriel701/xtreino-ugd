@@ -1,6 +1,6 @@
 // HeadToHeadTab.tsx
 import { Swords, Target, UserCircle, Dumbbell } from "lucide-react";
-import { FilterBar, SearchInput, LoadingSpinner, EmptyState, Sparkline, BadgeIcon } from "./xtreino";
+import { FilterBar, SearchInput, LoadingSpinner, EmptyState, Sparkline, BadgeIcon } from "../components/Xtreinos/ui";
 import { useHeadToHeadTab } from "@/hooks/useXtreinoTabs";
 import type { PlayerFullStats } from "@/types/xtreinos";
 

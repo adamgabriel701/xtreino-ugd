@@ -3,7 +3,7 @@ import {
   Target, TrendingUp, Award, ArrowLeft, History, Tag, Flame, Users, Swords, Shield,
 } from "lucide-react";
 import { trpc } from "@/providers/trpc";
-import { Sparkline, BadgeIcon } from "../components/xtreino";
+import { Sparkline, BadgeIcon } from "../../components/Xtreinos/ui";
 
 // CORREÇÃO: Tipo adicionado para inferir corretamente as propriedades de stats
 type PlayerStats = {

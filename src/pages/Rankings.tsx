@@ -15,21 +15,21 @@ import {
   History,
 } from "lucide-react";
 import MainLayout from "@/layout/MainLayout";
-import XTreinosTab from "./components/XTreinosTab";
+import XTreinosTab from "../Tabs/XTreinosTab";
 import JogadoresPage from "./Jogadores/JogadoresPage"; 
-import RankingGeralTab from "./components/RankingGeralTab";
-import RankingMensalTab from "./components/RankingMensalTab";
-import RankingSemanalTab from "./components/RankingSemanalTab";
-import RankingClasTab from "./components/RankingClasTab";
-import DueloTab from "./components/DueloTab";
-import HeadToHeadTab from "./components/HeadToHeadTab";
-import EvolucaoTab from "./components/EvolucaoTab";
-import HistoricoGeralTab from "./components/HistoricoGeralTab";
+import RankingGeralTab from "../Tabs/RankingGeralTab";
+import RankingMensalTab from "../Tabs/RankingMensalTab";
+import RankingSemanalTab from "../Tabs/RankingSemanalTab";
+import RankingClasTab from "../Tabs/RankingClasTab";
+import DueloTab from "../Tabs/DueloTab";
+import HeadToHeadTab from "../Tabs/HeadToHeadTab";
+import EvolucaoTab from "../Tabs/EvolucaoTab";
+import HistoricoGeralTab from "../Tabs/HistoricoGeralTab";
 import {
   PredicoesTab,
   MomentosCarousel,
   CrossfireTab,
-} from "./components/xtreino-ousado";
+} from "../Tabs/xtreino-ousado";
 
 // ============================================================
 // TIPOS

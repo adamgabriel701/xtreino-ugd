@@ -55,3 +55,31 @@ export function getPointsByPosition(pos: number): number {
   const points: Record<number, number> = { 1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7, 7: 6, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1, 13: 1, 14: 0, 15: 0 };
   return points[pos] ?? 0;
 }
+
+// types/scrims.ts
+
+export type ScrimRankTabKey = "jogadores" | "times";
+
+export interface EnrichedScrimPlayer {
+  nickname: string;
+  teamName: string;
+  scrimKills: number;
+  scrimAssists: number;
+  scrimDeaths: number;
+  scrimDamage: number;
+  scrimMvps: number;
+  scrimKdRatio: number;
+  scrimWins: number;
+  scrimLosses: number;
+  totalMatches: number;
+}
+
+export interface EnrichedScrimTeam {
+  name: string;
+  tag: string;
+  scrimKills: number;
+  scrimWins: number;
+  scrimLosses: number;
+  scrimMatches: number;
+  winRate: number;
+}
