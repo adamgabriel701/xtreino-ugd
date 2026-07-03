@@ -3,10 +3,7 @@
 // ============================================================
 
 import { Trophy, Target, BarChart3 } from "lucide-react";
-import {
-  POSITION_POINTS,
-  KILL_POINTS,
-} from "@/hooks/xtreinos/useXtreinoCalculations";
+import { XTREINO_POSITION_POINTS as POSITION_POINTS, XTREINO_KILL_POINTS as KILL_POINTS } from "@/constants/gameRules";
 
 export function RankingLegend() {
   return (
