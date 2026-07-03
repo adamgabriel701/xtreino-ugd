@@ -92,11 +92,17 @@ const TABS: TabConfig[] = [
 export default function Rankings() {
   const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
 
-  // Se estiver na rota de jogadores, forçamos a aba ativa como "jogadores"
-  // Caso contrário, usamos o tab vindo da URL, ou "geral" como padrão
-  const activeTab: TabKey = subtab 
+  // CORREÇÃO: Procura a aba válida tanto no "tab" quanto no "subtab" para evitar 
+  // conflitos de rota quando o router joga "mensal/semanal" dentro do subtab.
+  const activeTab: TabKey = 
+    TABS.find(t => t.key === tab)?.key as TabKey || 
+    TABS.find(t => t.key === subtab)?.key as TabKey || 
+    "geral";
+
+  // Garante que a aba jogadores só seja ativada se a rota for explicitamente de jogadores
+  const finalActiveTab: TabKey = (tab === "jogadores" || (activeTab === "jogadores" && subtab !== undefined)) 
     ? "jogadores" 
-    : (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
+    : activeTab;
 
   if (!tab && !subtab) {
     return <Navigate to="/rankings/geral" replace />;
@@ -106,13 +112,13 @@ export default function Rankings() {
     return <Navigate to="/rankings/jogadores/xtreinos" replace />;
   }
 
-  const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
+  const activeTabConfig = TABS.find((t) => t.key === finalActiveTab)!;
   const group1Tabs = TABS.filter((t) => t.group === 1);
   const group2Tabs = TABS.filter((t) => t.group === 2);
   const group3Tabs = TABS.filter((t) => t.group === 3);
 
   const renderTabButton = (tabConfig: TabConfig) => {
-    const isActive = activeTab === tabConfig.key;
+    const isActive = finalActiveTab === tabConfig.key;
 
     if (tabConfig.isExternal) {
       return (
@@ -185,21 +191,21 @@ export default function Rankings() {
 
         {/* Tab Content */}
         <div className="pb-12">
-          {activeTab === "xtreinos" && <XTreinosTab />}
-          {activeTab === "geral" && <RankingGeralTab />}
-          {activeTab === "mensal" && <RankingMensalTab />}
-          {activeTab === "semanal" && <RankingSemanalTab />}
-          {activeTab === "clas" && <RankingClasTab />}
+          {finalActiveTab === "xtreinos" && <XTreinosTab />}
+          {finalActiveTab === "geral" && <RankingGeralTab />}
+          {finalActiveTab === "mensal" && <RankingMensalTab />}
+          {finalActiveTab === "semanal" && <RankingSemanalTab />}
+          {finalActiveTab === "clas" && <RankingClasTab />}
           
           {/* Passa a subtab capturada nativamente pelo Router */}
-          {activeTab === "jogadores" && <JogadoresPage initialSubTab={subtab} />}
+          {finalActiveTab === "jogadores" && <JogadoresPage initialSubTab={subtab} />}
           
-          {activeTab === "historico" && <HistoricoGeralTab />}
-          {activeTab === "duelo" && <DueloTab />}
-          {activeTab === "h2h" && <HeadToHeadTab />}
-          {activeTab === "evolucao" && <EvolucaoTab />}
-          {activeTab === "predicoes" && <PredicoesTab />}
-          {activeTab === "crossfire" && <CrossfireTab />}
+          {finalActiveTab === "historico" && <HistoricoGeralTab />}
+          {finalActiveTab === "duelo" && <DueloTab />}
+          {finalActiveTab === "h2h" && <HeadToHeadTab />}
+          {finalActiveTab === "evolucao" && <EvolucaoTab />}
+          {finalActiveTab === "predicoes" && <PredicoesTab />}
+          {finalActiveTab === "crossfire" && <CrossfireTab />}
         </div>
       </div>
     </MainLayout>
