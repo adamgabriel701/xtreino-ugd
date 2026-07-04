@@ -359,10 +359,11 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "sean_021",
+    canonicalNickname: "UGD SEAN021",
     canonicalTeam: "UGD CASUAL",
     role: "off",
     knownAliases: [
+      "UGD SEAN021",
       "sean_021",
     ],
   },
@@ -374,6 +375,20 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD Thz⁷",
     ],
   },
+  {
+    canonicalNickname: "UGD A2",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "UGD A2",
+    ],
+  },
+{
+  canonicalNickname: "Noway_7",
+  canonicalTeam: "UGD CASUAL",
+  role: "off",
+  knownAliases: ["Noway_7"],
+},
 
   // ==========================================
   // UGD ROYAL (X1 - XTreino 1)
@@ -780,13 +795,14 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "CMF Lyx7",
+    canonicalNickname: "CMF Nyx",
     canonicalTeam: "CMF ASSALT",
     role: "off",
     knownAliases: [
       "CMF Lyx7",
       "cmflyx7",
       "lyx7",
+      "CMF Nyx",
     ],
   },
   {
@@ -828,6 +844,18 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "MacroSync",
     ],
+  },
+  {
+    canonicalNickname: "omar",
+    canonicalTeam: "CMF ASSALT",
+    role: "off",
+    knownAliases: ["omar"],
+  },
+  {
+    canonicalNickname: "CMF D2Efps",
+    canonicalTeam: "CMF ASSALT",
+    role: "off",
+    knownAliases: ["CMF D2Efps"],
   },
 
   // ==========================================
@@ -902,11 +930,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "RED LORD",
+    canonicalNickname: "RED LΘRD",
     canonicalTeam: "RED INSS",
     role: "off",
     knownAliases: [
       "RED LORD",
+      "RED LΘRD",
     ],
   },
   {
@@ -926,10 +955,11 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "yKWIM",
+    canonicalNickname: "yKWIM¿",
     canonicalTeam: "RED INSS",
     role: "off",
     knownAliases: [
+      "yKWIM¿",
       "yKWIM",
     ],
   },
@@ -1249,6 +1279,24 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "EME々Swift7",
       "swift7",
     ],
+  },
+  {
+    canonicalNickname: "Pain",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: ["Pain"],
+  },
+  {
+    canonicalNickname: "FROSTX",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: ["FROSTX"],
+  },
+  {
+    canonicalNickname: "Jtpe' ✞",
+    canonicalTeam: "EME",
+    role: "off",
+    knownAliases: ["Jtpe' ✞"],
   },
 
   // ==========================================
@@ -2075,6 +2123,32 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     canonicalTeam: "FURY ROYAL",
     role: "off",
     knownAliases: ["Asmota"],
+  },
+
+  // RIVERS
+  {
+    canonicalNickname: "Rivers JN",
+    canonicalTeam: "RIVERS",
+    role: "off",
+    knownAliases: ["Rivers JN"],
+  },
+  {
+    canonicalNickname: "Rivers DJ",
+    canonicalTeam: "RIVERS",
+    role: "off",
+    knownAliases: ["Rivers DJ"],
+  },
+  {
+    canonicalNickname: "River____w",
+    canonicalTeam: "RIVERS",
+    role: "off",
+    knownAliases: ["River____w"],
+  },
+  {
+    canonicalNickname: "Buzeira 永",
+    canonicalTeam: "RIVERS",
+    role: "off",
+    knownAliases: ["Buzeira 永"],  // ⚠️ Já existe em UGD LEGENDS! Precisa decidir
   },
 ];
 
