@@ -23,13 +23,10 @@ export default function XTreinosTab() {
     selectedDate, setSelectedDate, search, setSearch, compareMode, setCompareMode,
     selectedForCompare, expandedTeam, setExpandedTeam, sortedStats, top3,
     comparisonTeams, getTeamPlayers, scheduleList, periodSummary, clearFilters, hasFilters,
-    // Usamos "as any" temporariamente caso o hook esteja com tipagem antiga em cache
+    availableMonths = [],
+    availableDates = [],
+    clearCompare = () => {},
   } = useXTreinosTab() as any;
-
-  // Extração segura (se vier do hook, usa. Se não, fallback para array vazio)
-  const availableMonths = (useXTreinosTab as any)().availableMonths || [];
-  const availableDates = (useXTreinosTab as any)().availableDates || [];
-  const clearCompare = (useXTreinosTab as any)().clearCompare || (() => {});
 
   const summaryCards = periodSummary ? [
     { icon: <Users className="w-4 h-4 text-blue-400" />, label: "Equipes", value: periodSummary.uniqueTeams },
@@ -47,7 +44,6 @@ export default function XTreinosTab() {
         <SelectFilter icon={<Clock className="w-4 h-4" />} value={selectedDate} onChange={setSelectedDate} placeholder="Todos os dias" options={availableDates.map((d: string) => ({ value: d, label: `${d.split("-")[2]}/${d.split("-")[1]}` }))} disabled={!selectedMonth} minWidth="140px" />
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#5a5a6e]" />
-          {/* CORREÇÃO: Adicionado "as SortField" para não dar erro de tipo no change */}
           <select value={sortBy} onChange={(e) => handleSort(e.target.value as any)} className="px-3 py-2 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#f0f0f5] text-sm focus:outline-none focus:border-green-500/50 min-w-[160px]">
             <option value="total">Ordenar: Total</option><option value="kills">Ordenar: Kills</option><option value="pos">Ordenar: Posicao</option><option value="xtreinos">Ordenar: X-Treinos</option><option value="avgPos">Ordenar: Media Pos</option><option value="consistency">Ordenar: Consistencia</option><option value="streak">Ordenar: Streak</option>
           </select>
