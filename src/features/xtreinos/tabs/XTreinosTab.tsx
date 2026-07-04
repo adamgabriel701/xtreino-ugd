@@ -18,15 +18,17 @@ import { useXTreinosTab } from "@/hooks/xtreinos/useXtreinoTabs";
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function XTreinosTab() {
+  // Pegamos TUDO de uma única chamada do hook.
+  // Isso garante que o availableDates saiba qual é o selectedMonth
   const {
     isLoading, isAccumulated, sortBy, sortDir, handleSort, selectedMonth, setSelectedMonth,
     selectedDate, setSelectedDate, search, setSearch, compareMode, setCompareMode,
     selectedForCompare, expandedTeam, setExpandedTeam, sortedStats, top3,
     comparisonTeams, getTeamPlayers, scheduleList, periodSummary, clearFilters, hasFilters,
-    availableMonths = [],
-    availableDates = [],
-    clearCompare = () => {},
-  } = useXTreinosTab() as any;
+    availableMonths,
+    availableDates,
+    clearCompare,
+  } = useXTreinosTab();
 
   const summaryCards = periodSummary ? [
     { icon: <Users className="w-4 h-4 text-blue-400" />, label: "Equipes", value: periodSummary.uniqueTeams },
@@ -40,15 +42,43 @@ export default function XTreinosTab() {
       {/* Filtros */}
       <FilterBar hasFilters={hasFilters} onClear={clearFilters}>
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar equipe..." minWidth="200px" />
-        <SelectFilter icon={<Calendar className="w-4 h-4" />} value={selectedMonth} onChange={(v) => { setSelectedMonth(v); setSelectedDate(""); }} placeholder="Todos os meses" options={availableMonths.map((m: string) => ({ value: m, label: `${m.split("-")[1]}/${m.split("-")[0]}` }))} minWidth="140px" />
-        <SelectFilter icon={<Clock className="w-4 h-4" />} value={selectedDate} onChange={setSelectedDate} placeholder="Todos os dias" options={availableDates.map((d: string) => ({ value: d, label: `${d.split("-")[2]}/${d.split("-")[1]}` }))} disabled={!selectedMonth} minWidth="140px" />
+        <SelectFilter 
+          icon={<Calendar className="w-4 h-4" />} 
+          value={selectedMonth} 
+          onChange={(v) => { setSelectedMonth(v); setSelectedDate(""); }} 
+          placeholder="Todos os meses" 
+          options={availableMonths.map((m: string) => ({ value: m, label: `${m.split("-")[1]}/${m.split("-")[0]}` }))} 
+          minWidth="140px" 
+        />
+        <SelectFilter 
+          icon={<Clock className="w-4 h-4" />} 
+          value={selectedDate} 
+          onChange={setSelectedDate} 
+          placeholder="Todos os dias" 
+          options={availableDates.map((d: string) => ({ value: d, label: `${d.split("-")[2]}/${d.split("-")[1]}` }))} 
+          disabled={!selectedMonth} 
+          minWidth="140px" 
+        />
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#5a5a6e]" />
-          <select value={sortBy} onChange={(e) => handleSort(e.target.value as any)} className="px-3 py-2 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#f0f0f5] text-sm focus:outline-none focus:border-green-500/50 min-w-[160px]">
-            <option value="total">Ordenar: Total</option><option value="kills">Ordenar: Kills</option><option value="pos">Ordenar: Posicao</option><option value="xtreinos">Ordenar: X-Treinos</option><option value="avgPos">Ordenar: Media Pos</option><option value="consistency">Ordenar: Consistencia</option><option value="streak">Ordenar: Streak</option>
+          <select 
+            value={sortBy} 
+            onChange={(e) => handleSort(e.target.value as any)} 
+            className="px-3 py-2 rounded-lg bg-[#1a1a24] border border-[#2a2a3a] text-[#f0f0f5] text-sm focus:outline-none focus:border-green-500/50 min-w-[160px]"
+          >
+            <option value="total">Ordenar: Total</option>
+            <option value="kills">Ordenar: Kills</option>
+            <option value="pos">Ordenar: Posicao</option>
+            <option value="xtreinos">Ordenar: X-Treinos</option>
+            <option value="avgPos">Ordenar: Media Pos</option>
+            <option value="consistency">Ordenar: Consistencia</option>
+            <option value="streak">Ordenar: Streak</option>
           </select>
         </div>
-        <button onClick={() => { setCompareMode((m: boolean) => !m); }} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${compareMode ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"}`}>
+        <button 
+          onClick={() => { setCompareMode((m: boolean) => !m); }} 
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${compareMode ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-[#1a1a24] border-[#2a2a3a] text-[#5a5a6e] hover:text-[#f0f0f5]"}`}
+        >
           <BarChart2 className="w-4 h-4 inline mr-1.5" /> Comparar
         </button>
       </FilterBar>
@@ -59,9 +89,23 @@ export default function XTreinosTab() {
       {/* Podio */}
       {isAccumulated && top3?.length === 3 && !isLoading && (
         <div>
-          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-yellow-400" /> Podio</h3>
+          <h3 className="text-sm font-medium text-[#8a8a9e] mb-3 flex items-center gap-2">
+            <Crown className="w-4 h-4 text-yellow-400" /> Podio
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {top3.map((t: any, i: number) => <PodiumCard key={t.teamName} name={t.teamName} rank={i} stats={[{ label: "Kills", value: t.totalKills, color: "text-green-400" }, { label: "XTs", value: t.streak || 1 }, { label: "Media", value: t.avgPosition }]} streak={t.streak >= 3 ? t.streak : undefined} />)}
+            {top3.map((t: any, i: number) => (
+              <PodiumCard 
+                key={t.teamName} 
+                name={t.teamName} 
+                rank={i} 
+                stats={[
+                  { label: "Kills", value: t.totalKills, color: "text-green-400" }, 
+                  { label: "XTs", value: t.streak || 1 }, 
+                  { label: "Media", value: t.avgPosition }
+                ]} 
+                streak={t.streak >= 3 ? t.streak : undefined} 
+              />
+            ))}
           </div>
         </div>
       )}
@@ -70,7 +114,9 @@ export default function XTreinosTab() {
       {!isLoading && (
         <div className="bg-[#12121a] rounded-xl border border-[#2a2a3a] overflow-hidden">
           <div className="px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-            <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2"><Medal className="w-5 h-5 text-yellow-400" /> Classificacao {selectedDate ? `— ${selectedDate.split("-")[2]}/${selectedDate.split("-")[1]}` : selectedMonth ? `— ${selectedMonth.split("-")[1]}/${selectedMonth.split("-")[0]}` : "— Todos os periodos"}</h3>
+            <h3 className="font-bold text-[#f0f0f5] flex items-center gap-2">
+              <Medal className="w-5 h-5 text-yellow-400" /> Classificacao {selectedDate ? `— ${selectedDate.split("-")[2]}/${selectedDate.split("-")[1]}` : selectedMonth ? `— ${selectedMonth.split("-")[1]}/${selectedMonth.split("-")[0]}` : "— Todos os periodos"}
+            </h3>
             <div className="flex items-center gap-3">
               {compareMode && <span className="text-xs text-green-400">{selectedForCompare?.size}/4 selecionados</span>}
               <span className="text-xs text-[#5a5a6e]">{sortedStats?.length} registros</span>
