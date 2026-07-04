@@ -92,25 +92,35 @@ const TABS: TabConfig[] = [
 export default function Rankings() {
   const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
 
-  // CORREÇÃO: Procura a aba válida tanto no "tab" quanto no "subtab" para evitar 
-  // conflitos de rota quando o router joga "mensal/semanal" dentro do subtab.
+  // 1. Se a rota for explicitamente de jogadores, não procurar em TABS
+  if (tab === "jogadores") {
+    // Se não tem subtab, redireciona para o padrão
+    if (!subtab) {
+      return <Navigate to="/rankings/jogadores/xtreinos" replace />;
+    }
+    
+    // Renderiza a página de jogadores passando a subtab
+    return (
+      <MainLayout>
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+          <JogadoresPage initialSubTab={subtab} />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // 2. Redirecionamento padrão se não tiver nada
+  if (!tab && !subtab) {
+    return <Navigate to="/rankings/geral" replace />;
+  }
+
+  // 3. Procura a aba válida em TABS apenas se não for "jogadores"
   const activeTab: TabKey = 
     TABS.find(t => t.key === tab)?.key as TabKey || 
     TABS.find(t => t.key === subtab)?.key as TabKey || 
     "geral";
 
-  // Garante que a aba jogadores só seja ativada se a rota for explicitamente de jogadores
-  const finalActiveTab: TabKey = (tab === "jogadores" || (activeTab === "jogadores" && subtab !== undefined)) 
-    ? "jogadores" 
-    : activeTab;
-
-  if (!tab && !subtab) {
-    return <Navigate to="/rankings/geral" replace />;
-  }
-
-  if (tab === "jogadores" && !subtab) {
-    return <Navigate to="/rankings/jogadores/xtreinos" replace />;
-  }
+  const finalActiveTab: TabKey = activeTab;
 
   const activeTabConfig = TABS.find((t) => t.key === finalActiveTab)!;
   const group1Tabs = TABS.filter((t) => t.group === 1);

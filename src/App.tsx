@@ -44,6 +44,8 @@ export default function App() {
         
         {/* Rankings (X-Treinos e outras tabs genéricas) */}
         <Route path="/rankings" element={<Rankings />} />
+
+        {/* A rota específica de jogadores DEVE vir antes da genérica :tab */}
         <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
         <Route path="/rankings/:tab" element={<Rankings />} />
 
