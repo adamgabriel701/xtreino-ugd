@@ -1,9 +1,8 @@
-import { useParams, Link, Navigate, useLocation } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import {
   Dumbbell,
   Trophy,
   BarChart3,
-  Users,
   CalendarDays,
   Calendar,
   Swords,
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import XTreinosTab from "@/features/xtreinos/tabs/XTreinosTab";
-import JogadoresPage from "./Jogadores/page"; 
 import RankingGeralTab from "@/features/xtreinos/tabs/RankingGeralTab";
 import RankingMensalTab from "@/features/xtreinos/tabs/RankingMensalTab";
 import RankingSemanalTab from "@/features/xtreinos/tabs/RankingSemanalTab";
@@ -31,6 +29,10 @@ import {
   CrossfireTab,
 } from "@/features/xtreinos/tabs/xtreino-ousado";
 
+// Importando direto os componentes de Jogadores
+import JogadoresXTKillsTab from "@/features/rankings/components/JogadoresXTKillsTab";
+import JogadoresTab from "@/features/rankings/components/JogadoresTab";
+
 // ============================================================
 // TIPOS
 // ============================================================
@@ -40,7 +42,9 @@ type TabKey =
   | "mensal" 
   | "semanal" 
   | "clas"       
-  | "jogadores" 
+  | "jogadores-xtreinos"
+  | "jogadores-geral"
+  | "jogadores-scrims"
   | "historico"
   | "duelo"
   | "h2h"
@@ -67,7 +71,19 @@ const TABS: TabConfig[] = [
   { key: "mensal", label: "Ranking Mensal", icon: <CalendarDays className="w-4 h-4" />, description: "Ranking consolidado por mes com variacao", group: 1 },
   { key: "semanal", label: "Ranking Semanal", icon: <Calendar className="w-4 h-4" />, description: "Ranking consolidado por semana", group: 1 },
   { key: "clas", label: "Ranking Clãs", icon: <Shield className="w-4 h-4" />, description: "Ranking acumulando todas as lines do mesmo clã", group: 1 },
-  { key: "jogadores", label: "Jogadores", icon: <Users className="w-4 h-4" />, description: "Estatísticas individuais de XT, Geral e Scrims", group: 1 },
+  
+  // NOVAS ABAS DE JOGADORES
+  { key: "jogadores-xtreinos", label: "Jogadores XT", icon: <Dumbbell className="w-4 h-4" />, description: "Kills individuais em X-Treinos", group: 1 },
+  { key: "jogadores-geral", label: "Jogadores Geral", icon: <BarChart3 className="w-4 h-4" />, description: "Estatísticas gerais individuais", group: 1 },
+  { 
+    key: "jogadores-scrims", 
+    label: "Jogadores Scrims", 
+    icon: <Swords className="w-4 h-4" />, 
+    description: "Estatísticas de Scrims (MME)", 
+    group: 1,
+    isExternal: true, 
+    externalTo: "/scrims/agendados" 
+  },
   
   { key: "historico", label: "Histórico Geral", icon: <History className="w-4 h-4" />, description: "Linha do tempo unificada de todos os X-Treinos e Scrims", group: 2 },
   { 
@@ -90,55 +106,27 @@ const TABS: TabConfig[] = [
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  const params = useParams<{ tab?: string; subtab?: string }>();
-  const location = useLocation();
-  
-  // Captura de forma segura o subtab (o React Router às vezes coloca tudo na barra de URL)
-  const tab = params.tab;
-  const subtab = params.subtab || location.pathname.split("/")[3] || "";
+  const { tab } = useParams<{ tab?: string }>();
 
-  // 1. Se a rota for explicitamente de jogadores, não procurar em TABS
-  if (tab === "jogadores") {
-    // Se não tem subtab, redireciona para o padrão
-    if (!subtab) {
-      return <Navigate to="/rankings/jogadores/xtreinos" replace />;
-    }
-    
-    // Renderiza a página de jogadores passando a subtab
-    return (
-      <MainLayout>
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
-          <JogadoresPage initialSubTab={subtab} />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // 2. Redirecionamento padrão se não tiver nada
-  if (!tab && !subtab) {
+  if (!tab) {
     return <Navigate to="/rankings/geral" replace />;
   }
 
-  // 3. Procura a aba válida em TABS apenas se não for "jogadores"
-  const activeTab: TabKey = 
-    TABS.find(t => t.key === tab)?.key as TabKey || 
-    TABS.find(t => t.key === subtab)?.key as TabKey || 
-    "geral";
+  const activeTab: TabKey = (TABS.find(t => t.key === tab)?.key as TabKey) || "geral";
+  const activeTabConfig = TABS.find((t) => t.key === activeTab)!;
 
-  const finalActiveTab: TabKey = activeTab;
-
-  const activeTabConfig = TABS.find((t) => t.key === finalActiveTab)!;
   const group1Tabs = TABS.filter((t) => t.group === 1);
   const group2Tabs = TABS.filter((t) => t.group === 2);
   const group3Tabs = TABS.filter((t) => t.group === 3);
 
   const renderTabButton = (tabConfig: TabConfig) => {
-    const isActive = finalActiveTab === tabConfig.key;
+    const isActive = activeTab === tabConfig.key;
 
     if (tabConfig.isExternal) {
       return (
         <Link
           to={tabConfig.externalTo!}
+          key={tabConfig.key}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]"
         >
           {tabConfig.icon}
@@ -147,13 +135,11 @@ export default function Rankings() {
       );
     }
 
-    const targetPath = tabConfig.key === "jogadores" 
-      ? "/rankings/jogadores/xtreinos" 
-      : `/rankings/${tabConfig.key}`;
+    const targetPath = `/rankings/${tabConfig.key}`;
 
     if (isActive) {
       return (
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
+        <div key={tabConfig.key} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
           {tabConfig.icon}
           {tabConfig.label}
         </div>
@@ -161,7 +147,7 @@ export default function Rankings() {
     }
 
     return (
-      <Link to={targetPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
+      <Link key={tabConfig.key} to={targetPath} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5a5a6e] hover:text-[#f0f0f5] hover:bg-[#1a1a24]">
         {tabConfig.icon}
         {tabConfig.label}
       </Link>
@@ -206,21 +192,23 @@ export default function Rankings() {
 
         {/* Tab Content */}
         <div className="pb-12">
-          {finalActiveTab === "xtreinos" && <XTreinosTab />}
-          {finalActiveTab === "geral" && <RankingGeralTab />}
-          {finalActiveTab === "mensal" && <RankingMensalTab />}
-          {finalActiveTab === "semanal" && <RankingSemanalTab />}
-          {finalActiveTab === "clas" && <RankingClasTab />}
+          {activeTab === "xtreinos" && <XTreinosTab />}
+          {activeTab === "geral" && <RankingGeralTab />}
+          {activeTab === "mensal" && <RankingMensalTab />}
+          {activeTab === "semanal" && <RankingSemanalTab />}
+          {activeTab === "clas" && <RankingClasTab />}
           
-          {/* Redundância de segurança: nunca deve cair aqui, mas se cair, garante que não dê erro */}
-          {finalActiveTab === "jogadores" && <JogadoresPage initialSubTab={subtab} />}
+          {/* Renderização das novas abas de Jogadores */}
+          {activeTab === "jogadores-xtreinos" && <JogadoresXTKillsTab />}
+          {activeTab === "jogadores-geral" && <JogadoresTab />}
+          {/* A aba jogadores-scrims é externa, então não precisa renderizar componente aqui */}
           
-          {finalActiveTab === "historico" && <HistoricoGeralTab />}
-          {finalActiveTab === "duelo" && <DueloTab />}
-          {finalActiveTab === "h2h" && <HeadToHeadTab />}
-          {finalActiveTab === "evolucao" && <EvolucaoTab />}
-          {finalActiveTab === "predicoes" && <PredicoesTab />}
-          {finalActiveTab === "crossfire" && <CrossfireTab />}
+          {activeTab === "historico" && <HistoricoGeralTab />}
+          {activeTab === "duelo" && <DueloTab />}
+          {activeTab === "h2h" && <HeadToHeadTab />}
+          {activeTab === "evolucao" && <EvolucaoTab />}
+          {activeTab === "predicoes" && <PredicoesTab />}
+          {activeTab === "crossfire" && <CrossfireTab />}
         </div>
       </div>
     </MainLayout>
