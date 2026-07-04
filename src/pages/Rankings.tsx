@@ -1,4 +1,4 @@
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import {
   Dumbbell,
   Trophy,
@@ -90,7 +90,12 @@ const TABS: TabConfig[] = [
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function Rankings() {
-  const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
+  const params = useParams<{ tab?: string; subtab?: string }>();
+  const location = useLocation();
+  
+  // Captura de forma segura o subtab (o React Router às vezes coloca tudo na barra de URL)
+  const tab = params.tab;
+  const subtab = params.subtab || location.pathname.split("/")[3] || "";
 
   // 1. Se a rota for explicitamente de jogadores, não procurar em TABS
   if (tab === "jogadores") {
@@ -207,7 +212,7 @@ export default function Rankings() {
           {finalActiveTab === "semanal" && <RankingSemanalTab />}
           {finalActiveTab === "clas" && <RankingClasTab />}
           
-          {/* Passa a subtab capturada nativamente pelo Router */}
+          {/* Redundância de segurança: nunca deve cair aqui, mas se cair, garante que não dê erro */}
           {finalActiveTab === "jogadores" && <JogadoresPage initialSubTab={subtab} />}
           
           {finalActiveTab === "historico" && <HistoricoGeralTab />}

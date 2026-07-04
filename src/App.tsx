@@ -42,11 +42,9 @@ export default function App() {
         {/* Redireciona rotas antigas de Rankings de Scrims para a nova rota unificada */}
         <Route path="/rankings/scrims/:tab" element={<Navigate to="/scrims/:tab" replace />} />
         
-        {/* Rankings (X-Treinos e outras tabs genéricas) */}
+        {/* Rankings */}
         <Route path="/rankings" element={<Rankings />} />
-
-        {/* A rota específica de jogadores DEVE vir antes da genérica :tab */}
-        <Route path="/rankings/jogadores/:subtab" element={<Rankings />} />
+        <Route path="/rankings/jogadores/*" element={<Rankings />} />
         <Route path="/rankings/:tab" element={<Rankings />} />
 
         <Route path="/clans" element={<Clans />}>
