@@ -34,7 +34,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Kaze",
+    canonicalNickname: "UGD Kaze",
     canonicalTeam: "UGD Threat",
     role: "cap",
     knownAliases: [
@@ -54,7 +54,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Arise",
+    canonicalNickname: "UGD ARISE",
     canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
@@ -205,7 +205,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   },
   {
     canonicalNickname: "Illusion",
-    canonicalTeam: "UGD LEGENDS",
+    canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
       "UGD Neo",
@@ -313,8 +313,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Lorex",
-    canonicalTeam: "UGD OLYMPIQUE",
+    canonicalNickname: "UGD LOREX",
+    canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
       "Lorex",
