@@ -1386,6 +1386,48 @@ export const xtreinosRaw: XtreinoRaw[] = [
       ["RED INSS", "RED LΘRD", 10, 9, 7],
     ],
   },
+  // ========================================
+  // XTreino 21 — 2026-07-07
+  // ========================================
+  {
+    id: 21,
+    date: "2026-07-07",
+    colocacoes: [
+      ["CMF ATLANTIC", 1, 2, 1],
+      ["RED INSS", 2, 5, 3],
+      ["K4F", 3, 6, 2],
+      ["UGD Threat", 4, 4, 5],
+      ["ODR", 5, 3, 4],
+      ["LMF", 0, 1, 0],
+    ],
+    jogadores: [
+      ["CMF ATLANTIC", "CMF Léo", 7, 8, 5],
+      ["CMF ATLANTIC", "CMF KIRAΛ新神", 15, 2, 8],
+      ["CMF ATLANTIC", "CMF Syx", 12, 13, 10],
+      ["CMF ATLANTIC", "CMF MOIZO", 3, 3, 5],
+      ["RED INSS", "RED iVERONz", 2, 1, 1],
+      ["RED INSS", "RED aces", 0, 0, 0],
+      ["RED INSS", "RED snow777", 4, 2, 2],
+      ["RED INSS", "yKWIM¿", 5, 3, 5],
+      ["RED INSS", "RED-Zenon", 0, 4, 0],
+      ["K4F", "K4F ÉoUrso", 2, 0, 2],
+      ["K4F", "K4F Lynx", 6, 0, 4],
+      ["K4F", "K4F Zaza", 2, 1, 3],
+      ["K4F", "K4F BOT?", 0, 0, 3],
+      ["UGD Threat", "UGD Kaze", 2, 2, 2],
+      ["UGD Threat", "UGD Illusion", 6, 3, 3],
+      ["UGD Threat", "UGD ARISE", 5, 3, 1],
+      ["UGD Threat", "UGD LOREX", 6, 1, 0],
+      ["ODR", "yurizz FURY", 2, 3, 0],
+      ["ODR", "Mindweak", 2, 3, 0],
+      ["ODR", "ODR S4NTLEVS", 2, 1, 4],
+      ["ODR", "ODR Aisha", 4, 1, 3],
+      ["LMF", "LMF_mtfacil", 0, 7, 0],
+      ["LMF", "LMF_RICHIMO", 0, 7, 0],
+      ["LMF", "CEIFADOR-ZXc", 0, 5, 0],
+      ["LMF", "LMF_XIT", 0, 11, 0],
+    ],
+  },
 
   // ========================================
   // NOVO XTREINO? Cole um bloco novo aqui embaixo!

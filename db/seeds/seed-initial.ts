@@ -127,6 +127,7 @@ const TEAMS_DATA: [string, string, string | null, "active" | "disbanded", string
   ["Equipe K", "TK", null, "active", "Time independente K."],
   ["Equipe D", "TD", null, "active", "Time independente D."],
   ["Squad D", "SD", null, "active", "Time independente D (Squad)."],
+  ["ODR", "ODR", null, "active", "Time avulso ODR."],
 ];
 
 // --- XTREINOS (lista base) ---
@@ -151,6 +152,7 @@ const XTREINOS_DATA: [string, string, "finalizado" | "aberto"][] = [
   ["XTreino Underground - 29/06", "2026-06-29", "finalizado"],
   ["XTreino Underground - 01/07", "2026-07-01", "finalizado"],
   ["XTreino Underground - 03/07", "2026-07-03", "finalizado"],
+  ["XTreino Underground - 07/07", "2026-07-07", "finalizado"],
 ];
 
 // ============================================================

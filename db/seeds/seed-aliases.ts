@@ -1088,6 +1088,18 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "LXELTINHO",
     ],
   },
+  {
+    canonicalNickname: "RED aces",
+    canonicalTeam: "RED INSS",
+    role: "off",
+    knownAliases: ["RED aces"],
+  },
+  {
+    canonicalNickname: "RED-Zenon",
+    canonicalTeam: "RED INSS",
+    role: "off",
+    knownAliases: ["RED-Zenon"],
+  },
 
   // ==========================================
   // K4F
@@ -1186,6 +1198,18 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "K4F LUCAO",
     ],
+  },
+  {
+    canonicalNickname: "K4F Lynx",
+    canonicalTeam: "K4F",
+    role: "off",
+    knownAliases: ["K4F Lynx"],
+  },
+  {
+    canonicalNickname: "K4F BOT?",
+    canonicalTeam: "K4F",
+    role: "off",
+    knownAliases: ["K4F BOT?"],
   },
 
   // ==========================================
@@ -1419,6 +1443,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "LMF CALOP12",
     ],
+  },
+  {
+    canonicalNickname: "CEIFADOR-ZXc",
+    canonicalTeam: "LMF",
+    role: "off",
+    knownAliases: ["CEIFADOR-ZXc"],
   },
 
   // ==========================================
@@ -2150,6 +2180,31 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: ["Buzeira 永"],  // ⚠️ Já existe em UGD LEGENDS! Precisa decidir
   },
+  // ODR
+  {
+    canonicalNickname: "yurizz FURY",
+    canonicalTeam: "ODR",
+    role: "off",
+    knownAliases: ["yurizz FURY"],
+  },
+  {
+    canonicalNickname: "Mindweak",
+    canonicalTeam: "ODR",
+    role: "off",
+    knownAliases: ["Mindweak"],
+  },
+  {
+    canonicalNickname: "ODR S4NTLEVS",
+    canonicalTeam: "ODR",
+    role: "off",
+    knownAliases: ["ODR S4NTLEVS"],
+  },
+  {
+    canonicalNickname: "ODR Aisha",
+    canonicalTeam: "ODR",
+    role: "off",
+    knownAliases: ["ODR Aisha"],
+  },
 ];
 
 // ============================================================
@@ -2324,6 +2379,10 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
   {
     canonicalName: "RIVERS",
     knownAliases: ["RIVERS"],
+  },
+  {
+    canonicalName: "ODR",
+    knownAliases: ["ODR"],
   },
 ];
 
