@@ -204,7 +204,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Illusion",
+    canonicalNickname: "UGD Illusion",
     canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
