@@ -1155,6 +1155,9 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "K4F zaza",
       "K4F ZAZA",
       "K4F Zaza",
+      "Zaza",
+      "zaza",
+      "ZAZA",
     ],
   },
   {
