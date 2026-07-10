@@ -1147,7 +1147,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   // K4F
   // ==========================================
   {
-    canonicalNickname: "Zaza",
+    canonicalNickname: "K4F Zaza",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
