@@ -1161,7 +1161,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Nine",
+    canonicalNickname: "K4F Nine",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
@@ -1169,10 +1169,13 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "K4F  Nine",
       "K4F NINE",
       "K4F Nine",
+      "Nine",
+      "nine",
+      "NINE",
     ],
   },
   {
-    canonicalNickname: "Guilok07",
+    canonicalNickname: "K4F Guilok07",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
@@ -1184,7 +1187,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Éourso",
+    canonicalNickname: "K4F Éourso",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
@@ -1217,7 +1220,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: ["K4F KISE", "KISE"],
   },
   {
-    canonicalNickname: "Alek",
+    canonicalNickname: "K4F Alek",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
@@ -1228,28 +1231,33 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "DUDU",
+    canonicalNickname: "K4F DUDU",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
       "K4F DUDU",
       "K4F Dudu",
+      "DUDU",
+      "dudu",
     ],
   },
   {
-    canonicalNickname: "KISE",
+    canonicalNickname: "K4F KISE",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
+      "K4F KISE",
       "KISE",
     ],
   },
   {
-    canonicalNickname: "LUCAO",
+    canonicalNickname: "K4F LUCAO",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
       "K4F LUCAO",
+      "LUCAO",
+      "lucao",
     ],
   },
   {
