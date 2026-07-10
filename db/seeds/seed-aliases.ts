@@ -383,12 +383,18 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "UGD A2",
     ],
   },
-{
-  canonicalNickname: "Noway_7",
-  canonicalTeam: "UGD CASUAL",
-  role: "off",
-  knownAliases: ["Noway_7"],
-},
+  {
+    canonicalNickname: "Noway_7",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: ["Noway_7"],
+  },
+  {
+    canonicalNickname: "yurizz FURY",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: ["yurizz FURY"],
+  },
 
   // ==========================================
   // UGD ROYAL (X1 - XTreino 1)
@@ -857,6 +863,24 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: ["CMF D2Efps"],
   },
+  {
+    canonicalNickname: "CMF OMAR",
+    canonicalTeam: "CMF ASSALT",
+    role: "off",
+    knownAliases: ["CMF OMAR", "omar"],
+  },
+  {
+    canonicalNickname: "CMF CLEUTIN",
+    canonicalTeam: "CMF ASSALT",
+    role: "off",
+    knownAliases: ["CMF CLEUTIN"],
+  },
+  {
+    canonicalNickname: "CMF SMOKE",
+    canonicalTeam: "CMF ASSALT",
+    role: "off",
+    knownAliases: ["CMF SMOKE", "CMF Smoke"],
+  },
 
   // ==========================================
   // CMF (Antes de dividir - X1 a X4)
@@ -1011,6 +1035,24 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "FUR next",
     ],
   },
+  {
+    canonicalNickname: "RED GOAT",
+    canonicalTeam: "RED INSS",
+    role: "off",
+    knownAliases: ["RED GOAT"],
+  },
+  {
+    canonicalNickname: "AR TIAGO",
+    canonicalTeam: "RED INSS",
+    role: "off",
+    knownAliases: ["AR TIAGO"],
+  },
+  {
+    canonicalNickname: "ODR S4NTLEVS",
+    canonicalTeam: "RED INSS",
+    role: "off",
+    knownAliases: ["ODR S4NTLEVS"],
+  },
 
   // ==========================================
   // RED (Antes de virar INSS - X1 a X4)
@@ -1154,14 +1196,22 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Wendxz",
+    canonicalNickname: "K4F Wendxz",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
       "wend",
       "Wend",
       "NyE Wendxz",
+      "Wendxz",
+      "K4F Wendxz",
     ],
+  },
+  {
+    canonicalNickname: "K4F KISE",
+    canonicalTeam: "K4F",
+    role: "off",
+    knownAliases: ["K4F KISE", "KISE"],
   },
   {
     canonicalNickname: "Alek",
@@ -2205,6 +2255,31 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: ["ODR Aisha"],
   },
+  // KF
+  {
+    canonicalNickname: "KF ℛdot",
+    canonicalTeam: "KF",
+    role: "off",
+    knownAliases: ["KF ℛdot"],
+  },
+  {
+    canonicalNickname: "Zeniwt",
+    canonicalTeam: "KF",
+    role: "off",
+    knownAliases: ["Zeniwt"],
+  },
+  {
+    canonicalNickname: "KF A𝒦𝒰ℛA!?ツ",
+    canonicalTeam: "KF",
+    role: "off",
+    knownAliases: ["KF A𝒦𝒰ℛA!?ツ"],
+  },
+  {
+    canonicalNickname: "KF-Dexter",
+    canonicalTeam: "KF",
+    role: "off",
+    knownAliases: ["KF-Dexter"],
+  },
 ];
 
 // ============================================================
@@ -2383,6 +2458,10 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
   {
     canonicalName: "ODR",
     knownAliases: ["ODR"],
+  },
+  {
+    canonicalName: "KF",
+    knownAliases: ["KF"],
   },
 ];
 

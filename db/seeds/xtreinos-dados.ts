@@ -1428,6 +1428,52 @@ export const xtreinosRaw: XtreinoRaw[] = [
       ["LMF", "LMF_XIT", 0, 11, 0],
     ],
   },
+  // ========================================
+  // XTreino 22 — 2026-07-09
+  // ========================================
+  {
+    id: 22,
+    date: "2026-07-09",
+    colocacoes: [
+      ["UGD CASUAL", 1, 4, 3],
+      ["RED INSS", 2, 5, 6],
+      ["K4F", 3, 3, 2],
+      ["KF", 4, 6, 7],
+      ["CMF ASSALT", 5, 2, 5],
+      ["CMF ATLANTIC", 6, 7, 1],
+      ["UGD Threat", 7, 1, 4],
+    ],
+    jogadores: [
+      ["UGD CASUAL", "UGD A2", 7, 5, 13],
+      ["UGD CASUAL", "UGD SEAN021", 10, 3, 7],
+      ["UGD CASUAL", "UGD judas", 5, 2, 3],
+      ["UGD CASUAL", "yurizz FURY", 14, 6, 8],
+      ["RED INSS", "ODR S4NTLEVS", 5, 2, 0],
+      ["RED INSS", "RED iVERONz", 5, 2, 0],
+      ["RED INSS", "RED GOAT", 1, 0, 0],
+      ["RED INSS", "AR TIAGO", 0, 1, 0],
+      ["K4F", "K4F KISE", 4, 8, 3],
+      ["K4F", "K4F BOT?", 3, 5, 7],
+      ["K4F", "K4F Wendxz", 7, 11, 12],
+      ["K4F", "K4F Zaza", 9, 5, 6],
+      ["KF", "KF ℛdot", 1, 0, 0],
+      ["KF", "Zeniwt", 1, 0, 0],
+      ["KF", "KF A𝒦𝒰ℛA!?ツ", 2, 0, 0],
+      ["KF", "KF-Dexter", 0, 0, 0],
+      ["CMF ASSALT", "CMF OMAR", 8, 8, 3],
+      ["CMF ASSALT", "CMF CLEUTIN", 3, 2, 0],
+      ["CMF ASSALT", "CMF Nyx", 2, 5, 4],
+      ["CMF ASSALT", "CMF SMOKE", 3, 3, 1],
+      ["CMF ATLANTIC", "CMF Léo", 3, 3, 7],
+      ["CMF ATLANTIC", "CMF KIRAΛ新神", 7, 3, 10],
+      ["CMF ATLANTIC", "CMF Syx", 7, 3, 9],
+      ["CMF ATLANTIC", "CMF MOIZO", 6, 2, 6],
+      ["UGD Threat", "UGD Kaze", 0, 11, 0],
+      ["UGD Threat", "UGD Illusion", 1, 11, 0],
+      ["UGD Threat", "UGD LOREX", 3, 17, 2],
+      ["UGD Threat", "UGD ARISE", 0, 8, 1],
+    ],
+  },
 
   // ========================================
   // NOVO XTREINO? Cole um bloco novo aqui embaixo!
