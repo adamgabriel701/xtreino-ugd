@@ -22,7 +22,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   // UGD THREAT
   // ==========================================
   {
-    canonicalNickname: "Ares",
+    canonicalNickname: "UGD Ares",
     canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
@@ -54,13 +54,42 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "UGD ARISE",
+    canonicalNickname: "UGD ARISE⁷",
     canonicalTeam: "UGD Threat",
     role: "off",
     knownAliases: [
       "UGD ARISE",
       "Arise",
       "ARISE",
+      "UGD ARISE⁷",
+    ],
+  },
+  {
+    canonicalNickname: "UGD Sant⁷",
+    canonicalTeam: "UGD Threat",
+    role: "off",
+    knownAliases: [
+      "UGD Neo",
+      "UGD Santz",
+      "UGD Sant",
+      "Sant",
+      "Neo",
+      "Santz",
+      "UGD Santz⁷",
+      "Santz⁷",
+      "UGD Illusion",
+      "Illusion",
+      "UGD Sant⁷",
+    ],
+  },
+  {
+    canonicalNickname: "UGD LOREX",
+    canonicalTeam: "UGD Threat",
+    role: "off",
+    knownAliases: [
+      "Lorex",
+      "LOREX",
+      "UGD LOREX",
     ],
   },
 
@@ -204,23 +233,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "UGD Illusion",
-    canonicalTeam: "UGD Threat",
-    role: "off",
-    knownAliases: [
-      "UGD Neo",
-      "UGD Santz",
-      "UGD Sant",
-      "Sant",
-      "Neo",
-      "Santz",
-      "UGD Santz⁷",
-      "Santz⁷",
-      "UGD Illusion",
-      "Illusion",
-    ],
-  },
-  {
     canonicalNickname: "Buzeira",
     canonicalTeam: "UGD LEGENDS",
     role: "off",
@@ -236,15 +248,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "Duardin",
       "UGD Duardin",
-    ],
-  },
-  {
-    canonicalNickname: "Hell",
-    canonicalTeam: "UGD LEGENDS",
-    role: "off",
-    knownAliases: [
-      "Hell",
-      "hell",
     ],
   },
   {
@@ -313,16 +316,6 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "UGD LOREX",
-    canonicalTeam: "UGD Threat",
-    role: "off",
-    knownAliases: [
-      "Lorex",
-      "LOREX",
-      "UGD LOREX",
-    ],
-  },
-  {
     canonicalNickname: "Cants",
     canonicalTeam: "UGD OLYMPIQUE",
     role: "off",
@@ -343,11 +336,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   // UGD CASUAL
   // ==========================================
   {
-    canonicalNickname: "UGD DRAKØN",
+    canonicalNickname: "UGD DRAKON",
     canonicalTeam: "UGD CASUAL",
     role: "off",
     knownAliases: [
       "UGD DRAKØN",
+      "UGD DRAKON"
     ],
   },
   {
@@ -359,12 +353,13 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "UGD SEAN021",
+    canonicalNickname: "sean_021💤🐍",
     canonicalTeam: "UGD CASUAL",
     role: "off",
     knownAliases: [
       "UGD SEAN021",
       "sean_021",
+      "sean_021💤🐍",
     ],
   },
   {
@@ -394,6 +389,16 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     canonicalTeam: "UGD CASUAL",
     role: "off",
     knownAliases: ["yurizz FURY"],
+  },
+  {
+    canonicalNickname: "UGD hell⁷",
+    canonicalTeam: "UGD CASUAL",
+    role: "off",
+    knownAliases: [
+      "Hell",
+      "hell",
+      "UGD hell⁷",
+    ],
   },
 
   // ==========================================
@@ -513,6 +518,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
   // FURY ELITE
   // ==========================================
   {
+    canonicalNickname: "it's FURY",
+    canonicalTeam: "FURY ELITE",
+    role: "off",
+    knownAliases: ["it's FURY"],
+  },
+  {
     canonicalNickname: "DIANA",
     canonicalTeam: "FURY ELITE",
     role: "off",
@@ -532,7 +543,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "Dexz RYL",
+    canonicalNickname: "Dexz FURY",
     canonicalTeam: "FURY ELITE",
     role: "off",
     knownAliases: [
@@ -542,6 +553,8 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Dexz⁷RYL",
       "Dexz7RYL",
       "Dexz²RYL",
+      "Dexz RYL",
+      "Dexz FURY",
     ],
   },
   {
@@ -609,6 +622,12 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     knownAliases: [
       "TENEBR FURY",
     ],
+  },
+  {
+    canonicalNickname: "Alpha FURY",
+    canonicalTeam: "FURY ELITE",
+    role: "off",
+    knownAliases: ["Alpha FURY"],
   },
 
   // ==========================================
@@ -1187,7 +1206,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     ],
   },
   {
-    canonicalNickname: "K4F Éourso",
+    canonicalNickname: "K4F ÉoUrso🐻",
     canonicalTeam: "K4F",
     role: "off",
     knownAliases: [
@@ -1199,6 +1218,7 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
       "Éourso",
       "K4F EruKramo",
       "K4F ExuKramo",
+      "K4F ÉoUrso🐻",
     ],
   },
   {
@@ -2291,6 +2311,46 @@ const PLAYER_ALIASES_DATA: PlayerAliasEntry[] = [
     role: "off",
     knownAliases: ["KF-Dexter"],
   },
+
+  // FURY / EME
+  {
+    canonicalNickname: "Asmita FURY",
+    canonicalTeam: "FURY / EME",
+    role: "off",
+    knownAliases: ["Asmita FURY"],
+  },
+  {
+    canonicalNickname: "perfection z",
+    canonicalTeam: "FURY / EME",
+    role: "off",
+    knownAliases: ["perfection z"],
+  },
+  {
+    canonicalNickname: "EME々Notfear`",
+    canonicalTeam: "FURY / EME",
+    role: "off",
+    knownAliases: ["EME々Notfear`", "EME々Notfear'"],
+  },
+  {
+    canonicalNickname: "EME々Orz⁷",
+    canonicalTeam: "FURY / EME",
+    role: "off",
+    knownAliases: ["EME々Orz⁷"],
+  },
+  
+  // HAVK'z
+  {
+    canonicalNickname: "ODR S4NTLEVS",
+    canonicalTeam: "HAVK'z",
+    role: "off",
+    knownAliases: ["ODR S4NTLEVS"],
+  },
+  {
+    canonicalNickname: "ODR Aisha",
+    canonicalTeam: "HAVK'z",
+    role: "off",
+    knownAliases: ["ODR Aisha"],
+  },
 ];
 
 // ============================================================
@@ -2473,6 +2533,14 @@ const TEAM_ALIASES_DATA: TeamAliasEntry[] = [
   {
     canonicalName: "KF",
     knownAliases: ["KF"],
+  },
+  {
+    canonicalName: "FURY / EME",
+    knownAliases: ["FURY / EME"],
+  },
+  {
+    canonicalName: "HAVK'z",
+    knownAliases: ["HAVK'z"],
   },
 ];
 
